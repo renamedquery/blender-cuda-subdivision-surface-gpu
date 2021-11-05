@@ -27,8 +27,5 @@ int main (void) {
         interpolateQuad(averagedVerts[i], verts[i][0], verts[i][1], verts[i][2], verts[i][3]);
     }
 
-    delete verts;
-    delete averagedVerts;
-
     return 0;
 }

@@ -1,0 +1,1 @@
+clang++ ./gpu-subsurf.cpp -o ./gpu-subsurf.o
