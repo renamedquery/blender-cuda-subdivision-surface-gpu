@@ -159,6 +159,113 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFa
     }
 }
 
+void getVertById(std::vector<vertex> vertices, int id, vertex& vert) {
+
+    for (int i = 0; i < vertices.size(); i++) {
+        
+        if (vertices[i].id == id) vert = vertices[i];
+    }
+}
+
+void getMaxVertID(std::vector<vertex> vertices, int& max) {
+
+    for (int i = 0; i < vertices.size(); i++) {
+
+        if (vertices[i].id > max) max = vertices[i].id;
+    }
+}
+
+void getEdgeAverage(vertex cornerVerts[4], vec3 averages[4], int cornerVertIndex, int cornerVertID_1, int cornerVertID_2, std::vector<vertex> vertices) {
+
+    averages[cornerVertIndex].x = (cornerVerts[cornerVertID_1].position.x + cornerVerts[cornerVertID_2].position.x) / 2;
+    averages[cornerVertIndex].y = (cornerVerts[cornerVertID_1].position.y + cornerVerts[cornerVertID_2].position.y) / 2;
+    averages[cornerVertIndex].z = (cornerVerts[cornerVertID_1].position.z + cornerVerts[cornerVertID_2].position.z) / 2;
+
+    cornerVerts[cornerVertIndex].position = averages[cornerVertIndex];
+
+    getMaxVertID(vertices, cornerVerts[cornerVertIndex].id);
+}
+
+// adapted from https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
+void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& faces) {
+
+    // calculate the middle face point averages
+    std::vector<vertex> middlePointAverages;
+
+    for (int i = 0; i < faces.size(); i++) {
+
+        vec3 faceAverageMiddlePoint;
+        vec3 faceAverageMiddlePointNormal;
+        vertex faceAverageMiddlePointVertex;
+        
+        for (int i = 0; i < 4; i++) {
+
+            vertex currentVert;
+            getVertById(vertices, faces[i].vertexIndex[i], currentVert);
+
+            faceAverageMiddlePoint.x += currentVert.position.x;
+            faceAverageMiddlePoint.y += currentVert.position.y;
+            faceAverageMiddlePoint.z += currentVert.position.z;
+
+            faceAverageMiddlePointNormal.x += currentVert.normal.x;
+            faceAverageMiddlePointNormal.y += currentVert.normal.y;
+            faceAverageMiddlePointNormal.z += currentVert.normal.z;
+        }
+
+        faceAverageMiddlePointVertex.position.x = faceAverageMiddlePoint.x / 4;
+        faceAverageMiddlePointVertex.position.y = faceAverageMiddlePoint.y / 4;
+        faceAverageMiddlePointVertex.position.z = faceAverageMiddlePoint.z / 4;
+
+        faceAverageMiddlePointVertex.normal.x = faceAverageMiddlePointNormal.x / 4;
+        faceAverageMiddlePointVertex.normal.y = faceAverageMiddlePointNormal.y / 4;
+        faceAverageMiddlePointVertex.normal.z = faceAverageMiddlePointNormal.z / 4;
+
+        int maxVertID = 0;
+        getMaxVertID(vertices, maxVertID);
+        faceAverageMiddlePointVertex.id = maxVertID + 1;
+
+        middlePointAverages.push_back(faceAverageMiddlePointVertex);
+    }
+
+    // combine middlePointAverages and vertices into one array
+    vertices.insert(vertices.end(), middlePointAverages.begin(), middlePointAverages.end());
+
+    // calculate the middle edge point averages
+    std::vector<vertex> edgePointAverages;
+
+    for (int i = 0; i < faces.size(); i++) {
+
+        vec3 edgeAverageMiddlePoint;
+        vec3 edgeAverageMiddlePointNormal;
+        vertex edgeAverageMiddlePointVertex;
+
+        // quad edge 1
+        /*
+            1  |  2
+            -------
+            3  |  4
+
+               1
+            4     2
+               3
+        */
+
+        vertex cornerVerts[4];
+
+        for (int j = 0; j < 4; j++) getVertById(vertices, faces[i].vertexIndex[j], cornerVerts[j]);
+
+        vec3 cornerVertsAverages[4];
+
+        getEdgeAverage(cornerVerts, cornerVertsAverages, 0, 0, 1, vertices);
+        getEdgeAverage(cornerVerts, cornerVertsAverages, 1, 1, 2, vertices);
+        getEdgeAverage(cornerVerts, cornerVertsAverages, 2, 2, 3, vertices);
+        getEdgeAverage(cornerVerts, cornerVertsAverages, 3, 3, 0, vertices);
+
+        // combine cornerVerts and vertices into one array
+        for (int j = 0; j < 4; j++) (vertices.push_back(cornerVerts[j]));
+    }
+}
+
 void printVerts(std::vector<vertex> vertices){
 
     for (int i = 0; i < vertices.size(); i++) {
@@ -191,13 +298,24 @@ int main (void) {
 
     readObj(objPath, objVertices, objFaces);
 
-    std::string vertCount = std::to_string(objVertices.size());
-    std::string faceCount = std::to_string(objFaces.size());
+    std::string vertCount;
+    std::string faceCount;
+
+    vertCount = std::to_string(objVertices.size());
+    faceCount = std::to_string(objFaces.size());
 
     // debugging stuff
     cout << "[CPU] FINISHED PARSING \"" << objPath << "\"WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
-    printVerts(objVertices);
+
     printFaces(objFaces);
+    printVerts(objVertices);
+
+    catmullClarkSubdiv(objVertices, objFaces);
+
+    vertCount = std::to_string(objVertices.size());
+    faceCount = std::to_string(objFaces.size());
+
+    cout << "[CPU] FINISHED SUBDIVIDING \"" << objPath << "\"WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
 
     return 0;
 }
