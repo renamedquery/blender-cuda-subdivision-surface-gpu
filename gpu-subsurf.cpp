@@ -122,6 +122,7 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<face>&
             }
 
             // check for which part of the vert has already been written to since the verts are written before the normals verts
+            // if the vert type is 1 (v) and the vert hasnt been modified on the verts array
             if (vertType == 1 && !vertices[(dataCount_v - 1)].position.modified) {
 
                 vertices[(dataCount_v - 1)].position.x = currentVert.position.x;
@@ -129,6 +130,7 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<face>&
                 vertices[(dataCount_v - 1)].position.z = currentVert.position.z;
                 vertices[(dataCount_v - 1)].position.modified = true;
 
+            // if the vert type is 3 (vn) and the vert hasnt been modified on the verts array
             } else if (vertType == 3 && !vertices[(dataCount_vn - 1)].normal.modified) {
 
                 vertices[(dataCount_vn - 1)].normal.x = currentVert.normal.x;
