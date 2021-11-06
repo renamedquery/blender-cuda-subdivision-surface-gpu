@@ -14,6 +14,7 @@ struct vec3 {
     double x;
     double y;
     double z;
+    bool modified = false;
 };
 
 struct vec2 {
@@ -25,6 +26,13 @@ struct vertex {
     vec3 position;
     vec2 textureCoordinate;
     vec3 normal;
+    int id;
+};
+
+struct face {
+    int vertexIndex;
+    int textureIndex;
+    int normalIndex;
 };
 
 std::vector<std::string> stringSplit(std::string string, char delimiter) {
@@ -54,7 +62,7 @@ std::vector<std::string> stringSplit(std::string string, char delimiter) {
 // for a simple cube there will be no speedup, but for a mesh with millions of verts it will be faster
 // currently only reads verts, faces and edges are todo
 // __global__
-void readObj(std::string path, std::vector<vertex> vertices) {
+void readObj(std::string path, std::vector<vertex>& vertices, std::vector<face>& faces) {
     
     std::ifstream objFile(path);
 
@@ -62,6 +70,10 @@ void readObj(std::string path, std::vector<vertex> vertices) {
     objFile.unsetf(std::ios_base::skipws);
 
     std::string objFileLine;
+
+    int dataCount_v = 0;
+    int dataCount_vn = 0;
+    int id = 0;
 
     while (getline(objFile, objFileLine)) {
 
@@ -74,24 +86,59 @@ void readObj(std::string path, std::vector<vertex> vertices) {
 
         vertex currentVert;
 
-        cout << objFileLine << endl;
+        bool wasVert = false;
+        int vertType = 0; // 0 = none, 1 = vert, 2 = texture coordinate, 3 = normal vert
 
         if (lineType.compare("v") == 0) {
             currentVert.position.x = std::stod(lineDataSplitBySpaces[1]);
             currentVert.position.y = std::stod(lineDataSplitBySpaces[2]);
             currentVert.position.z = std::stod(lineDataSplitBySpaces[3]);
+            currentVert.position.modified = true;
+            currentVert.id = id;
 
-        } else if (lineType.compare("vt") == 0) {
-            currentVert.textureCoordinate.x = std::stod(lineDataSplitBySpaces[1]);
-            currentVert.textureCoordinate.x = std::stod(lineDataSplitBySpaces[2]);
+            wasVert = true;
+            vertType = 1;
+            dataCount_v++;
 
         } else if (lineType.compare("vn") == 0) {
             currentVert.normal.x = std::stod(lineDataSplitBySpaces[1]);
             currentVert.normal.y = std::stod(lineDataSplitBySpaces[2]);
             currentVert.normal.z = std::stod(lineDataSplitBySpaces[3]);
+            currentVert.normal.modified = true;
+            currentVert.id = id;
+
+            wasVert = true;
+            vertType = 3;
+            dataCount_vn++;
 
         } else if (lineType.compare("f") == 0) {
-            
+
+        }
+
+        if (wasVert) {
+            if (currentVert.id < dataCount_v || currentVert.id < dataCount_vn) {
+
+                vertices.push_back(currentVert);
+            }
+
+            // check for which part of the vert has already been written to since the verts are written before the normals verts
+            if (vertType == 1 && !vertices[(dataCount_v - 1)].position.modified) {
+
+                vertices[(dataCount_v - 1)].position.x = currentVert.position.x;
+                vertices[(dataCount_v - 1)].position.y = currentVert.position.y;
+                vertices[(dataCount_v - 1)].position.z = currentVert.position.z;
+                vertices[(dataCount_v - 1)].position.modified = true;
+
+            } else if (vertType == 3 && !vertices[(dataCount_vn - 1)].normal.modified) {
+
+                vertices[(dataCount_vn - 1)].normal.x = currentVert.position.x;
+                vertices[(dataCount_vn - 1)].normal.y = currentVert.position.y;
+                vertices[(dataCount_vn - 1)].normal.z = currentVert.position.z;
+                vertices[(dataCount_vn - 1)].normal.modified = true;
+
+            }
+
+            id++;
         }
     }
 }
@@ -100,8 +147,14 @@ int main (void) {
 
     std::string objPath = "./testCube.obj";
     std::vector<vertex> objVertices;
+    std::vector<face> objFaces;
 
-    readObj(objPath, objVertices);
+    readObj(objPath, objVertices, objFaces);
+
+    std::string vertCount = std::to_string(objVertices.size());
+    std::string faceCount = std::to_string(objFaces.size());
+
+    cout << "FINISHED WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
 
     return 0;
 }
