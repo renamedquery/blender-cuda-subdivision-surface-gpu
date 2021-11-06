@@ -1,1 +1,0 @@
-clang++ ./gpu-subsurf.cpp -o ./gpu-subsurf.o -fsanitize=address -fno-omit-frame-pointer -O1 -g
