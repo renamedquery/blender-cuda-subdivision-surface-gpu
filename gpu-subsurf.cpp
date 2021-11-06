@@ -163,14 +163,16 @@ void printVerts(std::vector<vertex> vertices){
 
     for (int i = 0; i < vertices.size(); i++) {
 
-        cout << "[" << std::to_string(vertices[i].id) << "]" << "V:  " << std::to_string(vertices[i].position.x) << ", " << std::to_string(vertices[i].position.y) << ", " << std::to_string(vertices[i].position.z) << endl;
-        cout << "[" << std::to_string(vertices[i].id) << "]" << "VN: " << std::to_string(vertices[i].normal.x) << ", " << std::to_string(vertices[i].normal.y) << ", " << std::to_string(vertices[i].normal.z) << endl;
+        cout << "[CPU] [" << std::to_string(vertices[i].id) << "]" << "V:  " << std::to_string(vertices[i].position.x) << ", " << std::to_string(vertices[i].position.y) << ", " << std::to_string(vertices[i].position.z) << endl;
+        cout << "[CPU] [" << std::to_string(vertices[i].id) << "]" << "VN: " << std::to_string(vertices[i].normal.x) << ", " << std::to_string(vertices[i].normal.y) << ", " << std::to_string(vertices[i].normal.z) << endl;
     }
 }
 
 void printFaces(std::vector<quadFace> faces) {
 
     for (int i = 0; i < faces.size(); i++) {
+
+        cout << "[CPU] ";
 
         for (int j = 0; j < 4; j++) {
 
@@ -193,7 +195,9 @@ int main (void) {
     std::string faceCount = std::to_string(objFaces.size());
 
     // debugging stuff
-    cout << "FINISHED PARSING \"" << objPath << "\"WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
+    cout << "[CPU] FINISHED PARSING \"" << objPath << "\"WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
+    printVerts(objVertices);
+    printFaces(objFaces);
 
     return 0;
 }
