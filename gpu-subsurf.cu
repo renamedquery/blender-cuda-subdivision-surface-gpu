@@ -11,7 +11,7 @@ void averageQuads(double vertices[], double arrangedVertices[], int sizeOfArray)
 
     int arrangedVertsPos = 0;
 
-    for (int i = 0; i < sizeOfArray; i++) {
+    for (int i = 0; i < sizeOfArray; i += 12) {
         int quadChunkPosition = (i / (4 * 3)) * (4 * 3);
 
         // this part is hardcoded but will later be turned into a loop. sorry!
@@ -19,7 +19,6 @@ void averageQuads(double vertices[], double arrangedVertices[], int sizeOfArray)
         arrangedVertices[arrangedVertsPos + 1] = (vertices[quadChunkPosition + 1] + vertices[quadChunkPosition + 4] + vertices[quadChunkPosition + 7] + vertices[quadChunkPosition + 10]) / 4;
         arrangedVertices[arrangedVertsPos + 2] = (vertices[quadChunkPosition + 2] + vertices[quadChunkPosition + 5] + vertices[quadChunkPosition + 8] + vertices[quadChunkPosition + 11]) / 4;
 
-        i += 12;
         arrangedVertsPos += 3;
     }
 }
