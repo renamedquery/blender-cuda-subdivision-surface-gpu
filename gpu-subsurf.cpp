@@ -61,7 +61,7 @@ std::vector<std::string> stringSplit(std::string string, char delimiter) {
 // can be gpu accelerated at least a little bit since it requires many lines to be read
 // for a simple cube there will be no speedup, but for a mesh with millions of verts it will be faster
 // currently only reads verts, faces and edges are todo
-// __global__
+//__global__
 void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFace>& faces) {
     
     std::ifstream objFile(path);
@@ -157,6 +157,24 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFa
             id++;
         }
     }
+
+    objFile.close();
+}
+
+// can not be gpu accelerated - is sequental
+void writeObj(std::string path, std::vector<vertex> vertices, std::vector<quadFace> faces) {
+
+    std::ofstream objFile;
+    objFile.open(path, ios::out | ios::trunc);
+
+    objFile << "o TMP_NAME" << endl;
+
+    for (int i = 0; i < vertices.size(); i++) {
+        
+        objFile << "v " << std::to_string(vertices[i].position.x) << " " << std::to_string(vertices[i].position.y) << " " << std::to_string(vertices[i].position.z) << endl;
+    }
+
+    objFile.close();
 }
 
 void getVertById(std::vector<vertex> vertices, int id, vertex& vert) {
@@ -187,6 +205,8 @@ void getEdgeAverage(vertex cornerVerts[4], vec3 averages[4], int cornerVertIndex
 }
 
 // adapted from https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
+// can be gpu accelerated
+//__global__
 void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& faces) {
 
     // calculate the middle face point averages
@@ -263,6 +283,11 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
         // combine cornerVerts and vertices into one array
         for (int j = 0; j < 4; j++) (vertices.push_back(cornerVerts[j]));
+
+        // create edge loops on the previous faces with the new verts
+        // the new face array should be 4x the previous size
+
+        //TODO
     }
 }
 
@@ -293,6 +318,7 @@ void printFaces(std::vector<quadFace> faces) {
 int main (void) {
 
     std::string objPath = "./testCube.obj";
+    std::string objOutputPath = "./testCubeOutput.obj";
     std::vector<vertex> objVertices;
     std::vector<quadFace> objFaces;
 
@@ -307,8 +333,8 @@ int main (void) {
     // debugging stuff
     cout << "[CPU] FINISHED PARSING \"" << objPath << "\"WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
 
-    printFaces(objFaces);
-    printVerts(objVertices);
+    //printFaces(objFaces);
+    //printVerts(objVertices);
 
     catmullClarkSubdiv(objVertices, objFaces);
 
@@ -316,6 +342,8 @@ int main (void) {
     faceCount = std::to_string(objFaces.size());
 
     cout << "[CPU] FINISHED SUBDIVIDING \"" << objPath << "\"WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
+
+    writeObj(objOutputPath, objVertices, objFaces);
 
     return 0;
 }
