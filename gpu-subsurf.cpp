@@ -131,9 +131,9 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<face>&
 
             } else if (vertType == 3 && !vertices[(dataCount_vn - 1)].normal.modified) {
 
-                vertices[(dataCount_vn - 1)].normal.x = currentVert.position.x;
-                vertices[(dataCount_vn - 1)].normal.y = currentVert.position.y;
-                vertices[(dataCount_vn - 1)].normal.z = currentVert.position.z;
+                vertices[(dataCount_vn - 1)].normal.x = currentVert.normal.x;
+                vertices[(dataCount_vn - 1)].normal.y = currentVert.normal.y;
+                vertices[(dataCount_vn - 1)].normal.z = currentVert.normal.z;
                 vertices[(dataCount_vn - 1)].normal.modified = true;
 
             }
@@ -146,7 +146,8 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<face>&
 void printVerts(std::vector<vertex> vertices){
 
     for (int i = 0; i < vertices.size(); i++) {
-        cout << std::to_string(vertices[i].position.x) << ", " << std::to_string(vertices[i].position.y) << ", " << std::to_string(vertices[i].position.z) << endl;
+        cout << "V:  " << std::to_string(vertices[i].position.x) << ", " << std::to_string(vertices[i].position.y) << ", " << std::to_string(vertices[i].position.z) << endl;
+        cout << "VN: " << std::to_string(vertices[i].normal.x) << ", " << std::to_string(vertices[i].normal.y) << ", " << std::to_string(vertices[i].normal.z) << endl;
     }
 }
 
