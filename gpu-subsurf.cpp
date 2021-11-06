@@ -90,7 +90,8 @@ void readObj(std::string path, std::vector<vertex> vertices) {
             currentVert.normal.y = std::stod(lineDataSplitBySpaces[2]);
             currentVert.normal.z = std::stod(lineDataSplitBySpaces[3]);
 
-        } else {
+        } else if (lineType.compare("f") == 0) {
+            
         }
     }
 }
