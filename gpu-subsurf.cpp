@@ -304,8 +304,8 @@ void printVerts(std::vector<vertex> vertices){
 
     for (int i = 0; i < vertices.size(); i++) {
 
-        cout << "[CPU] [" << std::to_string(vertices[i].id) << "]" << "V:  " << std::to_string(vertices[i].position.x) << ", " << std::to_string(vertices[i].position.y) << ", " << std::to_string(vertices[i].position.z) << endl;
-        cout << "[CPU] [" << std::to_string(vertices[i].id) << "]" << "VN: " << std::to_string(vertices[i].normal.x) << ", " << std::to_string(vertices[i].normal.y) << ", " << std::to_string(vertices[i].normal.z) << endl;
+        std::cout << "[CPU] [" << std::to_string(vertices[i].id) << "]" << "V:  " << std::to_string(vertices[i].position.x) << ", " << std::to_string(vertices[i].position.y) << ", " << std::to_string(vertices[i].position.z) << endl;
+        std::cout << "[CPU] [" << std::to_string(vertices[i].id) << "]" << "VN: " << std::to_string(vertices[i].normal.x) << ", " << std::to_string(vertices[i].normal.y) << ", " << std::to_string(vertices[i].normal.z) << endl;
     }
 }
 
@@ -313,14 +313,14 @@ void printFaces(std::vector<quadFace> faces) {
 
     for (int i = 0; i < faces.size(); i++) {
 
-        cout << "[CPU] ";
+        std::cout << "[CPU] ";
 
         for (int j = 0; j < 4; j++) {
 
-            cout << "[V = " << faces[i].vertexIndex[j] << "][VT = " << faces[i].textureIndex[j] << "][VN = " << faces[i].normalIndex[j] << "] ";
+            std::cout << "[V = " << faces[i].vertexIndex[j] << "][VT = " << faces[i].textureIndex[j] << "][VN = " << faces[i].normalIndex[j] << "] ";
         }
 
-        cout << endl;
+        std::cout << endl;
     }
 }
 
@@ -340,7 +340,7 @@ int main (void) {
     faceCount = std::to_string(objFaces.size());
 
     // debugging stuff
-    cout << "[CPU] FINISHED PARSING \"" << objPath << "\"WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
+    std::cout << "[CPU] FINISHED PARSING \"" << objPath << "\"WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
 
     //printFaces(objFaces);
 
@@ -349,7 +349,7 @@ int main (void) {
     vertCount = std::to_string(objVertices.size());
     faceCount = std::to_string(objFaces.size());
 
-    cout << "[CPU] FINISHED SUBDIVIDING \"" << objPath << "\"WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
+    std::cout << "[CPU] FINISHED SUBDIVIDING \"" << objPath << "\"WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
 
     printVerts(objVertices);
 
