@@ -193,8 +193,7 @@ int main (void) {
     std::string faceCount = std::to_string(objFaces.size());
 
     // debugging stuff
-    cout << "FINISHED WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
-    printFaces(objFaces);
+    cout << "FINISHED PARSING \"" << objPath << "\"WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
 
     return 0;
 }
