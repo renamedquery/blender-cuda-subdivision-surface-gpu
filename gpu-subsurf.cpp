@@ -26,7 +26,7 @@ struct vertex {
     vec3 position;
     vec2 textureCoordinate;
     vec3 normal;
-    int id;
+    int id; // will be 1 less than the actual face id since this starts at 0
 };
 
 struct face {
@@ -148,8 +148,9 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<face>&
 void printVerts(std::vector<vertex> vertices){
 
     for (int i = 0; i < vertices.size(); i++) {
-        cout << "V:  " << std::to_string(vertices[i].position.x) << ", " << std::to_string(vertices[i].position.y) << ", " << std::to_string(vertices[i].position.z) << endl;
-        cout << "VN: " << std::to_string(vertices[i].normal.x) << ", " << std::to_string(vertices[i].normal.y) << ", " << std::to_string(vertices[i].normal.z) << endl;
+
+        cout << "[" << std::to_string(vertices[i].id) << "]" << "V:  " << std::to_string(vertices[i].position.x) << ", " << std::to_string(vertices[i].position.y) << ", " << std::to_string(vertices[i].position.z) << endl;
+        cout << "[" << std::to_string(vertices[i].id) << "]" << "VN: " << std::to_string(vertices[i].normal.x) << ", " << std::to_string(vertices[i].normal.y) << ", " << std::to_string(vertices[i].normal.z) << endl;
     }
 }
 
