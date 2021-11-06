@@ -29,10 +29,10 @@ struct vertex {
     int id; // will be 1 less than the actual face id since this starts at 0
 };
 
-struct face {
-    int vertexIndex;
-    int textureIndex;
-    int normalIndex;
+struct quadFace {
+    int vertexIndex[4];
+    int textureIndex[4];
+    int normalIndex[4];
 };
 
 std::vector<std::string> stringSplit(std::string string, char delimiter) {
@@ -62,7 +62,7 @@ std::vector<std::string> stringSplit(std::string string, char delimiter) {
 // for a simple cube there will be no speedup, but for a mesh with millions of verts it will be faster
 // currently only reads verts, faces and edges are todo
 // __global__
-void readObj(std::string path, std::vector<vertex>& vertices, std::vector<face>& faces) {
+void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFace>& faces) {
     
     std::ifstream objFile(path);
 
@@ -113,6 +113,20 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<face>&
 
         } else if (lineType.compare("f") == 0) {
 
+            quadFace currentFace;
+
+            for (int i = 1; i < lineDataSplitBySpaces.size(); i++) {
+                
+                std::vector<std::string> lineDataSplitBySlashes = stringSplit(lineDataSplitBySpaces[i], '/');
+
+                // vertex_index, texture_index, normal_index
+                currentFace.vertexIndex[i - 1] = std::stod(lineDataSplitBySlashes[0]);
+                currentFace.textureIndex[i - 1] = std::stod(lineDataSplitBySlashes[1]);
+                currentFace.normalIndex[i - 1] = std::stod(lineDataSplitBySlashes[2]);
+
+            }
+
+            faces.push_back(currentFace);
         }
 
         if (wasVert) {
@@ -154,11 +168,24 @@ void printVerts(std::vector<vertex> vertices){
     }
 }
 
+void printFaces(std::vector<quadFace> faces) {
+
+    for (int i = 0; i < faces.size(); i++) {
+
+        for (int j = 0; j < 4; j++) {
+
+            cout << "[V = " << faces[i].vertexIndex[j] << "][VT = " << faces[i].textureIndex[j] << "][VN = " << faces[i].normalIndex[j] << "] ";
+        }
+
+        cout << endl;
+    }
+}
+
 int main (void) {
 
     std::string objPath = "./testCube.obj";
     std::vector<vertex> objVertices;
-    std::vector<face> objFaces;
+    std::vector<quadFace> objFaces;
 
     readObj(objPath, objVertices, objFaces);
 
@@ -167,7 +194,7 @@ int main (void) {
 
     // debugging stuff
     cout << "FINISHED WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
-    printVerts(objVertices);
+    printFaces(objFaces);
 
     return 0;
 }
