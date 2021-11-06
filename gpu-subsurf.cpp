@@ -143,6 +143,13 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<face>&
     }
 }
 
+void printVerts(std::vector<vertex> vertices){
+
+    for (int i = 0; i < vertices.size(); i++) {
+        cout << std::to_string(vertices[i].position.x) << ", " << std::to_string(vertices[i].position.y) << ", " << std::to_string(vertices[i].position.z) << endl;
+    }
+}
+
 int main (void) {
 
     std::string objPath = "./testCube.obj";
@@ -154,7 +161,9 @@ int main (void) {
     std::string vertCount = std::to_string(objVertices.size());
     std::string faceCount = std::to_string(objFaces.size());
 
+    // debugging stuff
     cout << "FINISHED WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
+    printVerts(objVertices);
 
     return 0;
 }
