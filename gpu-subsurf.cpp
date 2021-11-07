@@ -74,7 +74,6 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFa
     std::string objFileLine;
 
     int dataCount_v = 0;
-    int dataCount_vn = 0;
     int id = 0;
 
     while (getline(objFile, objFileLine)) {
@@ -102,17 +101,6 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFa
             vertType = 1;
             dataCount_v++;
 
-        } else if (lineType.compare("vn") == 0) {
-            currentVert.normal.x = std::stod(lineDataSplitBySpaces[1]);
-            currentVert.normal.y = std::stod(lineDataSplitBySpaces[2]);
-            currentVert.normal.z = std::stod(lineDataSplitBySpaces[3]);
-            currentVert.normal.modified = true;
-            currentVert.id = id;
-
-            wasVert = true;
-            vertType = 3;
-            dataCount_vn++;
-
         } else if (lineType.compare("f") == 0) {
 
             quadFace currentFace;
@@ -132,10 +120,8 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFa
         }
 
         if (wasVert) {
-            if (currentVert.id < dataCount_v || currentVert.id < dataCount_vn) {
 
-                vertices.push_back(currentVert);
-            }
+            if (currentVert.id < dataCount_v) vertices.push_back(currentVert);
 
             // check for which part of the vert has already been written to since the verts are written before the normals verts
             // if the vert type is 1 (v) and the vert hasnt been modified on the verts array
@@ -145,15 +131,6 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFa
                 vertices[(dataCount_v - 1)].position.y = currentVert.position.y;
                 vertices[(dataCount_v - 1)].position.z = currentVert.position.z;
                 vertices[(dataCount_v - 1)].position.modified = true;
-
-            // if the vert type is 3 (vn) and the vert hasnt been modified on the verts array
-            } else if (vertType == 3 && !vertices[(dataCount_vn - 1)].normal.modified) {
-
-                vertices[(dataCount_vn - 1)].normal.x = currentVert.normal.x;
-                vertices[(dataCount_vn - 1)].normal.y = currentVert.normal.y;
-                vertices[(dataCount_vn - 1)].normal.z = currentVert.normal.z;
-                vertices[(dataCount_vn - 1)].normal.modified = true;
-
             }
 
             id++;
@@ -311,43 +288,46 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
             // find the averages for the face points
 
-            neighboringFacePointCenter.x = (
-                (vertices[faces[nextdoorFaceID].vertexIndex[0]].position.x) + 
-                (vertices[faces[nextdoorFaceID].vertexIndex[1]].position.x) + 
-                (vertices[faces[nextdoorFaceID].vertexIndex[2]].position.x) + 
-                (vertices[faces[nextdoorFaceID].vertexIndex[3]].position.x)
-            ) / 4;
+            if (nextdoorFaceID < faces.size() && nextdoorFaceID > 0) {
+                neighboringFacePointCenter.x = (
+                    (vertices[faces[nextdoorFaceID].vertexIndex[0]].position.x) + 
+                    (vertices[faces[nextdoorFaceID].vertexIndex[1]].position.x) + 
+                    (vertices[faces[nextdoorFaceID].vertexIndex[2]].position.x) + 
+                    (vertices[faces[nextdoorFaceID].vertexIndex[3]].position.x)
+                ) / 4;
 
-            neighboringFacePointCenter.y = (
-                (vertices[faces[nextdoorFaceID].vertexIndex[0]].position.y) + 
-                (vertices[faces[nextdoorFaceID].vertexIndex[1]].position.y) + 
-                (vertices[faces[nextdoorFaceID].vertexIndex[2]].position.y) + 
-                (vertices[faces[nextdoorFaceID].vertexIndex[3]].position.y)
-            ) / 4;
+                neighboringFacePointCenter.y = (
+                    (vertices[faces[nextdoorFaceID].vertexIndex[0]].position.y) + 
+                    (vertices[faces[nextdoorFaceID].vertexIndex[1]].position.y) + 
+                    (vertices[faces[nextdoorFaceID].vertexIndex[2]].position.y) + 
+                    (vertices[faces[nextdoorFaceID].vertexIndex[3]].position.y)
+                ) / 4;
 
-            neighboringFacePointCenter.z = (
-                (vertices[faces[nextdoorFaceID].vertexIndex[0]].position.z) + 
-                (vertices[faces[nextdoorFaceID].vertexIndex[1]].position.z) + 
-                (vertices[faces[nextdoorFaceID].vertexIndex[2]].position.z) + 
-                (vertices[faces[nextdoorFaceID].vertexIndex[3]].position.z)
-            ) / 4;
+                neighboringFacePointCenter.z = (
+                    (vertices[faces[nextdoorFaceID].vertexIndex[0]].position.z) + 
+                    (vertices[faces[nextdoorFaceID].vertexIndex[1]].position.z) + 
+                    (vertices[faces[nextdoorFaceID].vertexIndex[2]].position.z) + 
+                    (vertices[faces[nextdoorFaceID].vertexIndex[3]].position.z)
+                ) / 4;
 
-            neighboringFacePointAverages.x = (faceAverageMiddlePoint.x + neighboringFacePointCenter.x) / 2;
-            neighboringFacePointAverages.y = (faceAverageMiddlePoint.y + neighboringFacePointCenter.y) / 2;
-            neighboringFacePointAverages.z = (faceAverageMiddlePoint.z + neighboringFacePointCenter.z) / 2;
+                neighboringFacePointAverages.x = (faceAverageMiddlePoint.x + neighboringFacePointCenter.x) / 2;
+                neighboringFacePointAverages.y = (faceAverageMiddlePoint.y + neighboringFacePointCenter.y) / 2;
+                neighboringFacePointAverages.z = (faceAverageMiddlePoint.z + neighboringFacePointCenter.z) / 2;
 
 
-            // find the averages for the edges + face points
+                // find the averages for the edges + face points
 
-            edgePoint.position.x = (edgeAveragePoint.x + neighboringFacePointAverages.x) / 2;
-            edgePoint.position.y = (edgeAveragePoint.y + neighboringFacePointAverages.y) / 2;
-            edgePoint.position.z = (edgeAveragePoint.z + neighboringFacePointAverages.z) / 2;
+                edgePoint.position.x = (edgeAveragePoint.x + neighboringFacePointAverages.x) / 2;
+                edgePoint.position.y = (edgeAveragePoint.y + neighboringFacePointAverages.y) / 2;
+                edgePoint.position.z = (edgeAveragePoint.z + neighboringFacePointAverages.z) / 2;
 
-            getMaxVertID(vertices, maxVertID);
+                getMaxVertID(vertices, maxVertID);
 
-            edgePoint.id = maxVertID;
+                edgePoint.id = maxVertID;
 
-            vertices.push_back(edgePoint);
+                vertices.push_back(edgePoint);
+
+            }
         }
     }
 
@@ -400,27 +380,32 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
                 for (int l = 0; l < 3; l++) {
 
                     for (int m = 0; m < 4; m++) {
-
+                        
                         if (
-                            vertices[faces[j].vertexIndex[k]].position.x == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.x &&
-                            vertices[faces[j].vertexIndex[k]].position.y == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.y &&
-                            vertices[faces[j].vertexIndex[k]].position.z == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.z
+                            j < faces.size() && vertices[i].neighboringFaceIDs[l] < faces.size() &&
+                            currentEdge < 3
                         ) {
-                            matches++; 
+                            if (
+                                vertices[faces[j].vertexIndex[k]].position.x == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.x &&
+                                vertices[faces[j].vertexIndex[k]].position.y == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.y &&
+                                vertices[faces[j].vertexIndex[k]].position.z == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.z
+                            ) {
+                                matches++; 
 
-                            currentEdgeMidpoint.x += vertices[faces[j].vertexIndex[k]].position.x;
-                            currentEdgeMidpoint.y += vertices[faces[j].vertexIndex[k]].position.y;
-                            currentEdgeMidpoint.z += vertices[faces[j].vertexIndex[k]].position.z;
+                                currentEdgeMidpoint.x += vertices[faces[j].vertexIndex[k]].position.x;
+                                currentEdgeMidpoint.y += vertices[faces[j].vertexIndex[k]].position.y;
+                                currentEdgeMidpoint.z += vertices[faces[j].vertexIndex[k]].position.z;
 
-                            if (matches > 2) { 
+                                if (matches > 2) { 
 
-                                currentEdgeMidpoint.x /= 3;
-                                currentEdgeMidpoint.y /= 3;
-                                currentEdgeMidpoint.z /= 3;
+                                    currentEdgeMidpoint.x /= 3;
+                                    currentEdgeMidpoint.y /= 3;
+                                    currentEdgeMidpoint.z /= 3;
 
-                                edgeMidpoints[currentEdge] = currentEdgeMidpoint;
+                                    edgeMidpoints[currentEdge] = currentEdgeMidpoint;
 
-                                currentEdge++;
+                                    currentEdge++;
+                                }
                             }
                         }
                     }
@@ -471,8 +456,8 @@ void printFaces(std::vector<quadFace> faces, std::vector<vertex> vertices) {
 
 int main (void) {
 
-    std::string objPath = "./testCube2.obj";
-    std::string objOutputPath = "./testCubeOutput.obj";
+    std::string objPath = "./testMesh.obj";
+    std::string objOutputPath = "./testMeshOutput.obj";
     std::vector<vertex> objVertices;
     std::vector<quadFace> objFaces;
 
