@@ -380,8 +380,6 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
             if (isMatchingFace) {
 
-                std::cout << std::to_string(currentFace) << endl;
-
                 faceMidpoints[currentFace] = faces[j].midpoint;
 
                 currentFace++;
@@ -496,8 +494,8 @@ int main (void) {
 
     std::cout << "[CPU] FINISHED SUBDIVIDING \"" << objPath << "\" WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
 
-    printVerts(objVertices);
-    printFaces(objFaces, objVertices);
+    //printVerts(objVertices);
+    //printFaces(objFaces, objVertices);
 
     writeObj(objOutputPath, objVertices, objFaces);
 
