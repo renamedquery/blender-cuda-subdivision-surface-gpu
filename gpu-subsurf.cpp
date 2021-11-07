@@ -204,7 +204,7 @@ void getMaxVertID(std::vector<vertex> vertices, int& max) {
    max = vertices.size();
 }
 
-// adapted from https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
+// adapted from the instructions at https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
 // should be gpu accelerated
 //__global__
 void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& faces) {
@@ -259,13 +259,60 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
             vec3 edgeAveragePoint;
             vertex edgePoint;
 
-            edgeAveragePoint.x = (vertices[faces[i].vertexIndex[(j + 1) % 4]].position.x + vertices[faces[i].vertexIndex[(j + 0) % 4]].position.x) / 2;
-            edgeAveragePoint.y = (vertices[faces[i].vertexIndex[(j + 1) % 4]].position.y + vertices[faces[i].vertexIndex[(j + 0) % 4]].position.y) / 2;
-            edgeAveragePoint.z = (vertices[faces[i].vertexIndex[(j + 1) % 4]].position.z + vertices[faces[i].vertexIndex[(j + 0) % 4]].position.z) / 2;
+            int knownFaceID = i;
+            int nextdoorFaceID = -1; // -1 so that the program will crash in the case of a mismatch
+
+            // find neighboring face
+            // search through all faces to find a face sharing points v1, v2 that exist in both the current face and the searching face
+            // exclude the current face from the search, therefore the only other possible face containing both points is the desired face
+            // this will be optimized later, ignore the 2323978423 nested loops
+
+            for (int k = 0; k < faces.size(); k++) {
+
+                int matchedPoints = 0;
+
+                std::cout << std::to_string(k) << endl;
+
+                for (int l = 0; l < 4; l++) {
+
+                    if (
+                        vertices[faces[k].vertexIndex[l]].position.x == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.x &&
+                        vertices[faces[k].vertexIndex[l]].position.y == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.y &&
+                        vertices[faces[k].vertexIndex[l]].position.z == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.z
+                    ) {
+
+                        matchedPoints++;
+                    }
+                }
+
+                if (matchedPoints > 1 && k != knownFaceID) {
+
+                    nextdoorFaceID = k;
+                    std::cout << std::to_string(k) << endl;
+                    break;
+                }
+            }
+
+            // find the averages for the edge points
+
+            edgeAveragePoint.x = (vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.x + vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.x) / 2;
+            edgeAveragePoint.y = (vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.y + vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.y) / 2;
+            edgeAveragePoint.z = (vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.z + vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.z) / 2;
+
+            // find the averages for the face points
+            
+            neighboringFacePointAverages.x = (vertices[faces[nextdoorFaceID].vertexIndex[(j + 1) % 4]].position.x + vertices[faces[nextdoorFaceID].vertexIndex[(j + 0) % 4]].position.x) / 2;
+            neighboringFacePointAverages.y = (vertices[faces[nextdoorFaceID].vertexIndex[(j + 1) % 4]].position.y + vertices[faces[nextdoorFaceID].vertexIndex[(j + 0) % 4]].position.y) / 2;
+            neighboringFacePointAverages.z = (vertices[faces[nextdoorFaceID].vertexIndex[(j + 1) % 4]].position.z + vertices[faces[nextdoorFaceID].vertexIndex[(j + 0) % 4]].position.z) / 2;
+
+            // find the averages for the edges + face points
+
+            edgePoint.position.x = (edgeAveragePoint.x + neighboringFacePointAverages.x) / 2;
+            edgePoint.position.y = (edgeAveragePoint.y + neighboringFacePointAverages.y) / 2;
+            edgePoint.position.z = (edgeAveragePoint.z + neighboringFacePointAverages.z) / 2;
 
             getMaxVertID(vertices, maxVertID);
 
-            edgePoint.position = edgeAveragePoint;
             edgePoint.id = maxVertID;
 
             vertices.push_back(edgePoint);
@@ -325,9 +372,6 @@ int main (void) {
 
     // debugging stuff
     std::cout << "[CPU] FINISHED PARSING \"" << objPath << "\" WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
-
-    printVerts(objVertices);
-    printFaces(objFaces, objVertices);
 
     catmullClarkSubdiv(objVertices, objFaces);
 
