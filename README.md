@@ -8,6 +8,10 @@
 
 *An input mesh generated in blender (left) next to the sudivided version of the mesh using my program (right).*
 
+![](https://i.imgur.com/JnObSNJ.png?raw=true)
+
+*A point cloud (right) generated from subdividing an open faced plane (left).*
+
 Completed tasks:
 
 - Reading from a `.obj` file to take in data (verts + faces).
