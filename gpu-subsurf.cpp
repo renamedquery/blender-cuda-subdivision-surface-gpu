@@ -367,6 +367,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
         }
 
         int currentEdge = 0;
+        bool barycenterError = false;
 
         // neighboring edge midpoint gathering
         for (int j = 0; j < faces.size(); j++) {
@@ -407,15 +408,21 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
                                     currentEdge++;
                                 }
                             }
+                        } else {
+                            
+                            barycenterError = true;
                         }
                     }
                 }
             }
         }
 
-        barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], faceMidpoints[0], faceMidpoints[1], faceMidpoints[2], coordinateDesiredAveragePosition);
+        if (!barycenterError) {
 
-        vertices[i].position = coordinateDesiredAveragePosition;
+            barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], faceMidpoints[0], faceMidpoints[1], faceMidpoints[2], coordinateDesiredAveragePosition);
+
+            vertices[i].position = coordinateDesiredAveragePosition;
+        }
     }
 }
 
