@@ -120,9 +120,9 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFa
                 std::vector<std::string> lineDataSplitBySlashes = stringSplit(lineDataSplitBySpaces[i], '/');
 
                 // vertex_index, texture_index, normal_index
-                currentFace.vertexIndex[i - 1] = std::stod(lineDataSplitBySlashes[0]);
-                currentFace.textureIndex[i - 1] = std::stod(lineDataSplitBySlashes[1]);
-                currentFace.normalIndex[i - 1] = std::stod(lineDataSplitBySlashes[2]);
+                currentFace.vertexIndex[i - 1] = std::stod(lineDataSplitBySlashes[0]) - 1;
+                currentFace.textureIndex[i - 1] = std::stod(lineDataSplitBySlashes[1]) - 1;
+                currentFace.normalIndex[i - 1] = std::stod(lineDataSplitBySlashes[2]) - 1;
 
             }
 
@@ -303,6 +303,9 @@ int main (void) {
 
     // debugging stuff
     std::cout << "[CPU] FINISHED PARSING \"" << objPath << "\" WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
+
+    printVerts(objVertices);
+    printFaces(objFaces, objVertices);
 
     catmullClarkSubdiv(objVertices, objFaces);
 
