@@ -216,17 +216,33 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
         vec3 faceAverageMiddlePoint;
         vec3 faceAverageMiddlePointNormal;
-        vertex faceAverageMiddlePointVertex;        
-        vertex cornerVerts[4];
+        vertex faceAverageMiddlePointVertex;
 
-        for (int j = 0; j < 4; j++) {
+        faceAverageMiddlePoint.x = (
+            (vertices[faces[i].vertexIndex[0]].position.x) + 
+            (vertices[faces[i].vertexIndex[1]].position.x) + 
+            (vertices[faces[i].vertexIndex[2]].position.x) + 
+            (vertices[faces[i].vertexIndex[3]].position.x)
+        ) / 4;
 
-            // find how to find the center of a plane
-        }
+        faceAverageMiddlePoint.y = (
+            (vertices[faces[i].vertexIndex[0]].position.y) + 
+            (vertices[faces[i].vertexIndex[1]].position.y) + 
+            (vertices[faces[i].vertexIndex[2]].position.y) + 
+            (vertices[faces[i].vertexIndex[3]].position.y)
+        ) / 4;
+
+        faceAverageMiddlePoint.z = (
+            (vertices[faces[i].vertexIndex[0]].position.z) + 
+            (vertices[faces[i].vertexIndex[1]].position.z) + 
+            (vertices[faces[i].vertexIndex[2]].position.z) + 
+            (vertices[faces[i].vertexIndex[3]].position.z)
+        ) / 4;
 
         faceAverageMiddlePointVertex.position = faceAverageMiddlePoint;
 
         getMaxVertID(vertices, maxVertID);
+
         faceAverageMiddlePointVertex.id = maxVertID;
 
         vertices.push_back(faceAverageMiddlePointVertex);
