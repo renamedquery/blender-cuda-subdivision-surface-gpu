@@ -27,12 +27,14 @@ struct vertex {
     vec2 textureCoordinate;
     vec3 normal;
     int id; // legacy attribute, do not use for actual ID
+    int neighboringFaceIDs[3];
 };
 
 struct quadFace {
     int vertexIndex[4];
     int textureIndex[4];
     int normalIndex[4];
+    vec3 midpoint;
 };
 
 std::vector<std::string> stringSplit(std::string string, char delimiter) {
@@ -179,29 +181,31 @@ void writeObj(std::string path, std::vector<vertex> vertices, std::vector<quadFa
 
 void getVertById(std::vector<vertex> vertices, int id, vertex& vert) {
 
-    /*
-    for (int i = 0; i < vertices.size(); i++) {
-        
-        if (vertices[i].id == id) {
-
-            vert = vertices[i];
-            break;
-        }
-    }
-    */
-
    vert = vertices[id];
 }
 
 void getMaxVertID(std::vector<vertex> vertices, int& max) {
 
-    /*
-    for (int i = 0; i < vertices.size(); i++) {
-
-        if (vertices[i].id > max) max = vertices[i].id;
-    }
-    */
    max = vertices.size();
+}
+
+// from the "original point" section of https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
+void barycenter(vec3 edgeMidpoint1, vec3 edgeMidpoint2, vec3 edgeMidpoint3, vec3 faceMidpoint1, vec3 faceMidpoint2, vec3 faceMidpoint3, vec3& point) {
+
+    vec3 edgeMidpointAverage;
+    vec3 faceMidpointAverage;
+
+    edgeMidpointAverage.x = (edgeMidpoint1.x + edgeMidpoint2.x + edgeMidpoint3.x) / 3;
+    edgeMidpointAverage.y = (edgeMidpoint1.y + edgeMidpoint2.y + edgeMidpoint3.y) / 3;
+    edgeMidpointAverage.z = (edgeMidpoint1.z + edgeMidpoint2.z + edgeMidpoint3.z) / 3;
+
+    faceMidpointAverage.x = (faceMidpoint1.x + faceMidpoint2.x + faceMidpoint3.x) / 3;
+    faceMidpointAverage.y = (faceMidpoint1.y + faceMidpoint2.y + faceMidpoint3.y) / 3;
+    faceMidpointAverage.z = (faceMidpoint1.z + faceMidpoint2.z + faceMidpoint3.z) / 3;
+
+    point.x = (edgeMidpointAverage.x + faceMidpointAverage.x) / 2;
+    point.y = (edgeMidpointAverage.y + faceMidpointAverage.y) / 2;
+    point.z = (edgeMidpointAverage.z + faceMidpointAverage.z) / 2;
 }
 
 // adapted from the instructions at https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
@@ -211,6 +215,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
     int maxVertID = 0;
     getMaxVertID(vertices, maxVertID);
+    const int originalMaxVertID = maxVertID; // for finding the original non-interpolated verts
 
     // face points and edge points
 
@@ -242,6 +247,8 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
             (vertices[faces[i].vertexIndex[2]].position.z) + 
             (vertices[faces[i].vertexIndex[3]].position.z)
         ) / 4;
+
+        faces[i].midpoint = faceAverageMiddlePoint;
 
         getMaxVertID(vertices, maxVertID);
         
@@ -342,10 +349,66 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
             vertices.push_back(edgePoint);
         }
+    }
 
-        // calculate the original points in their interpolated form
+    // calculate the original points in their interpolated form
+    for (int i = 0; i < originalMaxVertID; i++) {
 
-        //TODO
+        vec3 coordinateDesiredAveragePosition;
+        vec3 edgeMidpoints[3];
+        vec3 faceMidpoints[3];
+
+        int currentFace = 0;
+
+        // find the neighboring faces
+        for (int j = 0; j < faces.size(); j++) {
+
+            bool isMatchingFace = false;
+
+            for (int k = 0; k < 4; k++) {
+
+                // neighboring faces
+                if ( // if this evaluates to true, then this is a neighboring face (there should only be three neighboring faces assuming that this is a quad)
+                    vertices[faces[j].vertexIndex[k]].position.x == vertices[i].position.x &&
+                    vertices[faces[j].vertexIndex[k]].position.y == vertices[i].position.y &&
+                    vertices[faces[j].vertexIndex[k]].position.z == vertices[i].position.z
+                ) {
+                    isMatchingFace = true;
+                    vertices[i].neighboringFaceIDs[currentFace] = j;
+                }
+            }
+
+            if (isMatchingFace) {
+
+                // calculate face midpoint
+
+                faceMidpoints[currentFace] = faces[j].midpoint;
+
+                currentFace++;
+            }
+
+            /*int matchingFaceVerts = 0; // should be 2, which will signify an equal edge
+            
+            for (int k = 0; k < 4; k++) {
+
+                vertex currentFaceCornerVert = vertices[faces[j].vertexIndex[k]];
+                int currentFaceCornerVertNeighboringFaces[3];
+                currentFaceCornerVertNeighboringFaces[0] = currentFaceCornerVert.neighboringFaceIDs[0];
+                currentFaceCornerVertNeighboringFaces[1] = currentFaceCornerVert.neighboringFaceIDs[1];
+                currentFaceCornerVertNeighboringFaces[2] = currentFaceCornerVert.neighboringFaceIDs[2];
+
+                for (int l = 0; l < 3; l++) {
+                    for (int m = 0; m < 4; m++) {
+
+                        //vertices[faces[currentFaceCornerVertNeighboringFaces[l]].vertexIndex[m]].position.x
+                    }
+                }
+            }*/
+        }
+
+        barycenter(faceMidpoints[0], faceMidpoints[1], faceMidpoints[2], faceMidpoints[0], faceMidpoints[1], faceMidpoints[2], coordinateDesiredAveragePosition);
+
+        vertices[i].position = coordinateDesiredAveragePosition;
     }
 }
 
