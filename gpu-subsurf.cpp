@@ -256,6 +256,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
         for (int j = 0; j < 4; j++) {
 
             vec3 neighboringFacePointAverages;
+            vec3 neighboringFacePointCenter;
             vec3 edgeAveragePoint;
             vertex edgePoint;
 
@@ -271,14 +272,17 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
                 int matchedPoints = 0;
 
-                std::cout << std::to_string(k) << endl;
-
                 for (int l = 0; l < 4; l++) {
 
                     if (
-                        vertices[faces[k].vertexIndex[l]].position.x == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.x &&
+                        (vertices[faces[k].vertexIndex[l]].position.x == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.x &&
                         vertices[faces[k].vertexIndex[l]].position.y == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.y &&
-                        vertices[faces[k].vertexIndex[l]].position.z == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.z
+                        vertices[faces[k].vertexIndex[l]].position.z == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.z)
+                        ||
+                        (vertices[faces[k].vertexIndex[l]].position.x == vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.x &&
+                        vertices[faces[k].vertexIndex[l]].position.y == vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.y &&
+                        vertices[faces[k].vertexIndex[l]].position.z == vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.z)
+
                     ) {
 
                         matchedPoints++;
@@ -288,7 +292,6 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
                 if (matchedPoints > 1 && k != knownFaceID) {
 
                     nextdoorFaceID = k;
-                    std::cout << std::to_string(k) << endl;
                     break;
                 }
             }
@@ -300,10 +303,32 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
             edgeAveragePoint.z = (vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.z + vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.z) / 2;
 
             // find the averages for the face points
-            
-            neighboringFacePointAverages.x = (vertices[faces[nextdoorFaceID].vertexIndex[(j + 1) % 4]].position.x + vertices[faces[nextdoorFaceID].vertexIndex[(j + 0) % 4]].position.x) / 2;
-            neighboringFacePointAverages.y = (vertices[faces[nextdoorFaceID].vertexIndex[(j + 1) % 4]].position.y + vertices[faces[nextdoorFaceID].vertexIndex[(j + 0) % 4]].position.y) / 2;
-            neighboringFacePointAverages.z = (vertices[faces[nextdoorFaceID].vertexIndex[(j + 1) % 4]].position.z + vertices[faces[nextdoorFaceID].vertexIndex[(j + 0) % 4]].position.z) / 2;
+
+            neighboringFacePointCenter.x = (
+                (vertices[faces[nextdoorFaceID].vertexIndex[0]].position.x) + 
+                (vertices[faces[nextdoorFaceID].vertexIndex[1]].position.x) + 
+                (vertices[faces[nextdoorFaceID].vertexIndex[2]].position.x) + 
+                (vertices[faces[nextdoorFaceID].vertexIndex[3]].position.x)
+            ) / 4;
+
+            neighboringFacePointCenter.y = (
+                (vertices[faces[nextdoorFaceID].vertexIndex[0]].position.y) + 
+                (vertices[faces[nextdoorFaceID].vertexIndex[1]].position.y) + 
+                (vertices[faces[nextdoorFaceID].vertexIndex[2]].position.y) + 
+                (vertices[faces[nextdoorFaceID].vertexIndex[3]].position.y)
+            ) / 4;
+
+            neighboringFacePointCenter.z = (
+                (vertices[faces[nextdoorFaceID].vertexIndex[0]].position.z) + 
+                (vertices[faces[nextdoorFaceID].vertexIndex[1]].position.z) + 
+                (vertices[faces[nextdoorFaceID].vertexIndex[2]].position.z) + 
+                (vertices[faces[nextdoorFaceID].vertexIndex[3]].position.z)
+            ) / 4;
+
+            neighboringFacePointAverages.x = (faceAverageMiddlePoint.x + neighboringFacePointCenter.x) / 2;
+            neighboringFacePointAverages.y = (faceAverageMiddlePoint.y + neighboringFacePointCenter.y) / 2;
+            neighboringFacePointAverages.z = (faceAverageMiddlePoint.z + neighboringFacePointCenter.z) / 2;
+
 
             // find the averages for the edges + face points
 
