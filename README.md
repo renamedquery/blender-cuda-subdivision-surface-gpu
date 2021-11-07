@@ -1,6 +1,6 @@
 # blender-cuda-subdivison-surface-gpu
 
-*An experiment to see if Catmull Clark subdividing can be accelerated on a GPU using CUDA. Written by katznboyz, and adapted from the instructions on [wikipedia][https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface].*
+*An experiment to see if Catmull Clark subdividing can be accelerated on a GPU using CUDA. Written by katznboyz, and adapted from the instructions on* [wikipedia][https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface]*.*
 
 # Current Progress:
 
@@ -26,7 +26,7 @@ TODO:
 
 - Accelerate the algorithm by using CUDA.
 
-# Compliling Instructions:
+# Compiling Instructions:
 
 Compiling the CUDA file on Win64 (not completed):
 
