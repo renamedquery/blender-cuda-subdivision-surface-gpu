@@ -45,3 +45,5 @@ Compiling the C++ file on Ubuntu 20.04:
 - Only works on quads.
 
 - Is slow.
+
+- Open faced meshes will work, and will stay as quad topology; however, they will have strangely located quads, untrue to the original topology.
