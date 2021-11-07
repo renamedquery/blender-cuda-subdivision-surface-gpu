@@ -342,6 +342,10 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
             vertices.push_back(edgePoint);
         }
+
+        // calculate the original points in their interpolated form
+
+        //TODO
     }
 }
 
