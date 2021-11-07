@@ -212,6 +212,8 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     int maxVertID = 0;
     getMaxVertID(vertices, maxVertID);
 
+    // face points and edge points
+
     for (int i = 0; i < faces.size(); i++) {
 
         vec3 faceAverageMiddlePoint;
@@ -241,13 +243,33 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
             (vertices[faces[i].vertexIndex[3]].position.z)
         ) / 4;
 
-        faceAverageMiddlePointVertex.position = faceAverageMiddlePoint;
-
         getMaxVertID(vertices, maxVertID);
-
+        
+        faceAverageMiddlePointVertex.position = faceAverageMiddlePoint;
         faceAverageMiddlePointVertex.id = maxVertID;
 
         vertices.push_back(faceAverageMiddlePointVertex);
+
+        // edge midpoints for this face
+        // the mesh will have to be combined into one later on, since this will create duplicate verts
+
+        for (int j = 0; j < 4; j++) {
+
+            vec3 neighboringFacePointAverages;
+            vec3 edgeAveragePoint;
+            vertex edgePoint;
+
+            edgeAveragePoint.x = (vertices[faces[i].vertexIndex[(j + 1) % 4]].position.x + vertices[faces[i].vertexIndex[(j + 0) % 4]].position.x) / 2;
+            edgeAveragePoint.y = (vertices[faces[i].vertexIndex[(j + 1) % 4]].position.y + vertices[faces[i].vertexIndex[(j + 0) % 4]].position.y) / 2;
+            edgeAveragePoint.z = (vertices[faces[i].vertexIndex[(j + 1) % 4]].position.z + vertices[faces[i].vertexIndex[(j + 0) % 4]].position.z) / 2;
+
+            getMaxVertID(vertices, maxVertID);
+
+            edgePoint.position = edgeAveragePoint;
+            edgePoint.id = maxVertID;
+
+            vertices.push_back(edgePoint);
+        }
     }
 }
 
