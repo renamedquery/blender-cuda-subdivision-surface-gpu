@@ -123,8 +123,8 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFa
 
                 // vertex_index, texture_index, normal_index
                 currentFace.vertexIndex[i - 1] = std::stod(lineDataSplitBySlashes[0]) - 1;
-                currentFace.textureIndex[i - 1] = std::stod(lineDataSplitBySlashes[1]) - 1;
-                currentFace.normalIndex[i - 1] = std::stod(lineDataSplitBySlashes[2]) - 1;
+                currentFace.textureIndex[i - 1] = 0;
+                currentFace.normalIndex[i - 1] = 0;
 
             }
 
@@ -471,7 +471,7 @@ void printFaces(std::vector<quadFace> faces, std::vector<vertex> vertices) {
 
 int main (void) {
 
-    std::string objPath = "./testCube.obj";
+    std::string objPath = "./testCube2.obj";
     std::string objOutputPath = "./testCubeOutput.obj";
     std::vector<vertex> objVertices;
     std::vector<quadFace> objFaces;
