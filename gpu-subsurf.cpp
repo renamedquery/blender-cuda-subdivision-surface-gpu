@@ -218,6 +218,8 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
         vec3 faceAverageMiddlePointNormal;
         vertex faceAverageMiddlePointVertex;
 
+        // face midpoint
+
         faceAverageMiddlePoint.x = (
             (vertices[faces[i].vertexIndex[0]].position.x) + 
             (vertices[faces[i].vertexIndex[1]].position.x) + 
@@ -253,20 +255,31 @@ void printVerts(std::vector<vertex> vertices){
 
     for (int i = 0; i < vertices.size(); i++) {
 
-        std::cout << "[CPU] [" << std::to_string(vertices[i].id) << "] " << "V:  " << std::to_string(vertices[i].position.x) << ", " << std::to_string(vertices[i].position.y) << ", " << std::to_string(vertices[i].position.z) << endl;
-        std::cout << "[CPU] [" << std::to_string(vertices[i].id) << "] " << "VN: " << std::to_string(vertices[i].normal.x) << ", " << std::to_string(vertices[i].normal.y) << ", " << std::to_string(vertices[i].normal.z) << endl;
+        std::cout << "[CPU] [" << std::to_string(vertices[i].id) << "] " << "V  : " << std::to_string(vertices[i].position.x) << ", " << std::to_string(vertices[i].position.y) << ", " << std::to_string(vertices[i].position.z) << endl;
+        std::cout << "[CPU] [" << std::to_string(vertices[i].id) << "] " << "VN : " << std::to_string(vertices[i].normal.x) << ", " << std::to_string(vertices[i].normal.y) << ", " << std::to_string(vertices[i].normal.z) << endl;
     }
 }
 
-void printFaces(std::vector<quadFace> faces) {
+void printFaces(std::vector<quadFace> faces, std::vector<vertex> vertices) {
 
     for (int i = 0; i < faces.size(); i++) {
 
-        std::cout << "[CPU] ";
+        // face IDs
+        std::cout << "[CPU] Face Vec IDS = ";
 
         for (int j = 0; j < 4; j++) {
 
             std::cout << "[V = " << faces[i].vertexIndex[j] << "][VT = " << faces[i].textureIndex[j] << "][VN = " << faces[i].normalIndex[j] << "] ";
+        }
+
+        std::cout << endl;
+
+        // face ID values
+        std::cout << "[CPU] Vec COORDS   = ";
+
+        for (int j = 0; j < 4; j++) {
+
+            std::cout << "[" << vertices[faces[i].vertexIndex[j]].position.x << ", " << vertices[faces[i].vertexIndex[j]].position.y << ", " << vertices[faces[i].vertexIndex[j]].position.z << "] ";
         }
 
         std::cout << endl;
@@ -299,7 +312,7 @@ int main (void) {
     std::cout << "[CPU] FINISHED SUBDIVIDING \"" << objPath << "\" WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
 
     printVerts(objVertices);
-    printFaces(objFaces);
+    printFaces(objFaces, objVertices);
 
     writeObj(objOutputPath, objVertices, objFaces);
 
