@@ -38,7 +38,7 @@ Compiling the CUDA file on Win64 (not completed):
 
 Compiling the C++ file on Ubuntu 20.04:
 
-`clang++ ./gpu-subsurf.cpp -o ./gpu-subsurf.o -fsanitize=address -fno-omit-frame-pointer -O1 -g`
+`clang++ ./gpu-subsurf.cpp -o ./gpu-subsurf.o -fsanitize=address -fno-omit-frame-pointer -O3 -g`
 
 # Limitations:
 
