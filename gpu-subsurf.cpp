@@ -351,7 +351,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
         }
     }
 
-    // calculate the original points in their interpolated form
+    // neighboring face midpoint gathering
     for (int i = 0; i < originalMaxVertID; i++) {
 
         vec3 coordinateDesiredAveragePosition;
@@ -380,33 +380,55 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
             if (isMatchingFace) {
 
-                // calculate face midpoint
-
                 faceMidpoints[currentFace] = faces[j].midpoint;
 
                 currentFace++;
             }
-
-            /*int matchingFaceVerts = 0; // should be 2, which will signify an equal edge
-            
-            for (int k = 0; k < 4; k++) {
-
-                vertex currentFaceCornerVert = vertices[faces[j].vertexIndex[k]];
-                int currentFaceCornerVertNeighboringFaces[3];
-                currentFaceCornerVertNeighboringFaces[0] = currentFaceCornerVert.neighboringFaceIDs[0];
-                currentFaceCornerVertNeighboringFaces[1] = currentFaceCornerVert.neighboringFaceIDs[1];
-                currentFaceCornerVertNeighboringFaces[2] = currentFaceCornerVert.neighboringFaceIDs[2];
-
-                for (int l = 0; l < 3; l++) {
-                    for (int m = 0; m < 4; m++) {
-
-                        //vertices[faces[currentFaceCornerVertNeighboringFaces[l]].vertexIndex[m]].position.x
-                    }
-                }
-            }*/
         }
 
-        barycenter(faceMidpoints[0], faceMidpoints[1], faceMidpoints[2], faceMidpoints[0], faceMidpoints[1], faceMidpoints[2], coordinateDesiredAveragePosition);
+        int currentEdge = 0;
+
+        // neighboring edge midpoint gathering
+        for (int j = 0; j < faces.size(); j++) {
+
+            // find neighboring edges (there will be 3)
+            for (int k = 0; k < 4; k++) {
+
+                int matches = 0;
+                vec3 currentEdgeMidpoint;
+
+                for (int l = 0; l < 3; l++) {
+
+                    for (int m = 0; m < 4; m++) {
+
+                        if (
+                            vertices[faces[j].vertexIndex[k]].position.x == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.x &&
+                            vertices[faces[j].vertexIndex[k]].position.y == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.y &&
+                            vertices[faces[j].vertexIndex[k]].position.z == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.z
+                        ) {
+                            matches++; 
+
+                            currentEdgeMidpoint.x += vertices[faces[j].vertexIndex[k]].position.x;
+                            currentEdgeMidpoint.y += vertices[faces[j].vertexIndex[k]].position.y;
+                            currentEdgeMidpoint.z += vertices[faces[j].vertexIndex[k]].position.z;
+
+                            if (matches > 2) { 
+
+                                currentEdgeMidpoint.x /= 3;
+                                currentEdgeMidpoint.y /= 3;
+                                currentEdgeMidpoint.z /= 3;
+
+                                edgeMidpoints[currentEdge] = currentEdgeMidpoint;
+
+                                currentEdge++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], faceMidpoints[0], faceMidpoints[1], faceMidpoints[2], coordinateDesiredAveragePosition);
 
         vertices[i].position = coordinateDesiredAveragePosition;
     }
