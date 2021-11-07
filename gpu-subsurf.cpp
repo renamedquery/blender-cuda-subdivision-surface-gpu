@@ -355,8 +355,8 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     for (int i = 0; i < originalMaxVertID; i++) {
 
         vec3 coordinateDesiredAveragePosition;
-        vec3 edgeMidpoints[3];
-        vec3 faceMidpoints[3];
+        vec3 edgeMidpoints[4];
+        vec3 faceMidpoints[4];
 
         int currentFace = 0;
 
@@ -379,6 +379,8 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
             }
 
             if (isMatchingFace) {
+
+                std::cout << std::to_string(currentFace) << endl;
 
                 faceMidpoints[currentFace] = faces[j].midpoint;
 
