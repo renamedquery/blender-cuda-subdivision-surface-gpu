@@ -26,7 +26,7 @@ struct vertex {
     vec3 position;
     vec2 textureCoordinate;
     vec3 normal;
-    int id; // will be 1 less than the actual face id since this starts at 0
+    int id; // legacy attribute, do not use for actual ID
 };
 
 struct quadFace {
@@ -179,6 +179,7 @@ void writeObj(std::string path, std::vector<vertex> vertices, std::vector<quadFa
 
 void getVertById(std::vector<vertex> vertices, int id, vertex& vert) {
 
+    /*
     for (int i = 0; i < vertices.size(); i++) {
         
         if (vertices[i].id == id) {
@@ -187,25 +188,20 @@ void getVertById(std::vector<vertex> vertices, int id, vertex& vert) {
             break;
         }
     }
+    */
+
+   vert = vertices[id];
 }
 
 void getMaxVertID(std::vector<vertex> vertices, int& max) {
 
+    /*
     for (int i = 0; i < vertices.size(); i++) {
 
         if (vertices[i].id > max) max = vertices[i].id;
     }
-}
-
-void getEdgeAverage(vertex cornerVerts[4], vec3 averages[4], int cornerVertIndex, int cornerVertID_1, int cornerVertID_2, std::vector<vertex> vertices) {
-
-    averages[cornerVertIndex].x = (cornerVerts[cornerVertID_1].position.x + cornerVerts[cornerVertID_2].position.x) / 2;
-    averages[cornerVertIndex].y = (cornerVerts[cornerVertID_1].position.y + cornerVerts[cornerVertID_2].position.y) / 2;
-    averages[cornerVertIndex].z = (cornerVerts[cornerVertID_1].position.z + cornerVerts[cornerVertID_2].position.z) / 2;
-
-    cornerVerts[cornerVertIndex].position = averages[cornerVertIndex];
-
-    getMaxVertID(vertices, cornerVerts[cornerVertIndex].id);
+    */
+   max = vertices.size();
 }
 
 // adapted from https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
@@ -220,83 +216,20 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
         vec3 faceAverageMiddlePoint;
         vec3 faceAverageMiddlePointNormal;
-        vertex faceAverageMiddlePointVertex;
-        
-        for (int j = 0; j < 4; j++) {
-
-            vertex currentVert;
-            getVertById(vertices, faces[i].vertexIndex[j], currentVert);
-
-            faceAverageMiddlePoint.x += currentVert.position.x;
-            faceAverageMiddlePoint.y += currentVert.position.y;
-            faceAverageMiddlePoint.z += currentVert.position.z;
-
-            faceAverageMiddlePointNormal.x += currentVert.normal.x;
-            faceAverageMiddlePointNormal.y += currentVert.normal.y;
-            faceAverageMiddlePointNormal.z += currentVert.normal.z;
-        }
-
-        faceAverageMiddlePointVertex.position.x = faceAverageMiddlePoint.x / 4;
-        faceAverageMiddlePointVertex.position.y = faceAverageMiddlePoint.y / 4;
-        faceAverageMiddlePointVertex.position.z = faceAverageMiddlePoint.z / 4;
-
-        faceAverageMiddlePointVertex.normal.x = faceAverageMiddlePointNormal.x / 4;
-        faceAverageMiddlePointVertex.normal.y = faceAverageMiddlePointNormal.y / 4;
-        faceAverageMiddlePointVertex.normal.z = faceAverageMiddlePointNormal.z / 4;
-
-        // check for NaN in case of 0/4 for position
-        if (faceAverageMiddlePointVertex.position.x != faceAverageMiddlePointVertex.position.x) faceAverageMiddlePointVertex.position.x = 0;
-        if (faceAverageMiddlePointVertex.position.y != faceAverageMiddlePointVertex.position.y) faceAverageMiddlePointVertex.position.y = 0;
-        if (faceAverageMiddlePointVertex.position.z != faceAverageMiddlePointVertex.position.z) faceAverageMiddlePointVertex.position.z = 0;
-
-        // NaN check for vertex normals
-        if (faceAverageMiddlePointVertex.normal.x != faceAverageMiddlePointVertex.normal.x) faceAverageMiddlePointVertex.normal.x = 0;
-        if (faceAverageMiddlePointVertex.normal.y != faceAverageMiddlePointVertex.normal.y) faceAverageMiddlePointVertex.normal.y = 0;
-        if (faceAverageMiddlePointVertex.normal.z != faceAverageMiddlePointVertex.normal.z) faceAverageMiddlePointVertex.normal.z = 0;
-
-        getMaxVertID(vertices, maxVertID);
-        faceAverageMiddlePointVertex.id = maxVertID + 1;
-
-        vertices.push_back(faceAverageMiddlePointVertex);
-    }
-    
-    // calculate the middle edge point averages
-    std::vector<vertex> edgePointAverages;
-
-    for (int i = 0; i < faces.size(); i++) {
-
-        vec3 edgeAverageMiddlePoint;
-        vec3 edgeAverageMiddlePointNormal;
-        vertex edgeAverageMiddlePointVertex;
-
-        // quad edge 1
-        //
-        //  1  |  2
-        //  -------
-        //  3  |  4
-        //
-        //     1
-        //  4     2
-        //     3
-
+        vertex faceAverageMiddlePointVertex;        
         vertex cornerVerts[4];
 
-        for (int j = 0; j < 4; j++) getVertById(vertices, faces[i].vertexIndex[j], cornerVerts[j]);
+        for (int j = 0; j < 4; j++) {
 
-        vec3 cornerVertsAverages[4];
+            // find how to find the center of a plane
+        }
 
-        getEdgeAverage(cornerVerts, cornerVertsAverages, 0, 0, 1, vertices);
-        getEdgeAverage(cornerVerts, cornerVertsAverages, 1, 1, 3, vertices);
-        getEdgeAverage(cornerVerts, cornerVertsAverages, 2, 3, 2, vertices);
-        getEdgeAverage(cornerVerts, cornerVertsAverages, 3, 2, 0, vertices);
+        faceAverageMiddlePointVertex.position = faceAverageMiddlePoint;
 
-        // combine cornerVerts and vertices into one array
-        for (int j = 0; j < 4; j++) (vertices.push_back(cornerVerts[j]));
+        getMaxVertID(vertices, maxVertID);
+        faceAverageMiddlePointVertex.id = maxVertID;
 
-        // create edge loops on the previous faces with the new verts
-        // the new face array should be 4x the previous size
-
-        //TODO
+        vertices.push_back(faceAverageMiddlePointVertex);
     }
 }
 
@@ -304,8 +237,8 @@ void printVerts(std::vector<vertex> vertices){
 
     for (int i = 0; i < vertices.size(); i++) {
 
-        std::cout << "[CPU] [" << std::to_string(vertices[i].id) << "]" << "V:  " << std::to_string(vertices[i].position.x) << ", " << std::to_string(vertices[i].position.y) << ", " << std::to_string(vertices[i].position.z) << endl;
-        std::cout << "[CPU] [" << std::to_string(vertices[i].id) << "]" << "VN: " << std::to_string(vertices[i].normal.x) << ", " << std::to_string(vertices[i].normal.y) << ", " << std::to_string(vertices[i].normal.z) << endl;
+        std::cout << "[CPU] [" << std::to_string(vertices[i].id) << "] " << "V:  " << std::to_string(vertices[i].position.x) << ", " << std::to_string(vertices[i].position.y) << ", " << std::to_string(vertices[i].position.z) << endl;
+        std::cout << "[CPU] [" << std::to_string(vertices[i].id) << "] " << "VN: " << std::to_string(vertices[i].normal.x) << ", " << std::to_string(vertices[i].normal.y) << ", " << std::to_string(vertices[i].normal.z) << endl;
     }
 }
 
