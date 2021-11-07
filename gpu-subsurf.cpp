@@ -273,18 +273,17 @@ int main (void) {
     faceCount = std::to_string(objFaces.size());
 
     // debugging stuff
-    std::cout << "[CPU] FINISHED PARSING \"" << objPath << "\"WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
-
-    //printFaces(objFaces);
+    std::cout << "[CPU] FINISHED PARSING \"" << objPath << "\" WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
 
     catmullClarkSubdiv(objVertices, objFaces);
 
     vertCount = std::to_string(objVertices.size());
     faceCount = std::to_string(objFaces.size());
 
-    std::cout << "[CPU] FINISHED SUBDIVIDING \"" << objPath << "\"WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
+    std::cout << "[CPU] FINISHED SUBDIVIDING \"" << objPath << "\" WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
 
     printVerts(objVertices);
+    printFaces(objFaces);
 
     writeObj(objOutputPath, objVertices, objFaces);
 
