@@ -184,18 +184,18 @@ void getMaxVertID(std::vector<vertex> vertices, int& max) {
 }
 
 // from the "original point" section of https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
-void barycenter(vec3 edgeMidpoint1, vec3 edgeMidpoint2, vec3 edgeMidpoint3, vec3 faceMidpoint1, vec3 faceMidpoint2, vec3 faceMidpoint3, vec3& point) {
+void barycenter(vec3 edgeMidpoint1, vec3 edgeMidpoint2, vec3 edgeMidpoint3, vec3 edgeMidpoint4, vec3 faceMidpoint1, vec3 faceMidpoint2, vec3 faceMidpoint3, vec3 faceMidpoint4, vec3& point) {
 
     vec3 edgeMidpointAverage;
     vec3 faceMidpointAverage;
 
-    edgeMidpointAverage.x = (edgeMidpoint1.x + edgeMidpoint2.x + edgeMidpoint3.x) / 3;
-    edgeMidpointAverage.y = (edgeMidpoint1.y + edgeMidpoint2.y + edgeMidpoint3.y) / 3;
-    edgeMidpointAverage.z = (edgeMidpoint1.z + edgeMidpoint2.z + edgeMidpoint3.z) / 3;
+    edgeMidpointAverage.x = (edgeMidpoint1.x + edgeMidpoint2.x + edgeMidpoint3.x + edgeMidpoint4.x) / 4;
+    edgeMidpointAverage.y = (edgeMidpoint1.y + edgeMidpoint2.y + edgeMidpoint3.y + edgeMidpoint4.y) / 4;
+    edgeMidpointAverage.z = (edgeMidpoint1.z + edgeMidpoint2.z + edgeMidpoint3.z + edgeMidpoint4.z) / 4;
 
-    faceMidpointAverage.x = (faceMidpoint1.x + faceMidpoint2.x + faceMidpoint3.x) / 3;
-    faceMidpointAverage.y = (faceMidpoint1.y + faceMidpoint2.y + faceMidpoint3.y) / 3;
-    faceMidpointAverage.z = (faceMidpoint1.z + faceMidpoint2.z + faceMidpoint3.z) / 3;
+    faceMidpointAverage.x = (faceMidpoint1.x + faceMidpoint2.x + faceMidpoint3.x + faceMidpoint3.x) / 4;
+    faceMidpointAverage.y = (faceMidpoint1.y + faceMidpoint2.y + faceMidpoint3.y + faceMidpoint3.y) / 4;
+    faceMidpointAverage.z = (faceMidpoint1.z + faceMidpoint2.z + faceMidpoint3.z + faceMidpoint3.z) / 4;
 
     point.x = (edgeMidpointAverage.x + faceMidpointAverage.x) / 2;
     point.y = (edgeMidpointAverage.y + faceMidpointAverage.y) / 2;
@@ -425,7 +425,7 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
                     
                     if (
                         j < faces.size() && vertices[i].neighboringFaceIDs[l] < faces.size() &&
-                        currentEdge < 3
+                        currentEdge < 4
                     ) {
                         if (
                             vertices[faces[j].vertexIndex[k]].position.x == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.x &&
@@ -460,7 +460,7 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
 
     if (!barycenterError) {
 
-        barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], faceMidpoints[0], faceMidpoints[1], faceMidpoints[2], coordinateDesiredAveragePosition);
+        barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], edgeMidpoints[3], faceMidpoints[0], faceMidpoints[1], faceMidpoints[2], faceMidpoints[3], coordinateDesiredAveragePosition);
 
         threadingMutex.lock();
         vertices[1].position = coordinateDesiredAveragePosition;
