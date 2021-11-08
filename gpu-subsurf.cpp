@@ -218,7 +218,7 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
     faces[i].midpoint = faceAverageMiddlePoint;
     
     faceAverageMiddlePointVertex.position = faceAverageMiddlePoint;
-    faceAverageMiddlePointVertex.id = maxVertsAtStart + (i * 5) + 1;
+    faceAverageMiddlePointVertex.id = maxVertsAtStart + (i * 5) + 0;
 
     vertices[faceAverageMiddlePointVertex.id] = faceAverageMiddlePointVertex;
 
@@ -309,9 +309,9 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
             edgePoint.position.y = (edgeAveragePoint.y + neighboringFacePointAverages.y) / 2;
             edgePoint.position.z = (edgeAveragePoint.z + neighboringFacePointAverages.z) / 2;
 
-            edgePoint.id =  maxVertsAtStart + (i * 5) + 1 + (j + 0);
+            edgePoint.id = maxVertsAtStart + (i * 5) + 1 + (j + 1);
 
-            vertices[faceAverageMiddlePointVertex.id] = edgePoint;
+            vertices[edgePoint.id] = edgePoint;
 
         }
     }
@@ -336,9 +336,9 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
 
             // neighboring faces
             if ( // if this evaluates to true, then this is a neighboring face (there should only be three neighboring faces assuming that this is a quad)
-                vertices[faces[j].vertexIndex[k]].position.x == vertices[i].position.x &&
-                vertices[faces[j].vertexIndex[k]].position.y == vertices[i].position.y &&
-                vertices[faces[j].vertexIndex[k]].position.z == vertices[i].position.z
+                vertices[faces[j].vertexIndex[k]].position.x == vertices[(i * 5)].position.x &&
+                vertices[faces[j].vertexIndex[k]].position.y == vertices[(i * 5)].position.y &&
+                vertices[faces[j].vertexIndex[k]].position.z == vertices[(i * 5)].position.z
             ) {
                 isMatchingFace = true;
                 vertices[i].neighboringFaceIDs[currentFace] = j;
@@ -374,9 +374,9 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
                         currentEdge < 3
                     ) {
                         if (
-                            vertices[faces[j].vertexIndex[k]].position.x == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.x &&
-                            vertices[faces[j].vertexIndex[k]].position.y == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.y &&
-                            vertices[faces[j].vertexIndex[k]].position.z == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.z
+                            vertices[faces[j].vertexIndex[k]].position.x == vertices[faces[vertices[(i * 1)].neighboringFaceIDs[l]].vertexIndex[m]].position.x &&
+                            vertices[faces[j].vertexIndex[k]].position.y == vertices[faces[vertices[(i * 1)].neighboringFaceIDs[l]].vertexIndex[m]].position.y &&
+                            vertices[faces[j].vertexIndex[k]].position.z == vertices[faces[vertices[(i * 1)].neighboringFaceIDs[l]].vertexIndex[m]].position.z
                         ) {
                             matches++; 
 
@@ -408,7 +408,7 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
 
         barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], faceMidpoints[0], faceMidpoints[1], faceMidpoints[2], coordinateDesiredAveragePosition);
 
-        vertices[i].position = coordinateDesiredAveragePosition;
+        vertices[(i * 1)].position = coordinateDesiredAveragePosition;
     }
 
     completeThreads++;
@@ -419,9 +419,7 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
 //__global__
 void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& faces, const int MAX_CORES, int maxVertsAtStart) {
 
-    int maxVertID = 0;
-    getMaxVertID(vertices, maxVertID);
-    const int originalMaxVertID = maxVertID; // for finding the original non-interpolated verts
+    const int originalMaxVertID = maxVertsAtStart; // for finding the original non-interpolated verts
 
     // face points and edge points
 
@@ -446,7 +444,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
-        std::thread(catmullClarkFacePointsAndEdges, std::ref(vertices), std::ref(faces), maxVertID, i, std::ref(completeThreads), maxVertsAtStart).detach();
+        std::thread(catmullClarkFacePointsAndEdges, std::ref(vertices), std::ref(faces), originalMaxVertID, i, std::ref(completeThreads), maxVertsAtStart).detach();
 
         // this print statement MUST be here or else the threads will not synchronize. I am working on a fix for this.
 
@@ -471,7 +469,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     for (int i = 0; i < originalMaxVertID; i++) {
 
         workInProgressThreads++;
-        std::thread(catmullClarkFacePointsAndEdgesAverage, std::ref(vertices), std::ref(faces), maxVertsAtStart, i, std::ref(completeThreads)).detach();
+        std::thread(catmullClarkFacePointsAndEdgesAverage, std::ref(vertices), std::ref(faces), originalMaxVertID, i, std::ref(completeThreads)).detach();
 
         std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] STARTED THREADS: " << std::to_string(workInProgressThreads) << " | COMPLETED THREADS: " << std::to_string(completeThreads) << endl;
 
