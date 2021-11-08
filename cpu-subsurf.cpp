@@ -404,9 +404,9 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
                         ) {
                             matches++; 
 
-                            currentEdgeMidpoint.x += vertices[faces[j].vertexIndex[k]].position.x;
-                            currentEdgeMidpoint.y += vertices[faces[j].vertexIndex[k]].position.y;
-                            currentEdgeMidpoint.z += vertices[faces[j].vertexIndex[k]].position.z;
+                            currentEdgeMidpoint.x += (vertices[faces[j].vertexIndex[k]].position.x + vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.x) / 2;
+                            currentEdgeMidpoint.y += (vertices[faces[j].vertexIndex[k]].position.y + vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.y) / 2;
+                            currentEdgeMidpoint.z += (vertices[faces[j].vertexIndex[k]].position.z + vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.z) / 2;
 
                             if (matches > 2) { 
 
