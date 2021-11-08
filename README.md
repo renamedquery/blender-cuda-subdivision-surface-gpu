@@ -24,6 +24,8 @@ Completed tasks:
 
 TODO:
 
+- \[PRIORITY] Fix verts that go missing caused by incomplete threads.
+
 - Read normals and texture coordinates from `.obj` files.
 
 - Write normals, texture coordinates, and faces to `.obj` files.
