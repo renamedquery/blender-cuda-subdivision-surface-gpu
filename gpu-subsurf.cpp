@@ -319,10 +319,105 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
     completeThreads++;
 }
 
+void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::vector<quadFace>& faces, int maxVertsAtStart, int i, int& completeThreads) {
+
+    vec3 coordinateDesiredAveragePosition;
+    vec3 edgeMidpoints[4];
+    vec3 faceMidpoints[4];
+
+    int currentFace = 0;
+
+    // find the neighboring faces
+    for (int j = 0; j < faces.size(); j++) {
+
+        bool isMatchingFace = false;
+
+        for (int k = 0; k < 4; k++) {
+
+            // neighboring faces
+            if ( // if this evaluates to true, then this is a neighboring face (there should only be three neighboring faces assuming that this is a quad)
+                vertices[faces[j].vertexIndex[k]].position.x == vertices[i].position.x &&
+                vertices[faces[j].vertexIndex[k]].position.y == vertices[i].position.y &&
+                vertices[faces[j].vertexIndex[k]].position.z == vertices[i].position.z
+            ) {
+                isMatchingFace = true;
+                vertices[i].neighboringFaceIDs[currentFace] = j;
+            }
+        }
+
+        if (isMatchingFace) {
+
+            faceMidpoints[currentFace] = faces[j].midpoint;
+
+            currentFace++;
+        }
+    }
+
+    int currentEdge = 0;
+    bool barycenterError = false;
+
+    // neighboring edge midpoint gathering
+    for (int j = 0; j < faces.size(); j++) {
+
+        // find neighboring edges (there will be 3)
+        for (int k = 0; k < 4; k++) {
+
+            int matches = 0;
+            vec3 currentEdgeMidpoint;
+
+            for (int l = 0; l < 3; l++) {
+
+                for (int m = 0; m < 4; m++) {
+                    
+                    if (
+                        j < faces.size() && vertices[i].neighboringFaceIDs[l] < faces.size() &&
+                        currentEdge < 3
+                    ) {
+                        if (
+                            vertices[faces[j].vertexIndex[k]].position.x == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.x &&
+                            vertices[faces[j].vertexIndex[k]].position.y == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.y &&
+                            vertices[faces[j].vertexIndex[k]].position.z == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.z
+                        ) {
+                            matches++; 
+
+                            currentEdgeMidpoint.x += vertices[faces[j].vertexIndex[k]].position.x;
+                            currentEdgeMidpoint.y += vertices[faces[j].vertexIndex[k]].position.y;
+                            currentEdgeMidpoint.z += vertices[faces[j].vertexIndex[k]].position.z;
+
+                            if (matches > 2) { 
+
+                                currentEdgeMidpoint.x /= 3;
+                                currentEdgeMidpoint.y /= 3;
+                                currentEdgeMidpoint.z /= 3;
+
+                                edgeMidpoints[currentEdge] = currentEdgeMidpoint;
+
+                                currentEdge++;
+                            }
+                        }
+                    } else {
+                        
+                        barycenterError = true;
+                    }
+                }
+            }
+        }
+    }
+
+    if (!barycenterError) {
+
+        barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], faceMidpoints[0], faceMidpoints[1], faceMidpoints[2], coordinateDesiredAveragePosition);
+
+        vertices[i].position = coordinateDesiredAveragePosition;
+    }
+
+    completeThreads++;
+}
+
 // adapted from the instructions at https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
 // should be gpu accelerated
 //__global__
-void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& faces, const int MAX_CORES, bool& maxVertIDGridLock, int maxVertsAtStart) {
+void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& faces, const int MAX_CORES, int maxVertsAtStart) {
 
     int maxVertID = 0;
     getMaxVertID(vertices, maxVertID);
@@ -346,6 +441,8 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
         vertices.push_back(vert);
     }
 
+    std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] SPAWNING " << faces.size() << " THREADS" << endl;
+
     for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
@@ -353,7 +450,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
         // this print statement MUST be here or else the threads will not synchronize. I am working on a fix for this.
 
-        std::cout << "[CPU] STARTED THREADS: " << std::to_string(workInProgressThreads) << " | COMPLETED THREADS: " << std::to_string(completeThreads) << endl;
+        std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] STARTED THREADS: " << std::to_string(workInProgressThreads) << " | COMPLETED THREADS: " << std::to_string(completeThreads) << " | FACE ID: " << std::to_string(i) << endl;
 
         while (true) {
             
@@ -361,105 +458,30 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
         }
     };
 
-    // check if threads are done
-    while (true) {
+    std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] THREAD SPAWNING IS DONE" << endl;
 
-        if (completeThreads >= faces.size()) break;
-    }
+    std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] ALL THREADS ARE DONE" << endl;
+
+    std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] SPAWNING " << originalMaxVertID << " THREADS" << endl;
+
+    completeThreads = 0;
+    workInProgressThreads = 0;
 
     // neighboring face midpoint gathering
     for (int i = 0; i < originalMaxVertID; i++) {
 
-        vec3 coordinateDesiredAveragePosition;
-        vec3 edgeMidpoints[4];
-        vec3 faceMidpoints[4];
+        workInProgressThreads++;
+        std::thread(catmullClarkFacePointsAndEdgesAverage, std::ref(vertices), std::ref(faces), maxVertsAtStart, i, std::ref(completeThreads)).detach();
 
-        int currentFace = 0;
+        std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] STARTED THREADS: " << std::to_string(workInProgressThreads) << " | COMPLETED THREADS: " << std::to_string(completeThreads) << endl;
 
-        // find the neighboring faces
-        for (int j = 0; j < faces.size(); j++) {
-
-            bool isMatchingFace = false;
-
-            for (int k = 0; k < 4; k++) {
-
-                // neighboring faces
-                if ( // if this evaluates to true, then this is a neighboring face (there should only be three neighboring faces assuming that this is a quad)
-                    vertices[faces[j].vertexIndex[k]].position.x == vertices[i].position.x &&
-                    vertices[faces[j].vertexIndex[k]].position.y == vertices[i].position.y &&
-                    vertices[faces[j].vertexIndex[k]].position.z == vertices[i].position.z
-                ) {
-                    isMatchingFace = true;
-                    vertices[i].neighboringFaceIDs[currentFace] = j;
-                }
-            }
-
-            if (isMatchingFace) {
-
-                faceMidpoints[currentFace] = faces[j].midpoint;
-
-                currentFace++;
-            }
-        }
-
-        int currentEdge = 0;
-        bool barycenterError = false;
-
-        // neighboring edge midpoint gathering
-        for (int j = 0; j < faces.size(); j++) {
-
-            // find neighboring edges (there will be 3)
-            for (int k = 0; k < 4; k++) {
-
-                int matches = 0;
-                vec3 currentEdgeMidpoint;
-
-                for (int l = 0; l < 3; l++) {
-
-                    for (int m = 0; m < 4; m++) {
-                        
-                        if (
-                            j < faces.size() && vertices[i].neighboringFaceIDs[l] < faces.size() &&
-                            currentEdge < 3
-                        ) {
-                            if (
-                                vertices[faces[j].vertexIndex[k]].position.x == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.x &&
-                                vertices[faces[j].vertexIndex[k]].position.y == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.y &&
-                                vertices[faces[j].vertexIndex[k]].position.z == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.z
-                            ) {
-                                matches++; 
-
-                                currentEdgeMidpoint.x += vertices[faces[j].vertexIndex[k]].position.x;
-                                currentEdgeMidpoint.y += vertices[faces[j].vertexIndex[k]].position.y;
-                                currentEdgeMidpoint.z += vertices[faces[j].vertexIndex[k]].position.z;
-
-                                if (matches > 2) { 
-
-                                    currentEdgeMidpoint.x /= 3;
-                                    currentEdgeMidpoint.y /= 3;
-                                    currentEdgeMidpoint.z /= 3;
-
-                                    edgeMidpoints[currentEdge] = currentEdgeMidpoint;
-
-                                    currentEdge++;
-                                }
-                            }
-                        } else {
-                            
-                            barycenterError = true;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!barycenterError) {
-
-            barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], faceMidpoints[0], faceMidpoints[1], faceMidpoints[2], coordinateDesiredAveragePosition);
-
-            vertices[i].position = coordinateDesiredAveragePosition;
+        while (true) {
+            
+            if (workInProgressThreads - completeThreads < MAX_CORES) break;
         }
     }
+
+    std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] ALL THREADS ARE DONE" << endl;
 }
 
 void printVerts(std::vector<vertex> vertices){
@@ -499,10 +521,8 @@ void printFaces(std::vector<quadFace> faces, std::vector<vertex> vertices) {
 
 int main (void) {
 
-    const int MAX_CORES = 6;
+    const int MAX_CORES = 32; // not really cores, moreso just threads
     
-    bool maxVertIDGridLock = false;
-
     std::string objPath = "./testMesh.obj";
     std::string objOutputPath = "./testMeshOutput.obj";
     std::vector<vertex> objVertices;
@@ -519,7 +539,7 @@ int main (void) {
     // debugging stuff
     std::cout << "[CPU] FINISHED PARSING \"" << objPath << "\" WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
 
-    catmullClarkSubdiv(objVertices, objFaces, MAX_CORES, maxVertIDGridLock, objFaces.size());
+    catmullClarkSubdiv(objVertices, objFaces, MAX_CORES, objFaces.size());
 
     vertCount = std::to_string(objVertices.size());
     faceCount = std::to_string(objFaces.size());
