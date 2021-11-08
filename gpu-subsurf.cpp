@@ -521,7 +521,7 @@ void printFaces(std::vector<quadFace> faces, std::vector<vertex> vertices) {
 
 int main (void) {
 
-    const int MAX_CORES = 32; // not really cores, moreso just threads
+    const int MAX_CORES = 12; // not really cores, moreso just threads
     
     std::string objPath = "./testMesh.obj";
     std::string objOutputPath = "./testMeshOutput.obj";
