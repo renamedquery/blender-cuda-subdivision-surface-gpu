@@ -543,7 +543,7 @@ void printFaces(std::vector<quadFace> faces, std::vector<vertex> vertices) {
 
 int main (void) {
 
-    const int MAX_CORES = std::thread::hardware_concurrency(); // not really cores, moreso just threads
+    const int MAX_CORES = std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency();
 
     std::cout << "[CPU] USING MAX_CORES=" << std::to_string(MAX_CORES) << endl;
     
