@@ -8,7 +8,7 @@
 
 *An input mesh generated in blender (left) next to the sudivided version of the mesh using my program (right).*
 
-![](https://i.imgur.com/bnGgW07.png?raw=true)
+![](https://i.imgur.com/OUVHWyt.png?raw=true)
 
 *Un-subdivided point cloud (left) next to a subdivided point cloud (right) that was generated using my program (with their faces removed).*
 
