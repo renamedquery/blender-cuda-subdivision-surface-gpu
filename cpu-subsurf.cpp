@@ -315,7 +315,7 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
             edgePoint.position.y = (edgeAveragePoint.y + neighboringFacePointAverages.y) / 2;
             edgePoint.position.z = (edgeAveragePoint.z + neighboringFacePointAverages.z) / 2;
 
-            edgePoint.id = maxVertsAtStart + (i * 5) + 1 + (j + 1);
+            edgePoint.id = maxVertsAtStart + (i * 5) + (j + 1);
 
             threadingMutex.lock();
             vertices[edgePoint.id] = edgePoint;
