@@ -441,6 +441,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
     int completeThreads = 0;
     std::atomic<int> workInProgressThreads(0);
+    int threadCountOverrunHalts = 0; // the amount of times the program has to stop spawning new threads to wait for the old ones to fall below the MAX_CORES limit
 
     // each thread adds 5 new face points
     // calculate the total new points
@@ -464,11 +465,14 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
         while (workInProgressThreads - completeThreads > MAX_CORES) {
             
+            threadCountOverrunHalts++;
+
             if (workInProgressThreads - completeThreads <= MAX_CORES) break;
         }
     };
 
     std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] THREAD SPAWNING IS DONE" << endl;
+    std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] threadCountOverrunHalts=" << std::to_string(threadCountOverrunHalts) << endl;
     std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] WAITING FOR THREADS TO FINISH" << endl;
 
     while (true) {
@@ -482,6 +486,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
     completeThreads = 0;
     workInProgressThreads = 0;
+    threadCountOverrunHalts = 0;
 
     // neighboring face midpoint gathering
     for (int i = 0; i < originalMaxVertID; i++) {
@@ -491,11 +496,14 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
         while (workInProgressThreads - completeThreads > MAX_CORES) {
             
+            threadCountOverrunHalts++;
+
             if (workInProgressThreads - completeThreads <= MAX_CORES) break;
         }
     }
 
     std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] THREAD SPAWNING IS DONE" << endl;
+    std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] threadCountOverrunHalts=" << std::to_string(threadCountOverrunHalts) << endl;
     std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] WAITING FOR THREADS TO FINISH" << endl;
 
     while (true) {
