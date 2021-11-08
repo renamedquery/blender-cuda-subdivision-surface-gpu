@@ -9,6 +9,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <atomic>
 
 using namespace std;
 
@@ -323,7 +324,9 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
         }
     }
 
+    threadingMutex.lock();
     completeThreads++;
+    threadingMutex.unlock();
 }
 
 void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::vector<quadFace>& faces, int maxVertsAtStart, int i, int& completeThreads) {
@@ -418,11 +421,13 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
         barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], faceMidpoints[0], faceMidpoints[1], faceMidpoints[2], coordinateDesiredAveragePosition);
 
         threadingMutex.lock();
-        vertices[(i * 1)].position = coordinateDesiredAveragePosition;
+        vertices[1].position = coordinateDesiredAveragePosition;
         threadingMutex.unlock();
     }
 
+    threadingMutex.lock();
     completeThreads++;
+    threadingMutex.unlock();
 }
 
 // adapted from the instructions at https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
@@ -435,7 +440,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     // face points and edge points
 
     int completeThreads = 0;
-    int workInProgressThreads = 0;
+    std::atomic<int> workInProgressThreads(0);
 
     // each thread adds 5 new face points
     // calculate the total new points
@@ -457,13 +462,14 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
         workInProgressThreads++;
         std::thread(catmullClarkFacePointsAndEdges, std::ref(vertices), std::ref(faces), originalMaxVertID, i, std::ref(completeThreads), maxVertsAtStart).detach();
 
-        while (true) {
+        while (workInProgressThreads - completeThreads > MAX_CORES) {
             
-            if (workInProgressThreads - completeThreads < MAX_CORES) break;
+            if (workInProgressThreads - completeThreads <= MAX_CORES) break;
         }
     };
 
     std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] THREAD SPAWNING IS DONE" << endl;
+    std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] WAITING FOR THREADS TO FINISH" << endl;
 
     while (true) {
 
@@ -483,10 +489,18 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
         workInProgressThreads++;
         std::thread(catmullClarkFacePointsAndEdgesAverage, std::ref(vertices), std::ref(faces), originalMaxVertID, i, std::ref(completeThreads)).detach();
 
-        while (true) {
+        while (workInProgressThreads - completeThreads > MAX_CORES) {
             
-            if (workInProgressThreads - completeThreads < MAX_CORES) break;
+            if (workInProgressThreads - completeThreads <= MAX_CORES) break;
         }
+    }
+
+    std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] THREAD SPAWNING IS DONE" << endl;
+    std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] WAITING FOR THREADS TO FINISH" << endl;
+
+    while (true) {
+
+        if (workInProgressThreads <= completeThreads) break;
     }
 
     std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] ALL THREADS ARE DONE" << endl;
