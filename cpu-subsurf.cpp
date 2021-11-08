@@ -377,36 +377,6 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
     vec3 edgeMidpoints[4];
     vec3 faceMidpoints[4];
 
-    int currentFace = 0;
-
-    // find the neighboring faces
-    for (int j = 0; j < faces.size(); j++) {
-
-        bool isMatchingFace = false;
-
-        for (int k = 0; k < 4; k++) {
-
-            // neighboring faces
-            if ( // if this evaluates to true, then this is a neighboring face (there should only be three neighboring faces assuming that this is a quad)
-                vertices[faces[j].vertexIndex[k]].position.x == vertices[(i * 5)].position.x &&
-                vertices[faces[j].vertexIndex[k]].position.y == vertices[(i * 5)].position.y &&
-                vertices[faces[j].vertexIndex[k]].position.z == vertices[(i * 5)].position.z
-            ) {
-                isMatchingFace = true;
-                threadingMutex.lock();
-                vertices[i].neighboringFaceIDs[currentFace] = j;
-                threadingMutex.unlock();
-            }
-        }
-
-        if (isMatchingFace) {
-
-            faceMidpoints[currentFace] = faces[j].midpoint;
-
-            currentFace++;
-        }
-    }
-
     int currentEdge = 0;
     bool barycenterError = false;
 
@@ -445,6 +415,8 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
                                 currentEdgeMidpoint.z /= 3;
 
                                 edgeMidpoints[currentEdge] = currentEdgeMidpoint;
+
+                                faceMidpoints[currentEdge] = faces[j].midpoint;
 
                                 currentEdge++;
                             }
