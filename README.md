@@ -10,7 +10,7 @@
 
 ![](https://i.imgur.com/bnGgW07.png?raw=true)
 
-*Un-subdivided point cloud (left) next to a subdivided point cloud (right) that was generated using my program.*
+*Un-subdivided point cloud (left) next to a subdivided point cloud (right) that was generated using my program (with their faces removed).*
 
 Completed tasks:
 
