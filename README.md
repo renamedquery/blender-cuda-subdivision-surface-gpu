@@ -8,9 +8,9 @@
 
 *An input mesh generated in blender (left) next to the sudivided version of the mesh using my program (right).*
 
-![](https://i.imgur.com/JnObSNJ.png?raw=true)
+![](https://i.imgur.com/bnGgW07.png?raw=true)
 
-*A point cloud (right) generated from subdividing an open faced plane (left).*
+*Un-subdivided point cloud (left) next to a subdivided point cloud (right) that was generated using my program.*
 
 Completed tasks:
 
@@ -19,6 +19,8 @@ Completed tasks:
 - Writing to a `.obj` file to export the data (verts).
 
 - Basic Catmull Clark subdivision algorithm.
+
+- CPU Multithreading is done.
 
 TODO:
 
@@ -43,7 +45,5 @@ Compiling the C++ file on Ubuntu 20.04:
 # Limitations:
 
 - Only works on quads.
-
-- Is slow.
 
 - Open faced meshes will work, and will stay as quad topology; however, they will have strangely located quads, untrue to the original topology.
