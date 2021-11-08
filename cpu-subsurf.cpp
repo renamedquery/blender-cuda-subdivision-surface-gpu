@@ -31,7 +31,7 @@ struct vertex {
     vec3 position;
     vec2 textureCoordinate;
     vec3 normal;
-    int id; // legacy attribute, do not use for actual ID
+    int id;
     int neighboringFaceIDs[3];
 };
 
@@ -151,7 +151,7 @@ void writeObj(std::string path, std::vector<vertex> vertices, std::vector<quadFa
     std::ofstream objFile;
     objFile.open(path, ios::out | ios::trunc);
 
-    objFile << "o TMP_NAME" << endl;
+    objFile << "o EXPERIMENTAL_MESH" << endl;
 
     for (int i = 0; i < vertices.size(); i++) {
         
@@ -267,16 +267,19 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
 
             for (int l = 0; l < 4; l++) {
 
-                if (
-                    (vertices[faces[k].vertexIndex[l]].position.x == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.x &&
+                bool firstFacePairMatch = (
+                    vertices[faces[k].vertexIndex[l]].position.x == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.x &&
                     vertices[faces[k].vertexIndex[l]].position.y == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.y &&
-                    vertices[faces[k].vertexIndex[l]].position.z == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.z)
-                    ||
-                    (vertices[faces[k].vertexIndex[l]].position.x == vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.x &&
-                    vertices[faces[k].vertexIndex[l]].position.y == vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.y &&
-                    vertices[faces[k].vertexIndex[l]].position.z == vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.z)
+                    vertices[faces[k].vertexIndex[l]].position.z == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.z
+                );
 
-                ) {
+                bool secondFacePairMatch = (
+                    vertices[faces[k].vertexIndex[l]].position.x == vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.x &&
+                    vertices[faces[k].vertexIndex[l]].position.y == vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.y &&
+                    vertices[faces[k].vertexIndex[l]].position.z == vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.z
+                );
+
+                if (firstFacePairMatch || secondFacePairMatch) {
                     
                     matchedPoints++;
                 }
@@ -295,8 +298,7 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
         edgeAveragePoint.y = (vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.y + vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.y) / 2;
         edgeAveragePoint.z = (vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.z + vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.z) / 2;
 
-        currentSubdividedFaces[j].vertexIndex[1] = faces[knownFaceID].vertexIndex[(j + 0) % 4];
-        currentSubdividedFaces[j].vertexIndex[2] = faces[knownFaceID].vertexIndex[(j + 3) % 4];
+        currentSubdividedFaces[j].vertexIndex[2] = faces[knownFaceID].vertexIndex[(j + 0) % 4];
 
         // find the averages for the face points
 
@@ -340,7 +342,8 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
             vertices[edgePoint.id] = edgePoint;
             threadingMutex.unlock();
 
-            currentSubdividedFaces[j].vertexIndex[3] = edgePoint.id; // edge average point
+            currentSubdividedFaces[j].vertexIndex[3] = edgePoint.id;
+            currentSubdividedFaces[(j + 1) % 4].vertexIndex[1] = edgePoint.id;
         }
     }
 
