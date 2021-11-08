@@ -8,8 +8,11 @@
 #include <sstream>
 #include <vector>
 #include <thread>
+#include <mutex>
 
 using namespace std;
+
+std::mutex threadingMutex;
 
 struct vec3 {
     double x = 0;
@@ -220,7 +223,9 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
     faceAverageMiddlePointVertex.position = faceAverageMiddlePoint;
     faceAverageMiddlePointVertex.id = maxVertsAtStart + (i * 5) + 0;
 
+    threadingMutex.lock();
     vertices[faceAverageMiddlePointVertex.id] = faceAverageMiddlePointVertex;
+    threadingMutex.unlock();
 
     // edge midpoints for this face
     // the mesh will have to be combined into one later on, since this will create duplicate verts
@@ -311,7 +316,9 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
 
             edgePoint.id = maxVertsAtStart + (i * 5) + 1 + (j + 1);
 
+            threadingMutex.lock();
             vertices[edgePoint.id] = edgePoint;
+            threadingMutex.unlock();
 
         }
     }
@@ -341,7 +348,9 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
                 vertices[faces[j].vertexIndex[k]].position.z == vertices[(i * 5)].position.z
             ) {
                 isMatchingFace = true;
+                threadingMutex.lock();
                 vertices[i].neighboringFaceIDs[currentFace] = j;
+                threadingMutex.unlock();
             }
         }
 
@@ -374,9 +383,9 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
                         currentEdge < 3
                     ) {
                         if (
-                            vertices[faces[j].vertexIndex[k]].position.x == vertices[faces[vertices[(i * 1)].neighboringFaceIDs[l]].vertexIndex[m]].position.x &&
-                            vertices[faces[j].vertexIndex[k]].position.y == vertices[faces[vertices[(i * 1)].neighboringFaceIDs[l]].vertexIndex[m]].position.y &&
-                            vertices[faces[j].vertexIndex[k]].position.z == vertices[faces[vertices[(i * 1)].neighboringFaceIDs[l]].vertexIndex[m]].position.z
+                            vertices[faces[j].vertexIndex[k]].position.x == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.x &&
+                            vertices[faces[j].vertexIndex[k]].position.y == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.y &&
+                            vertices[faces[j].vertexIndex[k]].position.z == vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.z
                         ) {
                             matches++; 
 
@@ -408,7 +417,9 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
 
         barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], faceMidpoints[0], faceMidpoints[1], faceMidpoints[2], coordinateDesiredAveragePosition);
 
+        threadingMutex.lock();
         vertices[(i * 1)].position = coordinateDesiredAveragePosition;
+        threadingMutex.unlock();
     }
 
     completeThreads++;
@@ -446,10 +457,6 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
         workInProgressThreads++;
         std::thread(catmullClarkFacePointsAndEdges, std::ref(vertices), std::ref(faces), originalMaxVertID, i, std::ref(completeThreads), maxVertsAtStart).detach();
 
-        // this print statement MUST be here or else the threads will not synchronize. I am working on a fix for this.
-
-        std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] STARTED THREADS: " << std::to_string(workInProgressThreads) << " | COMPLETED THREADS: " << std::to_string(completeThreads) << " | FACE ID: " << std::to_string(i) << endl;
-
         while (true) {
             
             if (workInProgressThreads - completeThreads < MAX_CORES) break;
@@ -457,6 +464,11 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     };
 
     std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] THREAD SPAWNING IS DONE" << endl;
+
+    while (true) {
+
+        if (workInProgressThreads <= completeThreads) break;
+    }
 
     std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] ALL THREADS ARE DONE" << endl;
 
@@ -470,8 +482,6 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
         workInProgressThreads++;
         std::thread(catmullClarkFacePointsAndEdgesAverage, std::ref(vertices), std::ref(faces), originalMaxVertID, i, std::ref(completeThreads)).detach();
-
-        std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] STARTED THREADS: " << std::to_string(workInProgressThreads) << " | COMPLETED THREADS: " << std::to_string(completeThreads) << endl;
 
         while (true) {
             
@@ -544,10 +554,10 @@ int main (void) {
 
     std::cout << "[CPU] FINISHED SUBDIVIDING \"" << objPath << "\" WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
 
+    writeObj(objOutputPath, objVertices, objFaces);
+
     //printVerts(objVertices);
     //printFaces(objFaces, objVertices);
-
-    writeObj(objOutputPath, objVertices, objFaces);
 
     return 0;
 }
