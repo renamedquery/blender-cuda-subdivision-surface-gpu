@@ -20,6 +20,7 @@ struct vec3 {
     double y = 0;
     double z = 0;
     bool modified = false;
+    int status = 0;
 };
 
 struct vec2 {
@@ -405,42 +406,35 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
                             
                             if ((vertices[i].neighboringFaceIDs[k] < vertices.size()) && (faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l] > 0)) {
 
-                                if (faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l] == faces[j].vertexIndex[m] && currentFace < 4 && !vertices[faces[j].vertexIndex[m]].alreadyAveraged) {
+                                if (faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l] == faces[j].vertexIndex[m] && currentEdgeMidpoint.status < 4 && !vertices[faces[j].vertexIndex[m]].alreadyAveraged) {
                                     
                                     currentEdgeMidpoint.x += (vertices[faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l]].position.x + vertices[faces[j].vertexIndex[m]].position.x) / 2;
                                     currentEdgeMidpoint.y += (vertices[faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l]].position.y + vertices[faces[j].vertexIndex[m]].position.y) / 2;
                                     currentEdgeMidpoint.z += (vertices[faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l]].position.z + vertices[faces[j].vertexIndex[m]].position.z) / 2;
 
-                                    edgeMidpoints[currentFace] = currentEdgeMidpoint;
+                                    //std::cout << std::to_string(currentEdgeMidpoint.status) << endl;
 
-                                    std::cout << std::to_string(currentEdgeMidpoint.x) << endl;
+                                    edgeMidpoints[currentEdgeMidpoint.status] = currentEdgeMidpoint;
 
-                                    currentFace++;
+                                    currentEdgeMidpoint.status++;
+                                }
 
-                                    if (currentFace == 3) {
+                                if (currentEdgeMidpoint.status == 3) {
 
-                                        j = faces.size();
+                                    if (!barycenterError) {
 
-                                        if (!barycenterError && !vertices[faces[j].vertexIndex[m]].alreadyAveraged) {
+                                        //std::cout << std::to_string(vertIndex) << endl;
 
+                                        barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], edgeMidpoints[3], edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], edgeMidpoints[3], coordinateDesiredAveragePositions[vertIndex]);
+
+                                        for (int n = 0; n < 4; n++) {
+
+                                            std::cout << std::to_string(edgeMidpoints[n].x) << endl;
+                                            
                                             threadingMutex.lock();
+                                            vertices[faces[j].vertexIndex[m]].position = edgeMidpoints[n]; //coordinateDesiredAveragePositions[vertIndex];
                                             vertices[faces[j].vertexIndex[m]].alreadyAveraged = true;
                                             threadingMutex.unlock();
-
-                                            //std::cout << std::to_string(vertIndex) << endl;
-
-                                            barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], edgeMidpoints[3], edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], edgeMidpoints[3], coordinateDesiredAveragePositions[vertIndex]);
-
-                                            if (!(
-                                                coordinateDesiredAveragePositions[vertIndex].x == 0 &&
-                                                coordinateDesiredAveragePositions[vertIndex].y == 0 &&
-                                                coordinateDesiredAveragePositions[vertIndex].z == 0
-                                            )) {
-                                                
-                                                threadingMutex.lock();
-                                                vertices[faces[j].vertexIndex[m]].position = coordinateDesiredAveragePositions[vertIndex];
-                                                threadingMutex.unlock();
-                                            }
                                         }
                                     }
                                 }
