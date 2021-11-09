@@ -33,6 +33,7 @@ struct vertex {
     vec3 normal;
     int id;
     int neighboringFaceIDs[4];
+    bool alreadyAveraged = false;
 };
 
 struct quadFace {
@@ -379,14 +380,14 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
 
     for (int vertIndex = 0; vertIndex < 4; vertIndex ++) {
 
-        vec3 coordinateDesiredAveragePositions[4];
-        vec3 edgeMidpoints[4];
-        vec3 faceMidpoints[4];
-
-        bool barycenterError = false;
-
         // neighboring edge midpoint gathering
         for (int j = 0; j < faces.size(); j++) {
+
+            vec3 coordinateDesiredAveragePositions[4];
+            vec3 edgeMidpoints[4];
+            vec3 faceMidpoints[4];
+
+            bool barycenterError = false;
 
             int currentFace = 0;
 
@@ -405,6 +406,8 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
                             if ((vertices[i].neighboringFaceIDs[k] < vertices.size()) && (faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l] > 0)) {
 
                                 if (faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l] == faces[j].vertexIndex[m] && currentFace < 4) {
+
+                                    std::cout << std::to_string((vertices[faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l]].position.x + vertices[faces[j].vertexIndex[m]].position.x) / 2) << endl;
                                     
                                     currentEdgeMidpoint.x += (vertices[faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l]].position.x + vertices[faces[j].vertexIndex[m]].position.x) / 2;
                                     currentEdgeMidpoint.y += (vertices[faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l]].position.y + vertices[faces[j].vertexIndex[m]].position.y) / 2;
@@ -428,14 +431,7 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
                 }
             }
 
-            for (int k = 0; k < 4; k++) {
-
-
-            }
-
-            if (currentFace >= 3 && !barycenterError) {
-
-                std::cout << std::to_string(currentFace) << endl;
+            if (currentFace >= 3 && !barycenterError && !vertices[faces[j].vertexIndex[vertIndex]].alreadyAveraged) {
 
                 barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], edgeMidpoints[3], edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], edgeMidpoints[3], coordinateDesiredAveragePositions[vertIndex]);
 
@@ -448,6 +444,8 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
                     threadingMutex.lock();
                     vertices[faces[j].vertexIndex[vertIndex]].position = coordinateDesiredAveragePositions[vertIndex];
                     threadingMutex.unlock();
+
+                    vertices[faces[j].vertexIndex[vertIndex]].alreadyAveraged = true;
                 }
             }
         }
