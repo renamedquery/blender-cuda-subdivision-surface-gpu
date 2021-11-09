@@ -393,7 +393,7 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
 
             vec3 currentEdgeMidpoint;
 
-            for (int k = 0; k < 3; k++) {
+            for (int k = 0; k < 4; k++) {
 
                 for (int l = 0; l < 4; l++) {
 
@@ -405,9 +405,7 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
                             
                             if ((vertices[i].neighboringFaceIDs[k] < vertices.size()) && (faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l] > 0)) {
 
-                                if (faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l] == faces[j].vertexIndex[m] && currentFace < 4) {
-
-                                    std::cout << std::to_string((vertices[faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l]].position.x + vertices[faces[j].vertexIndex[m]].position.x) / 2) << endl;
+                                if (faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l] == faces[j].vertexIndex[m] && currentFace < 4 && !vertices[faces[j].vertexIndex[m]].alreadyAveraged) {
                                     
                                     currentEdgeMidpoint.x += (vertices[faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l]].position.x + vertices[faces[j].vertexIndex[m]].position.x) / 2;
                                     currentEdgeMidpoint.y += (vertices[faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l]].position.y + vertices[faces[j].vertexIndex[m]].position.y) / 2;
@@ -415,7 +413,36 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
 
                                     edgeMidpoints[currentFace] = currentEdgeMidpoint;
 
+                                    std::cout << std::to_string(currentEdgeMidpoint.x) << endl;
+
                                     currentFace++;
+
+                                    if (currentFace == 3) {
+
+                                        j = faces.size();
+
+                                        if (!barycenterError && !vertices[faces[j].vertexIndex[m]].alreadyAveraged) {
+
+                                            threadingMutex.lock();
+                                            vertices[faces[j].vertexIndex[m]].alreadyAveraged = true;
+                                            threadingMutex.unlock();
+
+                                            //std::cout << std::to_string(vertIndex) << endl;
+
+                                            barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], edgeMidpoints[3], edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], edgeMidpoints[3], coordinateDesiredAveragePositions[vertIndex]);
+
+                                            if (!(
+                                                coordinateDesiredAveragePositions[vertIndex].x == 0 &&
+                                                coordinateDesiredAveragePositions[vertIndex].y == 0 &&
+                                                coordinateDesiredAveragePositions[vertIndex].z == 0
+                                            )) {
+                                                
+                                                threadingMutex.lock();
+                                                vertices[faces[j].vertexIndex[m]].position = coordinateDesiredAveragePositions[vertIndex];
+                                                threadingMutex.unlock();
+                                            }
+                                        }
+                                    }
                                 }
 
                             } else {
@@ -428,24 +455,6 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
                             barycenterError = true;
                         }
                     }
-                }
-            }
-
-            if (currentFace >= 3 && !barycenterError && !vertices[faces[j].vertexIndex[vertIndex]].alreadyAveraged) {
-
-                barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], edgeMidpoints[3], edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], edgeMidpoints[3], coordinateDesiredAveragePositions[vertIndex]);
-
-                if (!(
-                    coordinateDesiredAveragePositions[vertIndex].x == 0 &&
-                    coordinateDesiredAveragePositions[vertIndex].y == 0 &&
-                    coordinateDesiredAveragePositions[vertIndex].z == 0
-                )) {
-                    
-                    threadingMutex.lock();
-                    vertices[faces[j].vertexIndex[vertIndex]].position = coordinateDesiredAveragePositions[vertIndex];
-                    threadingMutex.unlock();
-
-                    vertices[faces[j].vertexIndex[vertIndex]].alreadyAveraged = true;
                 }
             }
         }
