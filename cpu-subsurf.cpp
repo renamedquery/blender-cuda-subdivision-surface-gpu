@@ -310,7 +310,7 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
 
         if (nextdoorFaceID < faces.size() && nextdoorFaceID > 0) {
 
-            neighboringFacePointCenter.x = (
+            /*neighboringFacePointCenter.x = (
                 (vertices[faces[nextdoorFaceID].vertexIndex[0]].position.x) + 
                 (vertices[faces[nextdoorFaceID].vertexIndex[1]].position.x) + 
                 (vertices[faces[nextdoorFaceID].vertexIndex[2]].position.x) + 
@@ -329,7 +329,11 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
                 (vertices[faces[nextdoorFaceID].vertexIndex[1]].position.z) + 
                 (vertices[faces[nextdoorFaceID].vertexIndex[2]].position.z) + 
                 (vertices[faces[nextdoorFaceID].vertexIndex[3]].position.z)
-            ) / 4;
+            ) / 4;*/
+
+            std::cout << std::to_string(nextdoorFaceID) << endl;
+
+            neighboringFacePointCenter = faces[nextdoorFaceID].midpoint;
 
             neighboringFacePointAverages.x = (faceAverageMiddlePoint.x + neighboringFacePointCenter.x) / 2;
             neighboringFacePointAverages.y = (faceAverageMiddlePoint.y + neighboringFacePointCenter.y) / 2;
