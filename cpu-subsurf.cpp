@@ -251,6 +251,8 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
     // edge midpoints for this face
     // the mesh will have to be combined into one later on, since this will create duplicate verts
 
+    vec3 edgeAveragePoints[4];
+
     for (int j = 0; j < 4; j++) {
 
         vec3 neighboringFacePointAverages;
@@ -310,7 +312,7 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
 
         if (nextdoorFaceID < faces.size() && nextdoorFaceID > 0) {
 
-            /*neighboringFacePointCenter.x = (
+            neighboringFacePointCenter.x = (
                 (vertices[faces[nextdoorFaceID].vertexIndex[0]].position.x) + 
                 (vertices[faces[nextdoorFaceID].vertexIndex[1]].position.x) + 
                 (vertices[faces[nextdoorFaceID].vertexIndex[2]].position.x) + 
@@ -329,11 +331,7 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
                 (vertices[faces[nextdoorFaceID].vertexIndex[1]].position.z) + 
                 (vertices[faces[nextdoorFaceID].vertexIndex[2]].position.z) + 
                 (vertices[faces[nextdoorFaceID].vertexIndex[3]].position.z)
-            ) / 4;*/
-
-            std::cout << std::to_string(nextdoorFaceID) << endl;
-
-            neighboringFacePointCenter = faces[nextdoorFaceID].midpoint;
+            ) / 4;
 
             neighboringFacePointAverages.x = (faceAverageMiddlePoint.x + neighboringFacePointCenter.x) / 2;
             neighboringFacePointAverages.y = (faceAverageMiddlePoint.y + neighboringFacePointCenter.y) / 2;
@@ -348,28 +346,56 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
 
             edgePoint.id = maxVertsAtStart + (i * 5) + (j + 1);
 
-            threadingMutex.lock();
-            vertices[edgePoint.id] = edgePoint;
-            threadingMutex.unlock();
-
             currentSubdividedFaces[j].vertexIndex[3] = edgePoint.id;
             currentSubdividedFaces[(j + 1) % 4].vertexIndex[1] = edgePoint.id;
         }
+
+        neighboringFacePointAverages.x = (neighboringFacePointAverages.x + edgeAveragePoint.x) / 2;
+        neighboringFacePointAverages.y = (neighboringFacePointAverages.y + edgeAveragePoint.y) / 2;
+        neighboringFacePointAverages.z = (neighboringFacePointAverages.z + edgeAveragePoint.z) / 2;
+
+        edgeAveragePoints[j] = neighboringFacePointAverages;
     }
 
     for (int j = 0; j < 4; j++) {
 
-        // check that it is a valid face with no -1's
+        threadingMutex.lock();
+        vertices[maxVertsAtStart + (i * 5) + (j + 1)].position = edgeAveragePoints[j];
+        threadingMutex.unlock();
+    }
 
-        bool faceIntegrityCheck = true;
+    /*if (faces[i].midpointVertID == faceAverageMiddlePointVertex.id) {
 
-        for (int k = 0; k < 4; k++) {
+        for (int j = 0; j < 4; j++) {
+            //std::cout << std::to_string(faceAverageMiddlePointVertex.id) << endl;
 
-            if (!(currentSubdividedFaces[j].vertexIndex[k] >= 0)) {
-                
-                faceIntegrityCheck = false;
-            }
+            vertices[faces[i].midpointVertID].position.x = (
+                vertices[faces[i].midpointVertID].position.x +
+                edgeAveragePoints[0].x +
+                edgeAveragePoints[1].x +
+                edgeAveragePoints[2].x +
+                edgeAveragePoints[3].x
+            ) / 5;
+
+            vertices[faces[i].midpointVertID].position.y = (
+                vertices[faces[i].midpointVertID].position.y +
+                edgeAveragePoints[0].y +
+                edgeAveragePoints[1].y +
+                edgeAveragePoints[2].y +
+                edgeAveragePoints[3].y
+            ) / 5;
+
+            vertices[faces[i].midpointVertID].position.z = (
+                vertices[faces[i].midpointVertID].position.z +
+                edgeAveragePoints[0].z +
+                edgeAveragePoints[1].z +
+                edgeAveragePoints[2].z +
+                edgeAveragePoints[3].z
+            ) / 5;
         }
+    }*/
+
+    for (int j = 0; j < 4; j++) {
 
         threadingMutex.lock();
         newFaces.push_back(currentSubdividedFaces[j]);
