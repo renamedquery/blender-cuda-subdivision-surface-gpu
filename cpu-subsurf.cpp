@@ -379,135 +379,49 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
 
 void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::vector<quadFace>& faces, int maxVertsAtStart, int i, int& completeThreads) {
 
-    /*for (int vertIndex = 0; vertIndex < 4; vertIndex ++) {
+    int facesArraySize = faces.size();
 
-        // neighboring edge midpoint gathering
-        for (int j = 0; j < faces.size(); j++) {
+    vec3 edgeMidpoints[4];
 
-            int faceMidpoint = faces[j].midpointVertID;
+    int currentEdgeMidpointsMatches = 0;
 
-            vec3 coordinateDesiredAveragePositions[4];
-            vec3 edgeMidpoints[4];
-            vec3 faceMidpoints[4];
+    for (int j = 0; j < facesArraySize; j++) {
 
-            bool barycenterError = false;
-
-            int currentFace = 0;
-
-            vec3 currentEdgeMidpoint;
-
-            for (int k = 0; k < 4; k++) {
-
-                for (int l = 0; l < 4; l++) {
-
-                    for (int m = 0; m < 4; m++) {
-
-                        if (i < vertices.size() && vertices[i].neighboringFaceIDs[k] < vertices.size() && vertices[i].neighboringFaceIDs[k] > 0) {
-
-                            //std::cout << std::to_string(vertices[i].neighboringFaceIDs[k]) << endl;
-                            
-                            if ((vertices[i].neighboringFaceIDs[k] < vertices.size()) && (faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l] > 0)) {
-
-                                if (
-                                    faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l] == faces[j].vertexIndex[m] && 
-                                    currentEdgeMidpoint.status < 4 && 
-                                    !vertices[faces[j].vertexIndex[m]].alreadyAveraged &&
-                                    (
-                                        (faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l] - 1) % 5 != 0
-                                    )
-                                ) {
-                                    
-                                    currentEdgeMidpoint.x += vertices[faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l]].position.x + vertices[faces[j].vertexIndex[m]].position.x;
-                                    currentEdgeMidpoint.y += vertices[faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l]].position.y + vertices[faces[j].vertexIndex[m]].position.y;
-                                    currentEdgeMidpoint.z += vertices[faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l]].position.z + vertices[faces[j].vertexIndex[m]].position.z;
-
-                                    std::cout << std::to_string(faces[vertices[i].neighboringFaceIDs[k]].vertexIndex[l]) << endl;
-
-                                    edgeMidpoints[currentEdgeMidpoint.status] = currentEdgeMidpoint;
-
-                                    currentEdgeMidpoint.status++;
-                                }
-
-                                if (currentEdgeMidpoint.status == 3) {
-
-                                    if (!barycenterError) {
-
-                                        //barycenter(edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], edgeMidpoints[3], edgeMidpoints[0], edgeMidpoints[1], edgeMidpoints[2], edgeMidpoints[3], coordinateDesiredAveragePositions[vertIndex]);
-
-                                        for (int n = 0; n < 4; n++) {
-                                            
-                                            //std::cout << std::to_string(faces[j].midpointVertID) << endl;
-
-                                            edgeMidpoints[n].x /= 2;
-                                            edgeMidpoints[n].y /= 2;
-                                            edgeMidpoints[n].z /= 2;
-
-                                            threadingMutex.lock();
-                                            vertices[faces[j].vertexIndex[m]].position = edgeMidpoints[n]; //coordinateDesiredAveragePositions[vertIndex];
-                                            vertices[faces[j].vertexIndex[m]].alreadyAveraged = true;
-                                            threadingMutex.unlock();
-                                        }
-                                    }
-                                }
-
-                            } else {
-
-                                barycenterError = true;
-                            }
-
-                        } else {
-
-                            barycenterError = true;
-                        }
-                    }
-                }
-            }
-        }*/
-
-        /*// find neighboring edges (there will be 3)
         for (int k = 0; k < 4; k++) {
 
-            vec3 currentEdgeMidpoint;
+            if (faces[j / 4].vertexIndex[(k + 1) % 4] == i && currentEdgeMidpointsMatches < 4) {
 
-            for (int l = 0; l < 3; l++) {
+                vec3 currentEdgeMidpoint;
+                currentEdgeMidpoint.x = ((vertices[faces[j].vertexIndex[(k + 1) % 4]].position.x + vertices[i].position.x) / 2);
+                currentEdgeMidpoint.y = ((vertices[faces[j].vertexIndex[(k + 1) % 4]].position.y + vertices[i].position.y) / 2);
+                currentEdgeMidpoint.z = ((vertices[faces[j].vertexIndex[(k + 1) % 4]].position.z + vertices[i].position.z) / 2);
 
-                for (int m = 0; m < 4; m++) {
-                    
-                    if (
-                        j < faces.size() && vertices[i].neighboringFaceIDs[l] < faces.size() &&
-                        currentEdge < 4
-                    ) {
-                        if (vertices[faces[j].vertexIndex[k]].id == vertices[i].id) {
+                edgeMidpoints[currentEdgeMidpointsMatches] = currentEdgeMidpoint;
 
-                            matches++; 
-
-                            currentEdgeMidpoint.x += (vertices[faces[j].vertexIndex[k]].position.x + vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.x) / 2;
-                            currentEdgeMidpoint.y += (vertices[faces[j].vertexIndex[k]].position.y + vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.y) / 2;
-                            currentEdgeMidpoint.z += (vertices[faces[j].vertexIndex[k]].position.z + vertices[faces[vertices[i].neighboringFaceIDs[l]].vertexIndex[m]].position.z) / 2;
-
-                            if (matches > 3) { 
-
-                                std::cout << std::to_string(matches) << endl;
-
-                                currentEdgeMidpoint.x /= 4;
-                                currentEdgeMidpoint.y /= 4;
-                                currentEdgeMidpoint.z /= 4;
-
-                                edgeMidpoints[currentEdge] = currentEdgeMidpoint;
-
-                                faceMidpoints[currentEdge] = faces[j].midpoint;
-
-                                currentEdge++;
-                            }
-                        }
-                    } else {
-                        
-                        barycenterError = true;
-                    }
-                }
+                currentEdgeMidpointsMatches++;
             }
-        }*/
+        }
     }
+
+    vec3 edgeMidpointsAverage;
+    edgeMidpointsAverage.x = (edgeMidpoints[0].x + edgeMidpoints[1].x + edgeMidpoints[2].x + edgeMidpoints[3].x) / 4;
+    edgeMidpointsAverage.y = (edgeMidpoints[0].y + edgeMidpoints[1].y + edgeMidpoints[2].y + edgeMidpoints[3].y) / 4;
+    edgeMidpointsAverage.z = (edgeMidpoints[0].z + edgeMidpoints[1].z + edgeMidpoints[2].z + edgeMidpoints[3].z) / 4;
+
+    /*if (!(
+        edgeMidpointsAverage.x == 0 &&
+        edgeMidpointsAverage.y == 0 &&
+        edgeMidpointsAverage.z == 0
+        ) &&
+        !(currentEdgeMidpointsMatches < 4)
+    ) {
+
+        threadingMutex.lock();
+        vertices[i].position = edgeMidpointsAverage;
+        threadingMutex.unlock();
+        
+        std::cout << std::to_string(edgeMidpointsAverage.x) << endl;
+    }*/
 
     threadingMutex.lock();
     completeThreads++;
