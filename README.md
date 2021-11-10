@@ -4,13 +4,13 @@
 
 # Current Progress:
 
-![](https://i.imgur.com/9KbUzoB.png?raw=true)
+![](https://i.imgur.com/xBXRA6w.png?raw=true)
 
-*An input mesh generated in blender (left) next to the sudivided version of the mesh using my program (right). The current version still has a few errors when calculating midpoints, so that is what those holes are.*
+*An input mesh generated in blender (left) next to the sudivided version of the mesh using my program (right). The current version still has a few errors when calculating midpoints, so that is what the hole on the bottom left is.*
 
-![](https://i.imgur.com/QQPJJ7q.png?raw=true)
+![](https://i.imgur.com/2Hgt3gv.png?raw=true)
 
-*While open faced meshes with quad topology will not crash the program, they will not be subdivided properly. This input mesh (right) and the output mesh (left) are an example of this misbehavior.*
+*While open faced meshes with quad topology will not crash the program, they will not be subdivided properly. This input mesh (left) and the output mesh (right) are an example of this misbehavior.*
 
 Completed tasks:
 
