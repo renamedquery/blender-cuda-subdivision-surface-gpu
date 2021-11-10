@@ -325,7 +325,7 @@ void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& n
     threadingMutex.unlock();
 }
 
-void mergeByDistance(std::vector<vertex>& vertices, int i, int& completeThreads, int maxVertsAtStart, std::vector<quadFace>& faces, std::map<int, bool>& alreadyMatchedVertices) {
+void mergeByDistance(std::vector<vertex>& vertices, int i, int& completeThreads, int maxVertsAtStart, std::vector<quadFace>& faces) {
 
     if (faces[i].edgeSimplificationMatches < 4) {
 
@@ -358,8 +358,6 @@ void mergeByDistance(std::vector<vertex>& vertices, int i, int& completeThreads,
                             threadingMutex.lock();
                             vertices[faces[i].vertexIndex[k]].position.status = 1;
                             faces[j].vertexIndex[l] = faces[i].vertexIndex[k];
-                            //alreadyMatchedVertices[faces[j].vertexIndex[l]] = true;
-                            //alreadyMatchedVertices[faces[i].vertexIndex[k]] = true;
                             threadingMutex.unlock();
                         }
                     }
@@ -515,18 +513,11 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     faces.clear();
     faces = newFaces;
 
-    std::map<int, bool> alreadyMatchedVertices;
-
-    for (int i = 0; i < vertices.size(); i++) {
-
-        alreadyMatchedVertices.emplace(i, false);
-    }
-
     // neighboring face midpoint gathering
     for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
-        std::thread(mergeByDistance, std::ref(vertices), i, std::ref(completeThreads), maxVertsAtStart, std::ref(faces), std::ref(alreadyMatchedVertices)).detach();
+        std::thread(mergeByDistance, std::ref(vertices), i, std::ref(completeThreads), maxVertsAtStart, std::ref(faces)).detach();
 
         if (i % (100 * 4) == 0) {
 
