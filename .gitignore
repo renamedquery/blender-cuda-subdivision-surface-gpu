@@ -1,0 +1,14 @@
+gpu-subsurf.o
+.vscode
+*.exp
+*.lib
+*.nsys-rep
+linuxcompile.sh
+cudacompile-win64.cmd
+gpu-subsurf.cuda
+testCubeOutput.obj
+*.mtl
+testMeshOutput.obj
+*.o
+*.log
+*.old
