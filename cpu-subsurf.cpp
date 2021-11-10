@@ -321,8 +321,6 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
         //vertices[faces[i].vertexIndex[j]].position = vertexCornerAveragePoint;
         faces[i].edgeVertexIndex[j] = vertexIDs[j];
         threadingMutex.unlock();
-
-        int edgeMatches = 0;
     }
 
     for (int j = 0; j < 4; j++) {
@@ -341,9 +339,9 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
     threadingMutex.unlock();
 }
 
-void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::vector<quadFace>& faces, int i, int& completeThreads, int maxVertsAtStart, std::vector<quadFace>& newFaces) {
+void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::vector<quadFace>& faces, int i, int& completeThreads, int maxVertsAtStart) {
 
-    /*for (int j = 0; j < faces.size(); j++) {
+    for (int j = 0; j < faces.size(); j++) {
 
         int matches = 0;
 
@@ -351,24 +349,29 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
 
             for (int l = 0; l < 4; l++) {
 
-                if (faces[i].vertexIndex[k] == faces[j].vertexIndex[l] && i != j) {
-
+                if (
+                    vertices[faces[i].vertexIndex[k]].position.x == vertices[faces[j].vertexIndex[l]].position.x &&
+                    vertices[faces[i].vertexIndex[k]].position.y == vertices[faces[j].vertexIndex[l]].position.y &&
+                    vertices[faces[i].vertexIndex[k]].position.z == vertices[faces[j].vertexIndex[l]].position.z &&
+                    faces[i].vertexIndex[k] != faces[j].vertexIndex[l]
+                ) {
+                    
                     matches++;
 
-                    if (!(matches < 1)) {
+                    threadingMutex.lock();
+                    bool isApplicableSurface = (!(matches < 1) && vertices[faces[j].vertexIndex[l]].position.status == 0);
 
-                        int mapLookupResult_source = faceEdgeLookup.at(faces[j].edgeVertexIndex[l]);
-                        int mapLookupResult_dest = faceEdgeLookup.at(faces[i].edgeVertexIndex[k]);
-
-                        vertices[mapLookupResult_dest].position = vertices[mapLookupResult_source].position;
-                        faces[j].vertexIndex[l] = mapLookupResult_source;
-
-                        newFaces[(j * 4) + k].vertexIndex[0] = mapLookupResult_source;
+                    if (isApplicableSurface) {
+                        
+                        vertices[faces[i].vertexIndex[k]].position.status = 1;
+                        faces[j].vertexIndex[l] = faces[i].vertexIndex[k];
                     }
+
+                    threadingMutex.unlock();
                 }
             }
         }
-    }*/
+    }
     
     threadingMutex.lock();
     completeThreads++;
@@ -414,7 +417,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
         if (i % 100 == 0) {
 
-            std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] " << std::to_string(((float)i / (float)originalMaxVertID) * 100) << "% DONE" << endl;
+            std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] " << std::to_string(((float)i / (float)faces.size()) * 100) << "% DONE" << endl;
         }
 
         while (workInProgressThreads - completeThreads > MAX_CORES) {
@@ -442,15 +445,18 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     workInProgressThreads = 0;
     threadCountOverrunHalts = 0;
 
+    faces.clear();
+    faces = newFaces;
+
     // neighboring face midpoint gathering
     for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
-        std::thread(catmullClarkFacePointsAndEdgesAverage, std::ref(vertices), std::ref(faces), i, std::ref(completeThreads), maxVertsAtStart, std::ref(newFaces)).detach();
+        std::thread(catmullClarkFacePointsAndEdgesAverage, std::ref(vertices), std::ref(faces), i, std::ref(completeThreads), maxVertsAtStart).detach();
 
         if (i % 100 == 0) {
 
-            std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] " << std::to_string(((float)i / (float)originalMaxVertID) * 100) << "% DONE" << endl;
+            std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] " << std::to_string(((float)i / (float)faces.size()) * 100) << "% DONE" << endl;
         }
 
         while (workInProgressThreads - completeThreads > MAX_CORES) {
@@ -469,9 +475,6 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
         if (workInProgressThreads <= completeThreads) break;
     }
-
-    faces.clear();
-    faces = newFaces;
 
     std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] ALL THREADS ARE DONE" << endl;
 }
