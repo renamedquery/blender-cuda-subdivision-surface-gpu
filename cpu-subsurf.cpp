@@ -305,17 +305,17 @@ void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& n
             neighboringFaceMidpointsAverage.z += faceMidpoints[neighboringFaceIDs[k]].z;
         }
 
-        neighboringFaceMidpointsAverage.x /= 4;
-        neighboringFaceMidpointsAverage.y /= 4;
-        neighboringFaceMidpointsAverage.z /= 4;
+        neighboringFaceMidpointsAverage.x /= matchedPoints;
+        neighboringFaceMidpointsAverage.y /= matchedPoints;
+        neighboringFaceMidpointsAverage.z /= matchedPoints;
 
-        edgeMidpointsAverage.x /= 4;
-        edgeMidpointsAverage.y /= 4;
-        edgeMidpointsAverage.z /= 4;
+        edgeMidpointsAverage.x /= matchedPoints;
+        edgeMidpointsAverage.y /= matchedPoints;
+        edgeMidpointsAverage.z /= matchedPoints;
 
-        finalMidpointAverage.x = (neighboringFaceMidpointsAverage.x + edgeMidpointsAverage.x) / 2.1;
-        finalMidpointAverage.y = (neighboringFaceMidpointsAverage.y + edgeMidpointsAverage.y) / 2.1;
-        finalMidpointAverage.z = (neighboringFaceMidpointsAverage.z + edgeMidpointsAverage.z) / 2.1;
+        finalMidpointAverage.x = (neighboringFaceMidpointsAverage.x + edgeMidpointsAverage.x) / 2;
+        finalMidpointAverage.y = (neighboringFaceMidpointsAverage.y + edgeMidpointsAverage.y) / 2;
+        finalMidpointAverage.z = (neighboringFaceMidpointsAverage.z + edgeMidpointsAverage.z) / 2;
 
         newVertices[faces[i].vertexIndex[j]].position = edgeMidpointsAverage; // find a way to get the finalMidpointAverage to work properly
     }
