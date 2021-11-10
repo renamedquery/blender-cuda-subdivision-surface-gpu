@@ -10,6 +10,7 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <map>
 
 using namespace std;
 
@@ -39,6 +40,7 @@ struct vertex {
 
 struct quadFace {
     int vertexIndex[4];
+    int edgeVertexIndex[4];
     int textureIndex[4];
     int normalIndex[4];
     vec3 midpoint;
@@ -186,26 +188,7 @@ void getMaxVertID(std::vector<vertex> vertices, int& max) {
     max = vertices.size();
 }
 
-// from the "original point" section of https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
-void barycenter(vec3 edgeMidpoint1, vec3 edgeMidpoint2, vec3 edgeMidpoint3, vec3 edgeMidpoint4, vec3 faceMidpoint1, vec3 faceMidpoint2, vec3 faceMidpoint3, vec3 faceMidpoint4, vec3& point) {
-
-    vec3 edgeMidpointAverage;
-    vec3 faceMidpointAverage;
-
-    edgeMidpointAverage.x = (edgeMidpoint1.x + edgeMidpoint2.x + edgeMidpoint3.x + edgeMidpoint4.x) * 4;
-    edgeMidpointAverage.y = (edgeMidpoint1.y + edgeMidpoint2.y + edgeMidpoint3.y + edgeMidpoint4.y) * 4;
-    edgeMidpointAverage.z = (edgeMidpoint1.z + edgeMidpoint2.z + edgeMidpoint3.z + edgeMidpoint4.z) * 4;
-
-    faceMidpointAverage.x = (faceMidpoint1.x + faceMidpoint2.x + faceMidpoint3.x + faceMidpoint3.x) * 4;
-    faceMidpointAverage.y = (faceMidpoint1.y + faceMidpoint2.y + faceMidpoint3.y + faceMidpoint3.y) * 4;
-    faceMidpointAverage.z = (faceMidpoint1.z + faceMidpoint2.z + faceMidpoint3.z + faceMidpoint3.z) * 4;
-
-    point.x = (edgeMidpointAverage.x + faceMidpointAverage.x) / 2;
-    point.y = (edgeMidpointAverage.y + faceMidpointAverage.y) / 2;
-    point.z = (edgeMidpointAverage.z + faceMidpointAverage.z) / 2;
-}
-
-void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<quadFace>& faces, std::vector<quadFace>& newFaces, int maxVertID, int i, int& completeThreads, int maxVertsAtStart) {
+void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<quadFace>& faces, std::vector<quadFace>& newFaces, int maxVertID, int i, int& completeThreads, int maxVertsAtStart, std::map<int, int>& faceEdgeLookup) {
 
     quadFace currentSubdividedFaces[4];
 
@@ -247,9 +230,6 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
     // edge midpoints for this face
     // the mesh will have to be combined into one later on, since this will create duplicate verts
 
-    vec3 edgeAveragePoints[4];
-    vec3 faceAveragePoints[4];
-
     // vertex ids for the edges
 
     int vertexIDs[4];
@@ -257,10 +237,12 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
     for (int j = 0; j < 4; j++) {
 
         vec3 edgeAveragePoint;
+        vec3 faceAveragePoint;
+        vec3 vertexCornerAveragePoint;
+
         vertex edgePoint;
 
         int neighboringFaceIDs[4];
-        int neighboringFaceMidpointIDs[4];
 
         int knownFaceID = i;
 
@@ -285,13 +267,33 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
             }
         }
 
+        for (int k = 0; k < 4; k++) {
+
+            for (int l = 0; l < 4; l++) {
+
+               if (faces[neighboringFaceIDs[k]].vertexIndex[(l + 1) % 4] == faces[i].vertexIndex[j]) {
+
+                   int vertexOffset = 0;
+
+                   vertexCornerAveragePoint.x += vertices[faces[neighboringFaceIDs[k]].vertexIndex[(l + vertexOffset) % 4]].position.x;
+                   vertexCornerAveragePoint.y += vertices[faces[neighboringFaceIDs[k]].vertexIndex[(l + vertexOffset) % 4]].position.y;
+                   vertexCornerAveragePoint.z += vertices[faces[neighboringFaceIDs[k]].vertexIndex[(l + vertexOffset) % 4]].position.z;
+                   break;
+               }
+            }
+        }
+
+        vertexCornerAveragePoint.x /= 4;
+        vertexCornerAveragePoint.y /= 4;
+        vertexCornerAveragePoint.z /= 4;
+
         if (!(matchedPoints < 4)) {
 
             for (int k = 0; k < 4; k++) {
 
-                faceAveragePoints[j].x += faceMidpoints[neighboringFaceIDs[k]].x;
-                faceAveragePoints[j].y += faceMidpoints[neighboringFaceIDs[k]].y;
-                faceAveragePoints[j].z += faceMidpoints[neighboringFaceIDs[k]].z;
+                faceAveragePoint.x += faceMidpoints[neighboringFaceIDs[k]].x;
+                faceAveragePoint.y += faceMidpoints[neighboringFaceIDs[k]].y;
+                faceAveragePoint.z += faceMidpoints[neighboringFaceIDs[k]].z;
             }
         }
 
@@ -307,21 +309,25 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
 
         vertexIDs[j] = edgePoint.id;
 
+        threadingMutex.lock();
+        faceEdgeLookup.insert({vertexIDs[j], faces[i].vertexIndex[j]});
+        threadingMutex.unlock();
+
         currentSubdividedFaces[j].vertexIndex[0] = edgePoint.id;
         currentSubdividedFaces[(j + 1) % 4].vertexIndex[2] = edgePoint.id;
 
-        edgeAveragePoints[j] = edgeAveragePoint;
+        faceAveragePoint.x /= 4;
+        faceAveragePoint.y /= 4;
+        faceAveragePoint.z /= 4;
+
+        threadingMutex.lock();
+        vertices[vertexIDs[j]].position = edgeAveragePoint;
+        vertices[faces[i].vertexIndex[j]].position = vertexCornerAveragePoint;
+        faces[i].edgeVertexIndex[j] = vertexIDs[j];
+        threadingMutex.unlock();
     }
 
     for (int j = 0; j < 4; j++) {
-
-        faceAveragePoints[j].x /= 4;
-        faceAveragePoints[j].y /= 4;
-        faceAveragePoints[j].z /= 4;
-
-        threadingMutex.lock();
-        vertices[vertexIDs[j]].position = edgeAveragePoints[j];
-        threadingMutex.unlock();
 
         threadingMutex.lock();
         newFaces.push_back(currentSubdividedFaces[j]);
@@ -337,52 +343,31 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
     threadingMutex.unlock();
 }
 
-void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::vector<quadFace>& faces, int maxVertsAtStart, int i, int& completeThreads) {
+void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::vector<quadFace>& faces, int i, int& completeThreads, int maxVertsAtStart, std::map<int, int>& faceEdgeLookup) {
 
-    int facesArraySize = faces.size();
+    for (int j = 0; j < faces.size(); j++) {
 
-    vec3 edgeMidpoints[4];
+        int matches = 0;
 
-    int currentEdgeMidpointsMatches = 0;
+        for (int k = 0; k < 4; k ++) {
 
-    for (int j = 0; j < facesArraySize; j++) {
+            for (int l = 0; l < 4; l++) {
 
-        for (int k = 0; k < 4; k++) {
+                if (faces[i].vertexIndex[k] == faces[j].vertexIndex[l] && i != j) {
 
-            if (faces[j / 4].vertexIndex[(k + 1) % 4] == i && currentEdgeMidpointsMatches < 4) {
+                    matches++;
 
-                vec3 currentEdgeMidpoint;
-                currentEdgeMidpoint.x = ((vertices[faces[j].vertexIndex[(k + 1) % 4]].position.x + vertices[i].position.x) / 2);
-                currentEdgeMidpoint.y = ((vertices[faces[j].vertexIndex[(k + 1) % 4]].position.y + vertices[i].position.y) / 2);
-                currentEdgeMidpoint.z = ((vertices[faces[j].vertexIndex[(k + 1) % 4]].position.z + vertices[i].position.z) / 2);
+                    if (!(matches < 1)) {
 
-                edgeMidpoints[currentEdgeMidpointsMatches] = currentEdgeMidpoint;
+                        int mapLookupResult = faceEdgeLookup.at(faces[i].edgeVertexIndex[k]);
 
-                currentEdgeMidpointsMatches++;
+                        vertices[faces[i].edgeVertexIndex[k]].position = vertices[mapLookupResult].position;
+                    }
+                }
             }
         }
     }
-
-    vec3 edgeMidpointsAverage;
-    edgeMidpointsAverage.x = (edgeMidpoints[0].x + edgeMidpoints[1].x + edgeMidpoints[2].x + edgeMidpoints[3].x) / 4;
-    edgeMidpointsAverage.y = (edgeMidpoints[0].y + edgeMidpoints[1].y + edgeMidpoints[2].y + edgeMidpoints[3].y) / 4;
-    edgeMidpointsAverage.z = (edgeMidpoints[0].z + edgeMidpoints[1].z + edgeMidpoints[2].z + edgeMidpoints[3].z) / 4;
-
-    /*if (!(
-        edgeMidpointsAverage.x == 0 &&
-        edgeMidpointsAverage.y == 0 &&
-        edgeMidpointsAverage.z == 0
-        ) &&
-        !(currentEdgeMidpointsMatches < 4)
-    ) {
-
-        threadingMutex.lock();
-        vertices[i].position = edgeMidpointsAverage;
-        threadingMutex.unlock();
-        
-        std::cout << std::to_string(edgeMidpointsAverage.x) << endl;
-    }*/
-
+    
     threadingMutex.lock();
     completeThreads++;
     threadingMutex.unlock();
@@ -398,13 +383,17 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     // face points and edge points
 
     int completeThreads = 0;
-    std::atomic<int> workInProgressThreads(0);
     int threadCountOverrunHalts = 0; // the amount of times the program has to stop spawning new threads to wait for the old ones to fall below the MAX_CORES limit
+
+    
+    std::atomic<int> workInProgressThreads(0);
 
     // each thread adds 5 new face points
     // calculate the total new points
 
     int totalNewVertsToAllocate = faces.size() * 5;
+
+    std::map<int, int> faceEdgeLookup;
 
     std::vector<quadFace> newFaces;
 
@@ -421,7 +410,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
-        std::thread(catmullClarkFacePointsAndEdges, std::ref(vertices), std::ref(faces), std::ref(newFaces), originalMaxVertID, i, std::ref(completeThreads), maxVertsAtStart).detach();
+        std::thread(catmullClarkFacePointsAndEdges, std::ref(vertices), std::ref(faces), std::ref(newFaces), originalMaxVertID, i, std::ref(completeThreads), maxVertsAtStart, std::ref(faceEdgeLookup)).detach();
 
         while (workInProgressThreads - completeThreads > MAX_CORES) {
             
@@ -449,10 +438,10 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     threadCountOverrunHalts = 0;
 
     // neighboring face midpoint gathering
-    for (int i = 0; i < originalMaxVertID; i++) {
+    for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
-        std::thread(catmullClarkFacePointsAndEdgesAverage, std::ref(vertices), std::ref(faces), originalMaxVertID, i, std::ref(completeThreads)).detach();
+        std::thread(catmullClarkFacePointsAndEdgesAverage, std::ref(vertices), std::ref(faces), i, std::ref(completeThreads), maxVertsAtStart, std::ref(faceEdgeLookup)).detach();
 
         if (i % 100 == 0) {
 
