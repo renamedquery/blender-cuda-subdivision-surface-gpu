@@ -258,7 +258,6 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
 
                 if (faces[i].vertexIndex[j] == faces[k].vertexIndex[l]) {
                     
-                    //std::cout << std::to_string(matchedPoints) << endl;
                     neighboringFaceIDs[matchedPoints] = k;
                     matchedPoints++;
                 }
@@ -384,36 +383,6 @@ void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& n
 
         newVertices[faces[i].vertexIndex[j]].position = finalMidpointAverage;
     }
-
-    /*for (int j = 0; j < faces.size(); j++) {
-
-        for (int k = 0; k < 4; k++) {
-
-            for (int l = 0; l < 4; l++) {
-
-                if (faces[i].vertexIndex[k] == faces[j].vertexIndex[l] && i != j) {
-
-                    matchedPoints++;
-
-                    neighboringFaceAverages.x += faceMidpoints[j].x;
-                    neighboringFaceAverages.y += faceMidpoints[j].y;
-                    neighboringFaceAverages.z += faceMidpoints[j].z;
-
-                    if (!(matchedPoints < 4)) {
-
-                        neighboringFaceAverages.x /= 4;
-                        neighboringFaceAverages.y /= 4;
-                        neighboringFaceAverages.z /= 4;
-
-                        newVertices[faces[i].vertexIndex[k]].position = neighboringFaceAverages;
-
-                        matchedPoints = 0;
-                        l = 4;
-                    }
-                }
-            }
-        }
-    }*/
 
     threadingMutex.lock();
     completeThreads++;
