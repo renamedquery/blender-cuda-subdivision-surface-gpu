@@ -337,7 +337,11 @@ void mergeByDistance(std::vector<vertex>& vertices, int i, int& completeThreads,
 
             for (int k = 0; k < 4; k ++) {
 
+                if (!(faces[j].edgeSimplificationMatches < 4)) continue;
+
                 for (int l = 0; l < 4; l++) {
+
+                    if (!(faces[j].edgeSimplificationMatches < 4)) continue;
 
                     if (
                         vertices[faces[i].vertexIndex[k]].position.x == vertices[faces[j].vertexIndex[l]].position.x &&
