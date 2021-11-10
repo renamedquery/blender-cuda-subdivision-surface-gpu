@@ -14,8 +14,6 @@
 
 using namespace std;
 
-std::mutex threadingMutex;
-
 struct vec3 {
     double x = 0;
     double y = 0;
@@ -48,6 +46,14 @@ struct quadFace {
     int edgeSimplificationMatches = 0;
 };
 
+__shared__ int faceID;
+
+__shared__ vertex objVertices[];
+__shared__ quadFace objFaces[];
+__shared__ quadFace newFaces[];
+__shared__ vec3 faceMidpoints[];
+__shared__ int localFaceMidpointVertIDs[];
+
 std::vector<std::string> stringSplit(std::string string, char delimiter) {
 
     std::vector<std::string> splitString;
@@ -71,10 +77,7 @@ std::vector<std::string> stringSplit(std::string string, char delimiter) {
     return splitString;
 }
 
-// can be gpu accelerated at least a little bit since it requires many lines to be read
-// for a simple cube there will be no speedup, but for a mesh with millions of verts it will be faster
 // currently only reads verts, faces and edges are todo
-__global__
 void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFace>& faces) {
     
     std::ifstream objFile(path);
@@ -179,17 +182,10 @@ void writeObj(std::string path, std::vector<vertex> vertices, std::vector<quadFa
     objFile.close();
 }
 
-void getVertById(std::vector<vertex> vertices, int id, vertex& vert) {
+__global__
+void catmullClarkFacePointsAndEdges(int facesSize, int maxVertsAtStart) {
 
-   vert = vertices[id];
-}
-
-void getMaxVertID(std::vector<vertex> vertices, int& max) {
-
-    max = vertices.size();
-}
-
-void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<quadFace>& faces, std::vector<quadFace>& newFaces, int maxVertID, int i, int& completeThreads, int maxVertsAtStart, std::vector<vec3>& faceMidpoints, std::vector<int>& localFaceMidpointVertIDs) {
+    int i = threadIdx.x;
 
     quadFace currentSubdividedFaces[4];
     
@@ -212,7 +208,6 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
 
         int knownFaceID = i;
 
-        bool faceAverageAlreadyCalculated = false;
         int matchedPoints = 0; // the amount of points per face that have been matched
 
         // find neighboring face
@@ -220,11 +215,11 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
         // exclude the current face from the search, therefore the only other possible face containing both points is the desired face
         // this will be optimized later, ignore the 2323978423 nested loops
         
-        for (int k = 0; k < faces.size(); k++) {
+        for (int k = 0; k < facesSize; k++) {
 
             for (int l = 0; l < 4; l++) {
 
-                if (faces[i].vertexIndex[j] == faces[k].vertexIndex[l]) {
+                if (objFaces[i].vertexIndex[j] == objFaces[k].vertexIndex[l]) {
                     
                     neighboringFaceIDs[matchedPoints] = k;
                     matchedPoints++;
@@ -233,11 +228,11 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
         }
 
 
-        edgeAveragePoint.x = (vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.x + vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.x) / 2;
-        edgeAveragePoint.y = (vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.y + vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.y) / 2;
-        edgeAveragePoint.z = (vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.z + vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.z) / 2;
+        edgeAveragePoint.x = (objVertices[objFaces[knownFaceID].vertexIndex[(j + 1) % 4]].position.x + objVertices[objFaces[knownFaceID].vertexIndex[(j + 0) % 4]].position.x) / 2;
+        edgeAveragePoint.y = (objVertices[objFaces[knownFaceID].vertexIndex[(j + 1) % 4]].position.y + objVertices[objFaces[knownFaceID].vertexIndex[(j + 0) % 4]].position.y) / 2;
+        edgeAveragePoint.z = (objVertices[objFaces[knownFaceID].vertexIndex[(j + 1) % 4]].position.z + objVertices[objFaces[knownFaceID].vertexIndex[(j + 0) % 4]].position.z) / 2;
 
-        currentSubdividedFaces[j].vertexIndex[1] = faces[knownFaceID].vertexIndex[(j + 0) % 4];
+        currentSubdividedFaces[j].vertexIndex[1] = objFaces[knownFaceID].vertexIndex[(j + 0) % 4];
 
         // find the averages for the face points
 
@@ -248,28 +243,20 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
         currentSubdividedFaces[j].vertexIndex[0] = edgePoint.id;
         currentSubdividedFaces[(j + 1) % 4].vertexIndex[2] = edgePoint.id;
 
-        threadingMutex.lock();
-        vertices[vertexIDs[j]].position = edgeAveragePoint;
-        faces[i].edgeVertexIndex[j] = vertexIDs[j];
-        threadingMutex.unlock();
+        objVertices[vertexIDs[j]].position = edgeAveragePoint;
+        objFaces[i].edgeVertexIndex[j] = vertexIDs[j];
     }
 
     for (int j = 0; j < 4; j++) {
 
-        threadingMutex.lock();
-        newFaces.push_back(currentSubdividedFaces[j]);
-        threadingMutex.unlock();
+        newFaces[faceID] = currentSubdividedFaces[j];
+        faceID++;
     }
 
-    threadingMutex.lock();
-    vertices[localFaceMidpointVertIDs[i]].position = faceMidpoints[i];
-    threadingMutex.unlock();
-
-    threadingMutex.lock();
-    completeThreads++;
-    threadingMutex.unlock();
+    objVertices[localFaceMidpointVertIDs[i]].position = faceMidpoints[i];
 }
-
+/*
+__global__
 void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& newVertices, std::vector<quadFace>& faces, int i, int& completeThreads, int maxVertsAtStart, std::vector<vec3>& faceMidpoints, std::vector<int>& localFaceMidpointVertIDs) {
 
     for (int j = 0; j < 4; j++) {
@@ -325,6 +312,7 @@ void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& n
     threadingMutex.unlock();
 }
 
+__global__
 void mergeByDistance(std::vector<vertex>& vertices, int i, int& completeThreads, std::vector<quadFace>& faces) {
 
     if (faces[i].edgeSimplificationMatches < 4) {
@@ -374,12 +362,81 @@ void mergeByDistance(std::vector<vertex>& vertices, int i, int& completeThreads,
     completeThreads++;
     threadingMutex.unlock();
 }
+*/
+int main (void) {
+    
+    std::string objPath = "./testMesh.obj";
+    std::string objOutputPath = "./testMeshOutput.obj";
 
-// adapted from the instructions at https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface
-// should be gpu accelerated
-//__global__
-void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& faces, const int MAX_CORES, int maxVertsAtStart) {
+    std::vector<vertex> vertices;
+    std::vector<quadFace> faces;
 
+    const int blockSize = 256;
+
+    readObj(objPath, vertices, faces);
+
+    int facesSize = faces.size();
+    int verticesSize = vertices.size();
+
+    vertex *objVertices = new vertex[verticesSize];
+    quadFace *objFaces = new quadFace[facesSize];
+    vec3 *faceMidpoints = new vec3[facesSize];
+    int *localFaceMidpointVertIDs = new int[facesSize];
+    quadFace *newFaces = new quadFace[facesSize * 4];
+
+    for (int j = 0; j < verticesSize; j++) {
+
+        objVertices[j] = vertices[j];
+    } 
+
+    for (int j = 0; j < facesSize; j++) {
+
+        objFaces[j] = faces[j];
+    }
+
+    int faceID = facesSize;
+
+    for (int j = 0; j < facesSize; j++) {
+
+        vec3 faceAverageMiddlePoint;
+
+        faceAverageMiddlePoint.x = (
+            (objVertices[objFaces[j].vertexIndex[0]].position.x) + 
+            (objVertices[objFaces[j].vertexIndex[1]].position.x) + 
+            (objVertices[objFaces[j].vertexIndex[2]].position.x) + 
+            (objVertices[objFaces[j].vertexIndex[3]].position.x)
+        ) / 4;
+
+        faceAverageMiddlePoint.y = (
+            (objVertices[objFaces[j].vertexIndex[0]].position.y) + 
+            (objVertices[objFaces[j].vertexIndex[1]].position.y) + 
+            (objVertices[objFaces[j].vertexIndex[2]].position.y) + 
+            (objVertices[objFaces[j].vertexIndex[3]].position.y)
+        ) / 4;
+
+        faceAverageMiddlePoint.z = (
+            (objVertices[objFaces[j].vertexIndex[0]].position.z) + 
+            (objVertices[objFaces[j].vertexIndex[1]].position.z) + 
+            (objVertices[objFaces[j].vertexIndex[2]].position.z) + 
+            (objVertices[objFaces[j].vertexIndex[3]].position.z)
+        ) / 4;
+
+        faceMidpoints[j] = faceAverageMiddlePoint;
+        localFaceMidpointVertIDs[j] = (verticesSize + (j * 5) + 0);
+    }
+
+    catmullClarkFacePointsAndEdges<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(facesSize, verticesSize);
+
+    cudaDeviceSynchronize();
+
+    averageCornerVertices<<<(faceSize + blockSize - 1) / blockSize, blockSize>>>();
+
+    cudaDeviceSynchronize();
+
+    //std::thread(averageCornerVertices, std::ref(vertices), std::ref(newVertices), std::ref(faces), i, std::ref(completeThreads), maxVertsAtStart, std::ref(faceMidpoints), std::ref(localFaceMidpointVertIDs)).detach();
+
+    /*
+    //catmullClarkSubdiv(objVertices, objFaces, MAX_CORES, objFaces.size());
     const int originalMaxVertID = maxVertsAtStart; // for finding the original non-interpolated verts
 
     // face points and edge points
@@ -482,10 +539,10 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
         workInProgressThreads++;
         std::thread(averageCornerVertices, std::ref(vertices), std::ref(newVertices), std::ref(faces), i, std::ref(completeThreads), maxVertsAtStart, std::ref(faceMidpoints), std::ref(localFaceMidpointVertIDs)).detach();
 
-        if (i % 100 == 0) {
+        //if (i % 100 == 0) {
 
-            std::cout << "[CPU] [averageCornerVertices()] " << std::to_string(((float)i / (float)faces.size()) * 100) << "% DONE" << endl;
-        }
+            //std::cout << "[CPU] [averageCornerVertices()] " << std::to_string(((float)i / (float)faces.size()) * 100) << "% DONE" << endl;
+        //}
 
         while (workInProgressThreads - completeThreads > MAX_CORES) {
             
@@ -495,9 +552,9 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
         }
     }
 
-    std::cout << "[CPU] [averageCornerVertices()] THREAD SPAWNING IS DONE" << endl;
-    std::cout << "[CPU] [averageCornerVertices()] threadCountOverrunHalts=" << std::to_string(threadCountOverrunHalts) << endl;
-    std::cout << "[CPU] [averageCornerVertices()] WAITING FOR THREADS TO FINISH" << endl;
+    //std::cout << "[CPU] [averageCornerVertices()] THREAD SPAWNING IS DONE" << endl;
+    //std::cout << "[CPU] [averageCornerVertices()] threadCountOverrunHalts=" << std::to_string(threadCountOverrunHalts) << endl;
+    //std::cout << "[CPU] [averageCornerVertices()] WAITING FOR THREADS TO FINISH" << endl;
 
     while (true) {
 
@@ -506,9 +563,9 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
     vertices = newVertices;
 
-    std::cout << "[CPU] [averageCornerVertices()] ALL THREADS ARE DONE" << endl;
+    //std::cout << "[CPU] [averageCornerVertices()] ALL THREADS ARE DONE" << endl;
 
-    std::cout << "[CPU] [mergeByDistance()] SPAWNING " << originalMaxVertID << " THREADS" << endl;
+    //std::cout << "[CPU] [mergeByDistance()] SPAWNING " << originalMaxVertID << " THREADS" << endl;
 
     completeThreads = 0;
     workInProgressThreads = 0;
@@ -521,12 +578,12 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
-        std::thread(mergeByDistance, std::ref(vertices), i, std::ref(completeThreads), std::ref(faces)).detach();
+        //std::thread(mergeByDistance, std::ref(vertices), i, std::ref(completeThreads), std::ref(faces)).detach();
 
-        if (i % (100 * 4) == 0) {
+        //if (i % (100 * 4) == 0) {
 
-            std::cout << "[CPU] [mergeByDistance()] " << std::to_string(((float)i / (float)faces.size()) * 100) << "% DONE" << endl;
-        }
+            //std::cout << "[CPU] [mergeByDistance()] " << std::to_string(((float)i / (float)faces.size()) * 100) << "% DONE" << endl;
+        //}
 
         while (workInProgressThreads - completeThreads > MAX_CORES) {
             
@@ -536,86 +593,24 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
         }
     }
 
-    std::cout << "[CPU] [mergeByDistance()] THREAD SPAWNING IS DONE" << endl;
-    std::cout << "[CPU] [mergeByDistance()] threadCountOverrunHalts=" << std::to_string(threadCountOverrunHalts) << endl;
-    std::cout << "[CPU] [mergeByDistance()] WAITING FOR THREADS TO FINISH" << endl;
+    //std::cout << "[CPU] [mergeByDistance()] THREAD SPAWNING IS DONE" << endl;
+    //std::cout << "[CPU] [mergeByDistance()] threadCountOverrunHalts=" << std::to_string(threadCountOverrunHalts) << endl;
+    //std::cout << "[CPU] [mergeByDistance()] WAITING FOR THREADS TO FINISH" << endl;
 
     while (true) {
 
         if (workInProgressThreads <= completeThreads) break;
     }
 
-    std::cout << "[CPU] [mergeByDistance()] ALL THREADS ARE DONE" << endl;
-}
-
-void printVerts(std::vector<vertex> vertices){
-
-    for (int i = 0; i < vertices.size(); i++) {
-
-        std::cout << "[CPU] [" << std::to_string(vertices[i].id) << "] " << "V  : " << std::to_string(vertices[i].position.x) << ", " << std::to_string(vertices[i].position.y) << ", " << std::to_string(vertices[i].position.z) << endl;
-        std::cout << "[CPU] [" << std::to_string(vertices[i].id) << "] " << "VN : " << std::to_string(vertices[i].normal.x) << ", " << std::to_string(vertices[i].normal.y) << ", " << std::to_string(vertices[i].normal.z) << endl;
-    }
-}
-
-void printFaces(std::vector<quadFace> faces, std::vector<vertex> vertices) {
-
-    for (int i = 0; i < faces.size(); i++) {
-
-        // face IDs
-        std::cout << "[CPU] Face Vec IDS = ";
-
-        for (int j = 0; j < 4; j++) {
-
-            std::cout << "[V = " << faces[i].vertexIndex[j] << "][VT = " << faces[i].textureIndex[j] << "][VN = " << faces[i].normalIndex[j] << "] ";
-        }
-
-        std::cout << endl;
-
-        // face ID values
-        std::cout << "[CPU] Vec COORDS   = ";
-
-        for (int j = 0; j < 4; j++) {
-
-            std::cout << "[" << vertices[faces[i].vertexIndex[j]].position.x << ", " << vertices[faces[i].vertexIndex[j]].position.y << ", " << vertices[faces[i].vertexIndex[j]].position.z << "] ";
-        }
-
-        std::cout << endl;
-    }
-}
-
-int main (void) {
-
-    const int MAX_CORES = std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency();
-
-    std::cout << "[CPU] USING MAX_CORES=" << std::to_string(MAX_CORES) << endl;
-    
-    std::string objPath = "./testMesh.obj";
-    std::string objOutputPath = "./testMeshOutput.obj";
-    std::vector<vertex> objVertices;
-    std::vector<quadFace> objFaces;
-
-    readObj(objPath, objVertices, objFaces);
-
-    std::string vertCount;
-    std::string faceCount;
+    //std::cout << "[CPU] [mergeByDistance()] ALL THREADS ARE DONE" << endl;
 
     vertCount = std::to_string(objVertices.size());
     faceCount = std::to_string(objFaces.size());
-
-    // debugging stuff
-    std::cout << "[CPU] FINISHED PARSING \"" << objPath << "\" WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
-
-    catmullClarkSubdiv(objVertices, objFaces, MAX_CORES, objFaces.size());
-
-    vertCount = std::to_string(objVertices.size());
-    faceCount = std::to_string(objFaces.size());
-
-    std::cout << "[CPU] FINISHED SUBDIVIDING \"" << objPath << "\" WITH " << vertCount << " VERTS AND " << faceCount << " FACES" << endl;
 
     writeObj(objOutputPath, objVertices, objFaces);
 
     //printVerts(objVertices);
-    //printFaces(objFaces, objVertices);
+    //printFaces(objFaces, objVertices);*/
 
     return 0;
 }
