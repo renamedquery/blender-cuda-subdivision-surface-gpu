@@ -188,42 +188,9 @@ void getMaxVertID(std::vector<vertex> vertices, int& max) {
     max = vertices.size();
 }
 
-void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<quadFace>& faces, std::vector<quadFace>& newFaces, int maxVertID, int i, int& completeThreads, int maxVertsAtStart) {
+void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<quadFace>& faces, std::vector<quadFace>& newFaces, int maxVertID, int i, int& completeThreads, int maxVertsAtStart, std::vector<vec3>& faceMidpoints, std::vector<int>& localFaceMidpointVertIDs) {
 
     quadFace currentSubdividedFaces[4];
-
-    // face midpoint
-    std::vector<vec3> faceMidpoints;
-    std::vector<int> localFaceMidpointVertIDs;
-
-    for (int j = 0; j < faces.size(); j++) {
-
-        vec3 faceAverageMiddlePoint;
-
-        faceAverageMiddlePoint.x = (
-            (vertices[faces[j].vertexIndex[0]].position.x) + 
-            (vertices[faces[j].vertexIndex[1]].position.x) + 
-            (vertices[faces[j].vertexIndex[2]].position.x) + 
-            (vertices[faces[j].vertexIndex[3]].position.x)
-        ) / 4;
-
-        faceAverageMiddlePoint.y = (
-            (vertices[faces[j].vertexIndex[0]].position.y) + 
-            (vertices[faces[j].vertexIndex[1]].position.y) + 
-            (vertices[faces[j].vertexIndex[2]].position.y) + 
-            (vertices[faces[j].vertexIndex[3]].position.y)
-        ) / 4;
-
-        faceAverageMiddlePoint.z = (
-            (vertices[faces[j].vertexIndex[0]].position.z) + 
-            (vertices[faces[j].vertexIndex[1]].position.z) + 
-            (vertices[faces[j].vertexIndex[2]].position.z) + 
-            (vertices[faces[j].vertexIndex[3]].position.z)
-        ) / 4;
-
-        faceMidpoints.push_back(faceAverageMiddlePoint);
-        localFaceMidpointVertIDs.push_back(maxVertsAtStart + (j * 5) + 0);
-    }
     
     for (int j = 0; j < 4; j++) currentSubdividedFaces[j].vertexIndex[3] = localFaceMidpointVertIDs[i]; // face point [0] will be the center of the subdivided face
 
@@ -302,39 +269,7 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
     threadingMutex.unlock();
 }
 
-void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& newVertices, std::vector<quadFace>& faces, int i, int& completeThreads, int maxVertsAtStart) {
-
-    std::vector<vec3> faceMidpoints;
-    std::vector<int> localFaceMidpointVertIDs;
-
-    for (int j = 0; j < faces.size(); j++) {
-
-        vec3 faceAverageMiddlePoint;
-
-        faceAverageMiddlePoint.x = (
-            (vertices[faces[j].vertexIndex[0]].position.x) + 
-            (vertices[faces[j].vertexIndex[1]].position.x) + 
-            (vertices[faces[j].vertexIndex[2]].position.x) + 
-            (vertices[faces[j].vertexIndex[3]].position.x)
-        ) / 4;
-
-        faceAverageMiddlePoint.y = (
-            (vertices[faces[j].vertexIndex[0]].position.y) + 
-            (vertices[faces[j].vertexIndex[1]].position.y) + 
-            (vertices[faces[j].vertexIndex[2]].position.y) + 
-            (vertices[faces[j].vertexIndex[3]].position.y)
-        ) / 4;
-
-        faceAverageMiddlePoint.z = (
-            (vertices[faces[j].vertexIndex[0]].position.z) + 
-            (vertices[faces[j].vertexIndex[1]].position.z) + 
-            (vertices[faces[j].vertexIndex[2]].position.z) + 
-            (vertices[faces[j].vertexIndex[3]].position.z)
-        ) / 4;
-
-        faceMidpoints.push_back(faceAverageMiddlePoint);
-        localFaceMidpointVertIDs.push_back(maxVertsAtStart + (j * 5) + 0);
-    }
+void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& newVertices, std::vector<quadFace>& faces, int i, int& completeThreads, int maxVertsAtStart, std::vector<vec3>& faceMidpoints, std::vector<int>& localFaceMidpointVertIDs) {
 
     for (int j = 0; j < 4; j++) {
 
@@ -381,7 +316,7 @@ void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& n
         finalMidpointAverage.y = (neighboringFaceMidpointsAverage.y + edgeMidpointsAverage.y) / 2.1;
         finalMidpointAverage.z = (neighboringFaceMidpointsAverage.z + edgeMidpointsAverage.z) / 2.1;
 
-        newVertices[faces[i].vertexIndex[j]].position = finalMidpointAverage;
+        newVertices[faces[i].vertexIndex[j]].position = edgeMidpointsAverage; // find a way to get the finalMidpointAverage to work properly
     }
 
     threadingMutex.lock();
@@ -389,8 +324,8 @@ void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& n
     threadingMutex.unlock();
 }
 
-void mergeByDistance(std::vector<vertex>& vertices, std::vector<quadFace>& faces, int i, int& completeThreads, int maxVertsAtStart) {
-
+void mergeByDistance(std::vector<vertex>& vertices, int i, int& completeThreads, int maxVertsAtStart, std::vector<quadFace>& faces) {
+    
     for (int j = 0; j < faces.size(); j++) {
 
         int matches = 0;
@@ -422,7 +357,7 @@ void mergeByDistance(std::vector<vertex>& vertices, std::vector<quadFace>& faces
             }
         }
     }
-    
+
     threadingMutex.lock();
     completeThreads++;
     threadingMutex.unlock();
@@ -460,10 +395,42 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
     std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] SPAWNING " << faces.size() << " THREADS" << endl;
 
+    std::vector<vec3> faceMidpoints;
+    std::vector<int> localFaceMidpointVertIDs;
+
+    for (int j = 0; j < faces.size(); j++) {
+
+        vec3 faceAverageMiddlePoint;
+
+        faceAverageMiddlePoint.x = (
+            (vertices[faces[j].vertexIndex[0]].position.x) + 
+            (vertices[faces[j].vertexIndex[1]].position.x) + 
+            (vertices[faces[j].vertexIndex[2]].position.x) + 
+            (vertices[faces[j].vertexIndex[3]].position.x)
+        ) / 4;
+
+        faceAverageMiddlePoint.y = (
+            (vertices[faces[j].vertexIndex[0]].position.y) + 
+            (vertices[faces[j].vertexIndex[1]].position.y) + 
+            (vertices[faces[j].vertexIndex[2]].position.y) + 
+            (vertices[faces[j].vertexIndex[3]].position.y)
+        ) / 4;
+
+        faceAverageMiddlePoint.z = (
+            (vertices[faces[j].vertexIndex[0]].position.z) + 
+            (vertices[faces[j].vertexIndex[1]].position.z) + 
+            (vertices[faces[j].vertexIndex[2]].position.z) + 
+            (vertices[faces[j].vertexIndex[3]].position.z)
+        ) / 4;
+
+        faceMidpoints.push_back(faceAverageMiddlePoint);
+        localFaceMidpointVertIDs.push_back(maxVertsAtStart + (j * 5) + 0);
+    }
+
     for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
-        std::thread(catmullClarkFacePointsAndEdges, std::ref(vertices), std::ref(faces), std::ref(newFaces), originalMaxVertID, i, std::ref(completeThreads), maxVertsAtStart).detach();
+        std::thread(catmullClarkFacePointsAndEdges, std::ref(vertices), std::ref(faces), std::ref(newFaces), originalMaxVertID, i, std::ref(completeThreads), maxVertsAtStart, std::ref(faceMidpoints), std::ref(localFaceMidpointVertIDs)).detach();
 
         if (i % 100 == 0) {
 
@@ -501,7 +468,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
-        std::thread(averageCornerVertices, std::ref(vertices), std::ref(newVertices), std::ref(faces), i, std::ref(completeThreads), maxVertsAtStart).detach();
+        std::thread(averageCornerVertices, std::ref(vertices), std::ref(newVertices), std::ref(faces), i, std::ref(completeThreads), maxVertsAtStart, std::ref(faceMidpoints), std::ref(localFaceMidpointVertIDs)).detach();
 
         if (i % 100 == 0) {
 
@@ -542,9 +509,9 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
-        std::thread(mergeByDistance, std::ref(vertices), std::ref(faces), i, std::ref(completeThreads), maxVertsAtStart).detach();
+        std::thread(mergeByDistance, std::ref(vertices), i, std::ref(completeThreads), maxVertsAtStart, std::ref(faces)).detach();
 
-        if (i % 100 == 0) {
+        if (i % (100 * 4) == 0) {
 
             std::cout << "[CPU] [mergeByDistance()] " << std::to_string(((float)i / (float)faces.size()) * 100) << "% DONE" << endl;
         }
