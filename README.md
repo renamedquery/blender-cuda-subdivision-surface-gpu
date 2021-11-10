@@ -4,13 +4,9 @@
 
 # Current Progress:
 
-![](https://i.imgur.com/066mO1v.png?raw=true)
+![](https://i.imgur.com/9KbUzoB.png?raw=true)
 
-*An input mesh generated in blender (left) next to the sudivided version of the mesh using my program (right).*
-
-![](https://i.imgur.com/OUVHWyt.png?raw=true)
-
-*Un-subdivided point cloud (left) next to a subdivided point cloud (right) that was generated using my program (with their faces removed).*
+*An input mesh generated in blender (left) next to the sudivided version of the mesh using my program (right). The current version still has a few errors when calculating midpoints, so that is what those holes are.*
 
 Completed tasks:
 
@@ -20,19 +16,19 @@ Completed tasks:
 
 - Basic Catmull Clark subdivision algorithm.
 
-- CPU Multithreading is done.
+- CPU Multithreading.
+
+- Merge by distance algorithm.
 
 TODO:
-
-- \[PRIORITY] Fix verts that go missing caused by incomplete threads.
 
 - Read normals and texture coordinates from `.obj` files.
 
 - Write normals, texture coordinates, and faces to `.obj` files.
 
-- Fix the wonky jittered subdivision verts.
-
 - Accelerate the algorithm by using CUDA.
+
+- Fix broken vertices that cause holes.
 
 # Compiling Instructions:
 
