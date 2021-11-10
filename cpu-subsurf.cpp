@@ -343,6 +343,8 @@ void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& n
         int neighboringFaceIDs[4];
 
         vec3 neighboringFaceMidpointsAverage;
+        vec3 edgeMidpointsAverage;
+        vec3 finalMidpointAverage;
 
         for (int k = 0; k < faces.size(); k++) {
 
@@ -351,6 +353,10 @@ void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& n
                 if (faces[i].vertexIndex[j] == faces[k].vertexIndex[l]) {
 
                     neighboringFaceIDs[matchedPoints] = k;
+
+                    edgeMidpointsAverage.x += (vertices[faces[i].vertexIndex[j]].position.x + vertices[faces[k].vertexIndex[(l + 1) % 4]].position.x) / 2;
+                    edgeMidpointsAverage.y += (vertices[faces[i].vertexIndex[j]].position.y + vertices[faces[k].vertexIndex[(l + 1) % 4]].position.y) / 2;
+                    edgeMidpointsAverage.z += (vertices[faces[i].vertexIndex[j]].position.z + vertices[faces[k].vertexIndex[(l + 1) % 4]].position.z) / 2;
 
                     matchedPoints++;
                 }
@@ -368,7 +374,15 @@ void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& n
         neighboringFaceMidpointsAverage.y /= 4;
         neighboringFaceMidpointsAverage.z /= 4;
 
-        newVertices[faces[i].vertexIndex[j]].position = neighboringFaceMidpointsAverage;
+        edgeMidpointsAverage.x /= 4;
+        edgeMidpointsAverage.y /= 4;
+        edgeMidpointsAverage.z /= 4;
+
+        finalMidpointAverage.x = (neighboringFaceMidpointsAverage.x + edgeMidpointsAverage.x) / 2;
+        finalMidpointAverage.y = (neighboringFaceMidpointsAverage.y + edgeMidpointsAverage.y) / 2;
+        finalMidpointAverage.z = (neighboringFaceMidpointsAverage.z + edgeMidpointsAverage.z) / 2;
+
+        newVertices[faces[i].vertexIndex[j]].position = finalMidpointAverage;
     }
 
     /*for (int j = 0; j < faces.size(); j++) {
