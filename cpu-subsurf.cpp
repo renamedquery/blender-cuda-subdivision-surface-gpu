@@ -378,9 +378,9 @@ void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& n
         edgeMidpointsAverage.y /= 4;
         edgeMidpointsAverage.z /= 4;
 
-        finalMidpointAverage.x = (neighboringFaceMidpointsAverage.x + edgeMidpointsAverage.x) / 2;
-        finalMidpointAverage.y = (neighboringFaceMidpointsAverage.y + edgeMidpointsAverage.y) / 2;
-        finalMidpointAverage.z = (neighboringFaceMidpointsAverage.z + edgeMidpointsAverage.z) / 2;
+        finalMidpointAverage.x = (neighboringFaceMidpointsAverage.x + edgeMidpointsAverage.x) / 2.1;
+        finalMidpointAverage.y = (neighboringFaceMidpointsAverage.y + edgeMidpointsAverage.y) / 2.1;
+        finalMidpointAverage.z = (neighboringFaceMidpointsAverage.z + edgeMidpointsAverage.z) / 2.1;
 
         newVertices[faces[i].vertexIndex[j]].position = finalMidpointAverage;
     }
