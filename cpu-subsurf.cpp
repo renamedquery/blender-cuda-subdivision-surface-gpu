@@ -339,7 +339,7 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
     threadingMutex.unlock();
 }
 
-void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::vector<quadFace>& faces, int i, int& completeThreads, int maxVertsAtStart) {
+void mergeByDistance(std::vector<vertex>& vertices, std::vector<quadFace>& faces, int i, int& completeThreads, int maxVertsAtStart) {
 
     for (int j = 0; j < faces.size(); j++) {
 
@@ -439,7 +439,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
     std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] ALL THREADS ARE DONE" << endl;
 
-    std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] SPAWNING " << originalMaxVertID << " THREADS" << endl;
+    std::cout << "[CPU] [mergeByDistance()] SPAWNING " << originalMaxVertID << " THREADS" << endl;
 
     completeThreads = 0;
     workInProgressThreads = 0;
@@ -452,11 +452,11 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
-        std::thread(catmullClarkFacePointsAndEdgesAverage, std::ref(vertices), std::ref(faces), i, std::ref(completeThreads), maxVertsAtStart).detach();
+        std::thread(mergeByDistance, std::ref(vertices), std::ref(faces), i, std::ref(completeThreads), maxVertsAtStart).detach();
 
         if (i % 100 == 0) {
 
-            std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] " << std::to_string(((float)i / (float)faces.size()) * 100) << "% DONE" << endl;
+            std::cout << "[CPU] [mergeByDistance()] " << std::to_string(((float)i / (float)faces.size()) * 100) << "% DONE" << endl;
         }
 
         while (workInProgressThreads - completeThreads > MAX_CORES) {
@@ -467,16 +467,16 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
         }
     }
 
-    std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] THREAD SPAWNING IS DONE" << endl;
-    std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] threadCountOverrunHalts=" << std::to_string(threadCountOverrunHalts) << endl;
-    std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] WAITING FOR THREADS TO FINISH" << endl;
+    std::cout << "[CPU] [mergeByDistance()] THREAD SPAWNING IS DONE" << endl;
+    std::cout << "[CPU] [mergeByDistance()] threadCountOverrunHalts=" << std::to_string(threadCountOverrunHalts) << endl;
+    std::cout << "[CPU] [mergeByDistance()] WAITING FOR THREADS TO FINISH" << endl;
 
     while (true) {
 
         if (workInProgressThreads <= completeThreads) break;
     }
 
-    std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] ALL THREADS ARE DONE" << endl;
+    std::cout << "[CPU] [mergeByDistance()] ALL THREADS ARE DONE" << endl;
 }
 
 void printVerts(std::vector<vertex> vertices){
