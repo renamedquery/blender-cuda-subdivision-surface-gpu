@@ -45,6 +45,7 @@ struct quadFace {
     int normalIndex[4];
     vec3 midpoint;
     int midpointVertID;
+    int edgeSimplificationMatches = 0;
 };
 
 std::vector<std::string> stringSplit(std::string string, char delimiter) {
@@ -324,35 +325,44 @@ void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& n
     threadingMutex.unlock();
 }
 
-void mergeByDistance(std::vector<vertex>& vertices, int i, int& completeThreads, int maxVertsAtStart, std::vector<quadFace>& faces) {
-    
-    for (int j = 0; j < faces.size(); j++) {
+void mergeByDistance(std::vector<vertex>& vertices, int i, int& completeThreads, int maxVertsAtStart, std::vector<quadFace>& faces, std::map<int, bool>& alreadyMatchedVertices) {
 
-        int matches = 0;
+    if (faces[i].edgeSimplificationMatches < 4) {
 
-        for (int k = 0; k < 4; k ++) {
+        for (int j = 0; j < faces.size(); j++) {
 
-            for (int l = 0; l < 4; l++) {
+            if (!(faces[j].edgeSimplificationMatches < 4)) continue;
 
-                if (
-                    vertices[faces[i].vertexIndex[k]].position.x == vertices[faces[j].vertexIndex[l]].position.x &&
-                    vertices[faces[i].vertexIndex[k]].position.y == vertices[faces[j].vertexIndex[l]].position.y &&
-                    vertices[faces[i].vertexIndex[k]].position.z == vertices[faces[j].vertexIndex[l]].position.z &&
-                    faces[i].vertexIndex[k] != faces[j].vertexIndex[l]
-                ) {
-                    
-                    matches++;
+            int matches = 0;
 
-                    threadingMutex.lock();
-                    bool isApplicableSurface = (!(matches < 1) && vertices[faces[j].vertexIndex[l]].position.status == 0);
+            for (int k = 0; k < 4; k ++) {
 
-                    if (isApplicableSurface) {
+                for (int l = 0; l < 4; l++) {
+
+                    if (
+                        vertices[faces[i].vertexIndex[k]].position.x == vertices[faces[j].vertexIndex[l]].position.x &&
+                        vertices[faces[i].vertexIndex[k]].position.y == vertices[faces[j].vertexIndex[l]].position.y &&
+                        vertices[faces[i].vertexIndex[k]].position.z == vertices[faces[j].vertexIndex[l]].position.z &&
+                        faces[i].vertexIndex[k] != faces[j].vertexIndex[l]
+                    ) {
                         
-                        vertices[faces[i].vertexIndex[k]].position.status = 1;
-                        faces[j].vertexIndex[l] = faces[i].vertexIndex[k];
-                    }
+                        matches++;
 
-                    threadingMutex.unlock();
+                        threadingMutex.lock();
+                        faces[j].edgeSimplificationMatches++;
+                        faces[i].edgeSimplificationMatches++;
+                        threadingMutex.unlock();
+
+                        if (!(matches < 1) && vertices[faces[j].vertexIndex[l]].position.status == 0) {
+
+                            threadingMutex.lock();
+                            vertices[faces[i].vertexIndex[k]].position.status = 1;
+                            faces[j].vertexIndex[l] = faces[i].vertexIndex[k];
+                            //alreadyMatchedVertices[faces[j].vertexIndex[l]] = true;
+                            //alreadyMatchedVertices[faces[i].vertexIndex[k]] = true;
+                            threadingMutex.unlock();
+                        }
+                    }
                 }
             }
         }
@@ -494,7 +504,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
     vertices = newVertices;
 
-    std::cout << "[CPU] [mergeByDistance()] ALL THREADS ARE DONE" << endl;
+    std::cout << "[CPU] [averageCornerVertices()] ALL THREADS ARE DONE" << endl;
 
     std::cout << "[CPU] [mergeByDistance()] SPAWNING " << originalMaxVertID << " THREADS" << endl;
 
@@ -505,11 +515,18 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     faces.clear();
     faces = newFaces;
 
+    std::map<int, bool> alreadyMatchedVertices;
+
+    for (int i = 0; i < vertices.size(); i++) {
+
+        alreadyMatchedVertices.emplace(i, false);
+    }
+
     // neighboring face midpoint gathering
     for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
-        std::thread(mergeByDistance, std::ref(vertices), i, std::ref(completeThreads), maxVertsAtStart, std::ref(faces)).detach();
+        std::thread(mergeByDistance, std::ref(vertices), i, std::ref(completeThreads), maxVertsAtStart, std::ref(faces), std::ref(alreadyMatchedVertices)).detach();
 
         if (i % (100 * 4) == 0) {
 
