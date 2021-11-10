@@ -325,7 +325,7 @@ void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& n
     threadingMutex.unlock();
 }
 
-void mergeByDistance(std::vector<vertex>& vertices, int i, int& completeThreads, int maxVertsAtStart, std::vector<quadFace>& faces) {
+void mergeByDistance(std::vector<vertex>& vertices, int i, int& completeThreads, std::vector<quadFace>& faces) {
 
     if (faces[i].edgeSimplificationMatches < 4) {
 
@@ -517,7 +517,7 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
-        std::thread(mergeByDistance, std::ref(vertices), i, std::ref(completeThreads), maxVertsAtStart, std::ref(faces)).detach();
+        std::thread(mergeByDistance, std::ref(vertices), i, std::ref(completeThreads), std::ref(faces)).detach();
 
         if (i % (100 * 4) == 0) {
 
