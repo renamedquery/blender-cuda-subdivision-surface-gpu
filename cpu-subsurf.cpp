@@ -188,7 +188,7 @@ void getMaxVertID(std::vector<vertex> vertices, int& max) {
     max = vertices.size();
 }
 
-void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<quadFace>& faces, std::vector<quadFace>& newFaces, int maxVertID, int i, int& completeThreads, int maxVertsAtStart, std::map<int, int>& faceEdgeLookup) {
+void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<quadFace>& faces, std::vector<quadFace>& newFaces, int maxVertID, int i, int& completeThreads, int maxVertsAtStart) {
 
     quadFace currentSubdividedFaces[4];
 
@@ -309,10 +309,6 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
 
         vertexIDs[j] = edgePoint.id;
 
-        threadingMutex.lock();
-        faceEdgeLookup.insert({vertexIDs[j], faces[i].vertexIndex[j]});
-        threadingMutex.unlock();
-
         currentSubdividedFaces[j].vertexIndex[0] = edgePoint.id;
         currentSubdividedFaces[(j + 1) % 4].vertexIndex[2] = edgePoint.id;
 
@@ -322,9 +318,11 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
 
         threadingMutex.lock();
         vertices[vertexIDs[j]].position = edgeAveragePoint;
-        vertices[faces[i].vertexIndex[j]].position = vertexCornerAveragePoint;
+        //vertices[faces[i].vertexIndex[j]].position = vertexCornerAveragePoint;
         faces[i].edgeVertexIndex[j] = vertexIDs[j];
         threadingMutex.unlock();
+
+        int edgeMatches = 0;
     }
 
     for (int j = 0; j < 4; j++) {
@@ -343,9 +341,9 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
     threadingMutex.unlock();
 }
 
-void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::vector<quadFace>& faces, int i, int& completeThreads, int maxVertsAtStart, std::map<int, int>& faceEdgeLookup) {
+void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::vector<quadFace>& faces, int i, int& completeThreads, int maxVertsAtStart, std::vector<quadFace>& newFaces) {
 
-    for (int j = 0; j < faces.size(); j++) {
+    /*for (int j = 0; j < faces.size(); j++) {
 
         int matches = 0;
 
@@ -359,14 +357,18 @@ void catmullClarkFacePointsAndEdgesAverage(std::vector<vertex>& vertices, std::v
 
                     if (!(matches < 1)) {
 
-                        int mapLookupResult = faceEdgeLookup.at(faces[i].edgeVertexIndex[k]);
+                        int mapLookupResult_source = faceEdgeLookup.at(faces[j].edgeVertexIndex[l]);
+                        int mapLookupResult_dest = faceEdgeLookup.at(faces[i].edgeVertexIndex[k]);
 
-                        vertices[faces[i].edgeVertexIndex[k]].position = vertices[mapLookupResult].position;
+                        vertices[mapLookupResult_dest].position = vertices[mapLookupResult_source].position;
+                        faces[j].vertexIndex[l] = mapLookupResult_source;
+
+                        newFaces[(j * 4) + k].vertexIndex[0] = mapLookupResult_source;
                     }
                 }
             }
         }
-    }
+    }*/
     
     threadingMutex.lock();
     completeThreads++;
@@ -393,8 +395,6 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
 
     int totalNewVertsToAllocate = faces.size() * 5;
 
-    std::map<int, int> faceEdgeLookup;
-
     std::vector<quadFace> newFaces;
 
     // make new placeholder vertices
@@ -410,7 +410,12 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
-        std::thread(catmullClarkFacePointsAndEdges, std::ref(vertices), std::ref(faces), std::ref(newFaces), originalMaxVertID, i, std::ref(completeThreads), maxVertsAtStart, std::ref(faceEdgeLookup)).detach();
+        std::thread(catmullClarkFacePointsAndEdges, std::ref(vertices), std::ref(faces), std::ref(newFaces), originalMaxVertID, i, std::ref(completeThreads), maxVertsAtStart).detach();
+
+        if (i % 100 == 0) {
+
+            std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] " << std::to_string(((float)i / (float)originalMaxVertID) * 100) << "% DONE" << endl;
+        }
 
         while (workInProgressThreads - completeThreads > MAX_CORES) {
             
@@ -441,11 +446,11 @@ void catmullClarkSubdiv(std::vector<vertex>& vertices, std::vector<quadFace>& fa
     for (int i = 0; i < faces.size(); i++) {
 
         workInProgressThreads++;
-        std::thread(catmullClarkFacePointsAndEdgesAverage, std::ref(vertices), std::ref(faces), i, std::ref(completeThreads), maxVertsAtStart, std::ref(faceEdgeLookup)).detach();
+        std::thread(catmullClarkFacePointsAndEdgesAverage, std::ref(vertices), std::ref(faces), i, std::ref(completeThreads), maxVertsAtStart, std::ref(newFaces)).detach();
 
         if (i % 100 == 0) {
 
-            std::cout << "[CPU] " << std::to_string(((float)i / (float)originalMaxVertID) * 100) << "% DONE" << endl;
+            std::cout << "[CPU] [catmullClarkFacePointsAndEdgesAverage()] " << std::to_string(((float)i / (float)originalMaxVertID) * 100) << "% DONE" << endl;
         }
 
         while (workInProgressThreads - completeThreads > MAX_CORES) {
