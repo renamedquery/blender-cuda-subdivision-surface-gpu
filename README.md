@@ -8,6 +8,10 @@
 
 *An input mesh generated in blender (left) next to the sudivided version of the mesh using my program (right). The current version still has a few errors when calculating midpoints, so that is what those holes are.*
 
+![](https://i.imgur.com/QQPJJ7q.png?raw=true)
+
+*While open faced meshes with quad topology will not crash the program, they will not be subdivided properly. This input mesh (right) and the output mesh (left) are an example of this misbehavior.*
+
 Completed tasks:
 
 - Reading from a `.obj` file to take in data (verts + faces).
@@ -29,6 +33,8 @@ TODO:
 - Accelerate the algorithm by using CUDA.
 
 - Fix broken vertices that cause holes.
+
+- Add support for open faced meshes with quad topology.
 
 # Compiling Instructions:
 
