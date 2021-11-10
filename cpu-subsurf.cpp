@@ -242,14 +242,17 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
         localFaceMidpointVertIDs.push_back(maxVertsAtStart + (j * 5) + 0);
     }
     
-    for (int j = 0; j < 4; j++) currentSubdividedFaces[j].vertexIndex[0] = localFaceMidpointVertIDs[i]; // face point [0] will be the center of the subdivided face
+    for (int j = 0; j < 4; j++) currentSubdividedFaces[j].vertexIndex[3] = localFaceMidpointVertIDs[i]; // face point [0] will be the center of the subdivided face
 
     // edge midpoints for this face
     // the mesh will have to be combined into one later on, since this will create duplicate verts
 
     vec3 edgeAveragePoints[4];
     vec3 faceAveragePoints[4];
-    int vertexIDs[4]; // vertex ids for the edges
+
+    // vertex ids for the edges
+
+    int vertexIDs[4];
 
     for (int j = 0; j < 4; j++) {
 
@@ -260,9 +263,9 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
         int neighboringFaceMidpointIDs[4];
 
         int knownFaceID = i;
-        int nextdoorFaceID = -1; // -1 so that the program will crash in the case of a mismatch
 
         bool faceAverageAlreadyCalculated = false;
+        int matchedPoints = 0; // the amount of points per face that have been matched
 
         // find neighboring face
         // search through all faces to find a face sharing points v1, v2 that exist in both the current face and the searching face
@@ -271,67 +274,32 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
         
         for (int k = 0; k < faces.size(); k++) {
 
-            int matchedPoints = 0; // the amount of points per face that have been matched
-            int currentMatchedFaceIndex = 0; // the amount of faces per point that have been matched
-
             for (int l = 0; l < 4; l++) {
 
-                bool firstFacePairMatch = (
-                    vertices[faces[k].vertexIndex[l]].position.x == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.x &&
-                    vertices[faces[k].vertexIndex[l]].position.y == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.y &&
-                    vertices[faces[k].vertexIndex[l]].position.z == vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.z
-                );
-
-                bool secondFacePairMatch = (
-                    vertices[faces[k].vertexIndex[l]].position.x == vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.x &&
-                    vertices[faces[k].vertexIndex[l]].position.y == vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.y &&
-                    vertices[faces[k].vertexIndex[l]].position.z == vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.z
-                );
-
-                if (firstFacePairMatch || secondFacePairMatch) {
+                if (faces[i].vertexIndex[j] == faces[k].vertexIndex[l]) {
                     
+                    //std::cout << std::to_string(matchedPoints) << endl;
+                    neighboringFaceIDs[matchedPoints] = k;
                     matchedPoints++;
-                }
-
-                if (matchedPoints > 0 && k != knownFaceID && currentMatchedFaceIndex < 4 && !faceAverageAlreadyCalculated) {
-
-                    nextdoorFaceID = k;
-
-                    threadingMutex.lock();
-                    vertices[faces[i].vertexIndex[l]].neighboringFaceIDs[currentMatchedFaceIndex] = k;
-                    threadingMutex.unlock();
-
-                    neighboringFaceIDs[currentMatchedFaceIndex] = k;
-                    neighboringFaceMidpointIDs[currentMatchedFaceIndex] = localFaceMidpointVertIDs[k];
-
-                    currentMatchedFaceIndex++;
-
-                    if (!(currentMatchedFaceIndex < 4)) {
-
-                        k = faces.size();
-                        l = 4;
-                        faceAverageAlreadyCalculated = true;
-                    }
                 }
             }
         }
 
-        for (int k = 0; k < 4; k++) {
+        if (!(matchedPoints < 4)) {
 
-            faceAveragePoints[j].x += vertices[neighboringFaceMidpointIDs[k]].position.x;
-            faceAveragePoints[j].y += vertices[neighboringFaceMidpointIDs[k]].position.y;
-            faceAveragePoints[j].z += vertices[neighboringFaceMidpointIDs[k]].position.z;
+            for (int k = 0; k < 4; k++) {
+
+                faceAveragePoints[j].x += faceMidpoints[neighboringFaceIDs[k]].x;
+                faceAveragePoints[j].y += faceMidpoints[neighboringFaceIDs[k]].y;
+                faceAveragePoints[j].z += faceMidpoints[neighboringFaceIDs[k]].z;
+            }
         }
-
-        faceAveragePoints[j].x /= 4;
-        faceAveragePoints[j].y /= 4;
-        faceAveragePoints[j].z /= 4;
 
         edgeAveragePoint.x = (vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.x + vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.x) / 2;
         edgeAveragePoint.y = (vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.y + vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.y) / 2;
         edgeAveragePoint.z = (vertices[faces[knownFaceID].vertexIndex[(j + 1) % 4]].position.z + vertices[faces[knownFaceID].vertexIndex[(j + 0) % 4]].position.z) / 2;
 
-        currentSubdividedFaces[j].vertexIndex[2] = faces[knownFaceID].vertexIndex[(j + 0) % 4];
+        currentSubdividedFaces[j].vertexIndex[1] = faces[knownFaceID].vertexIndex[(j + 0) % 4];
 
         // find the averages for the face points
 
@@ -339,16 +307,20 @@ void catmullClarkFacePointsAndEdges(std::vector<vertex>& vertices, std::vector<q
 
         vertexIDs[j] = edgePoint.id;
 
-        currentSubdividedFaces[j].vertexIndex[3] = edgePoint.id;
-        currentSubdividedFaces[(j + 1) % 4].vertexIndex[1] = edgePoint.id;
+        currentSubdividedFaces[j].vertexIndex[0] = edgePoint.id;
+        currentSubdividedFaces[(j + 1) % 4].vertexIndex[2] = edgePoint.id;
 
         edgeAveragePoints[j] = edgeAveragePoint;
     }
 
     for (int j = 0; j < 4; j++) {
 
+        faceAveragePoints[j].x /= 4;
+        faceAveragePoints[j].y /= 4;
+        faceAveragePoints[j].z /= 4;
+
         threadingMutex.lock();
-        vertices[vertexIDs[j]].position = faceAveragePoints[j];
+        vertices[vertexIDs[j]].position = edgeAveragePoints[j];
         threadingMutex.unlock();
 
         threadingMutex.lock();
