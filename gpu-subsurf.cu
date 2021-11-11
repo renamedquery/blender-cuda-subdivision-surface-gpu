@@ -50,8 +50,6 @@ struct quadFace {
     int edgeSimplificationMatches = 0;
 };
 
-__device__ int facesSize;
-__device__ int verticesSize;
 __device__ int threadID;
 
 __device__ vertex *objVertices;
@@ -188,17 +186,15 @@ void writeObj(std::string path, std::vector<vertex> vertices, std::vector<quadFa
     objFile.close();
 }
 
-__global__ void catmullClarkFacePointsAndEdges(int facesSize, int maxVertsAtStart, int totalMaxVerts) {
+__global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAtStart_lcl, int totalMaxVerts_lcl) {
 
-    //printf("A%d\n", (threadID));
-
-    int i = atomicAdd(&threadID, 1);
+    int i = (blockIdx.x * blockDim.x) + threadIdx.x;
 
     quadFace currentSubdividedFaces[4];
     
     for (int j = 0; j < 4; j++) currentSubdividedFaces[j].vertexIndex[3] = (uintptr_t)&objFaces[i].midpointVertID; // face point [0] will be the center of the subdivided face
 
-    printf("B%d\n", (i));
+    printf("B%d/%d\n", (i), facesSize_lcl);
 
     // vertex ids for the edges
 
@@ -222,7 +218,7 @@ __global__ void catmullClarkFacePointsAndEdges(int facesSize, int maxVertsAtStar
 
         // find the averages for the face points
 
-        edgePoint.id = maxVertsAtStart + (i * 5) + (j + 1);
+        edgePoint.id = maxVertsAtStart_lcl + (i * 5) + (j + 1);
 
         vertexIDs[j] = edgePoint.id;
 
@@ -361,7 +357,6 @@ int main (void) {
     int facesSize_host = faces.size();
     int verticesSize_host = vertices.size();
     int totalNewVertsToAllocate_host = facesSize_host * 5;
-    int threadID_host = 0;
 
     vertex *objVertices_host = new vertex[verticesSize_host + totalNewVertsToAllocate_host]; 
     quadFace *objFaces_host = new quadFace[facesSize_host]; 
@@ -414,43 +409,21 @@ int main (void) {
         objFaces_host[j].midpointVertID = verticesSize_host + (j * 5);
     }
 
-    CUDA_CHECK_RETURN(cudaMalloc((void**)&facesSize_host, sizeof(facesSize_host)));
-    CUDA_CHECK_RETURN(cudaMalloc((void**)&verticesSize_host, sizeof(verticesSize_host)));
-    CUDA_CHECK_RETURN(cudaMalloc((void**)&threadID_host, sizeof(threadID_host)));
     CUDA_CHECK_RETURN(cudaMalloc((void**)&objVertices_host, sizeof(objVertices_host)));
     CUDA_CHECK_RETURN(cudaMalloc((void**)&objFaces_host, sizeof(objFaces_host)));
     CUDA_CHECK_RETURN(cudaMalloc((void**)&faceMidpoints_host, sizeof(faceMidpoints_host)));
     CUDA_CHECK_RETURN(cudaMalloc((void**)&newFaces_host, sizeof(newFaces_host)));
     CUDA_CHECK_RETURN(cudaMalloc((void**)&newVertices_host, sizeof(newVertices_host)));
 
-    CUDA_CHECK_RETURN(cudaMemcpyToSymbol(facesSize, &facesSize_host, sizeof(facesSize_host)));
-    CUDA_CHECK_RETURN(cudaMemcpyToSymbol(verticesSize, &verticesSize_host, sizeof(verticesSize_host)));
-    CUDA_CHECK_RETURN(cudaMemcpyToSymbol(threadID, &threadID_host, sizeof(threadID_host)));
     CUDA_CHECK_RETURN(cudaMemcpyToSymbol(objVertices, &objVertices_host, sizeof(objVertices_host)));
     CUDA_CHECK_RETURN(cudaMemcpyToSymbol(objFaces, &objFaces_host, sizeof(objFaces_host)));
     CUDA_CHECK_RETURN(cudaMemcpyToSymbol(faceMidpoints, &faceMidpoints_host, sizeof(faceMidpoints_host)));
     CUDA_CHECK_RETURN(cudaMemcpyToSymbol(newFaces, &newFaces_host, sizeof(newFaces_host)));
     CUDA_CHECK_RETURN(cudaMemcpyToSymbol(newVertices, &newVertices_host, sizeof(newVertices_host)));
 
-    /*CUDA_CHECK_RETURN(cudaMemcpyToSymbol("objVertices", &objVertices_host, (verticesSize + totalNewVertsToAllocate) * sizeof(vertex)));
-
-    cudaMemset(&objFaces_host, 0, facesSize * sizeof(quadFace));
-    cudaMemcpyToSymbol("objFaces", &objFaces_host, facesSize * sizeof(quadFace));
-    
-    cudaMemset(&faceMidpoints_host, 0, facesSize * sizeof(vec3));
-    cudaMemcpyToSymbol("faceMidpoints", &faceMidpoints_host, facesSize * sizeof(vec3));
-    
-    cudaMemset(&newFaces_host, 0, (facesSize * 4) * sizeof(vertex));
-    cudaMemcpyToSymbol("newFaces", &newFaces_host, (facesSize * 4) * sizeof(vertex));
-    
-    cudaMemset(&newVertices_host, 0, (verticesSize + (facesSize * 5)) * sizeof(vertex));
-    cudaMemcpyToSymbol("newVertices", &newVertices_host, (verticesSize + (facesSize * 5)) * sizeof(vertex));*/
-
     catmullClarkFacePointsAndEdges<<<(facesSize_host + blockSize - 1) / blockSize, blockSize>>>(facesSize_host, verticesSize_host, verticesSize_host + totalNewVertsToAllocate_host);
 
     cudaDeviceSynchronize();
-
-    //std::cout << "b" << endl;
 
     facesSize_host *= 4;
 
