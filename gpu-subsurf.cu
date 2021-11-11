@@ -189,18 +189,13 @@ __global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAt
     if (i > facesSize_lcl) return;
 
     quadFace currentSubdividedFaces[4];
-
-    printf("A %d\n", i);
     
     for (int j = 0; j < 4; j++) currentSubdividedFaces[j].vertexIndex[3] = objFaces[i].midpointVertID; // face point [0] will be the center of the subdivided face
-
-    printf("B %d\n", i);
 
     // vertex ids for the edges
 
     int vertexIDs[4];
-
-    /*
+    
     for (int j = 0; j < 4; j++) {
 
         vec3 edgeAveragePoint;
@@ -234,7 +229,6 @@ __global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAt
     }
 
     objVertices[objFaces[i].midpointVertID].position = faceMidpoints[i];
-    */
 }
 /*
 __global__
