@@ -206,8 +206,6 @@ __global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAt
         edgeAveragePoint.y = (objVertices[objFaces[i].vertexIndex[(j + 1) % 4]].position.y + objVertices[objFaces[i].vertexIndex[(j + 0) % 4]].position.y) / 2;
         edgeAveragePoint.z = (objVertices[objFaces[i].vertexIndex[(j + 1) % 4]].position.z + objVertices[objFaces[i].vertexIndex[(j + 0) % 4]].position.z) / 2;
 
-        printf("%d | %d\n", i, objFaces[100].vertexIndex[(j + 1) % 4]);
-
         currentSubdividedFaces[j].vertexIndex[1] = objFaces[i].vertexIndex[(j + 0) % 4];
 
         // find the averages for the face points
