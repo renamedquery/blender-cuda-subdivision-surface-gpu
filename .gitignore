@@ -12,3 +12,5 @@ testMeshOutput.obj
 *.o
 *.log
 *.old
+*.exe
+cudaInclude

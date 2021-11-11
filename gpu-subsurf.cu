@@ -1,16 +1,10 @@
 // trying to get the catmull clark subdiv method working in c++ so I can translate it to cuda
 
 #include <iostream>
-#include <math.h>
 #include <string>
 #include <fstream>
-#include <iterator>
 #include <sstream>
 #include <vector>
-#include <thread>
-#include <mutex>
-#include <atomic>
-#include <map>
 
 using namespace std;
 
@@ -46,13 +40,16 @@ struct quadFace {
     int edgeSimplificationMatches = 0;
 };
 
-__shared__ int faceID;
+__device__ long long int facesSize;
+__device__ long long int verticesSize;
+__device__ long long int threadID;
 
-__shared__ vertex objVertices[];
-__shared__ quadFace objFaces[];
-__shared__ quadFace newFaces[];
-__shared__ vec3 faceMidpoints[];
-__shared__ int localFaceMidpointVertIDs[];
+__device__ vertex objVertices[];
+__device__ quadFace objFaces[];
+__device__ vec3 faceMidpoints[];
+__device__ long long int localFaceMidpointVertIDs[];
+__device__ quadFace newFaces[];
+__device__ vertex newVertices[]; 
 
 std::vector<std::string> stringSplit(std::string string, char delimiter) {
 
@@ -182,10 +179,10 @@ void writeObj(std::string path, std::vector<vertex> vertices, std::vector<quadFa
     objFile.close();
 }
 
-__global__
-void catmullClarkFacePointsAndEdges(int facesSize, int maxVertsAtStart) {
-
-    int i = threadIdx.x;
+__global__ void catmullClarkFacePointsAndEdges(int facesSize, int maxVertsAtStart) {
+    
+    int i = threadID;
+    threadID++;
 
     quadFace currentSubdividedFaces[4];
     
@@ -206,9 +203,9 @@ void catmullClarkFacePointsAndEdges(int facesSize, int maxVertsAtStart) {
 
         int neighboringFaceIDs[4];
 
-        int knownFaceID = i;
+        int knownFaceID;
 
-        int matchedPoints = 0; // the amount of points per face that have been matched
+        int matchedPoints; // the amount of points per face that have been matched
 
         // find neighboring face
         // search through all faces to find a face sharing points v1, v2 that exist in both the current face and the searching face
@@ -249,15 +246,14 @@ void catmullClarkFacePointsAndEdges(int facesSize, int maxVertsAtStart) {
 
     for (int j = 0; j < 4; j++) {
 
-        newFaces[faceID] = currentSubdividedFaces[j];
-        faceID++;
+        newFaces[(threadID * 4) + j] = currentSubdividedFaces[j];
     }
 
     objVertices[localFaceMidpointVertIDs[i]].position = faceMidpoints[i];
 }
 /*
 __global__
-void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& newVertices, std::vector<quadFace>& faces, int i, int& completeThreads, int maxVertsAtStart, std::vector<vec3>& faceMidpoints, std::vector<int>& localFaceMidpointVertIDs) {
+void averageCornerVertices(int facesSize, const int * const & i) {
 
     for (int j = 0; j < 4; j++) {
 
@@ -268,17 +264,17 @@ void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& n
         vec3 edgeMidpointsAverage;
         vec3 finalMidpointAverage;
 
-        for (int k = 0; k < faces.size(); k++) {
+        for (int k = 0; k < facesSize; k++) {
 
             for (int l = 0; l < 4; l++) {
 
-                if (faces[i].vertexIndex[j] == faces[k].vertexIndex[l]) {
+                if (objFaces[i].vertexIndex[j] == objFaces[k].vertexIndex[l]) {
 
                     neighboringFaceIDs[matchedPoints] = k;
 
-                    edgeMidpointsAverage.x += (vertices[faces[i].vertexIndex[j]].position.x + vertices[faces[k].vertexIndex[(l + 1) % 4]].position.x) / 2;
-                    edgeMidpointsAverage.y += (vertices[faces[i].vertexIndex[j]].position.y + vertices[faces[k].vertexIndex[(l + 1) % 4]].position.y) / 2;
-                    edgeMidpointsAverage.z += (vertices[faces[i].vertexIndex[j]].position.z + vertices[faces[k].vertexIndex[(l + 1) % 4]].position.z) / 2;
+                    edgeMidpointsAverage.x += (objVertices[objFaces[i].vertexIndex[j]].position.x + objVertices[objFaces[k].vertexIndex[(l + 1) % 4]].position.x) / 2;
+                    edgeMidpointsAverage.y += (objVertices[objFaces[i].vertexIndex[j]].position.y + objVertices[objFaces[k].vertexIndex[(l + 1) % 4]].position.y) / 2;
+                    edgeMidpointsAverage.z += (objVertices[objFaces[i].vertexIndex[j]].position.z + objVertices[objFaces[k].vertexIndex[(l + 1) % 4]].position.z) / 2;
 
                     matchedPoints++;
                 }
@@ -304,14 +300,11 @@ void averageCornerVertices(std::vector<vertex>& vertices, std::vector<vertex>& n
         finalMidpointAverage.y = (neighboringFaceMidpointsAverage.y + edgeMidpointsAverage.y) / 2;
         finalMidpointAverage.z = (neighboringFaceMidpointsAverage.z + edgeMidpointsAverage.z) / 2;
 
-        newVertices[faces[i].vertexIndex[j]].position = edgeMidpointsAverage; // find a way to get the finalMidpointAverage to work properly
+        newVertices[objFaces[i].vertexIndex[j]].position = edgeMidpointsAverage; // find a way to get the finalMidpointAverage to work properly
     }
-
-    threadingMutex.lock();
-    completeThreads++;
-    threadingMutex.unlock();
 }
-
+*/
+/*
 __global__
 void mergeByDistance(std::vector<vertex>& vertices, int i, int& completeThreads, std::vector<quadFace>& faces) {
 
@@ -363,6 +356,7 @@ void mergeByDistance(std::vector<vertex>& vertices, int i, int& completeThreads,
     threadingMutex.unlock();
 }
 */
+
 int main (void) {
     
     std::string objPath = "./testMesh.obj";
@@ -378,25 +372,26 @@ int main (void) {
     int facesSize = faces.size();
     int verticesSize = vertices.size();
 
-    vertex *objVertices = new vertex[verticesSize];
-    quadFace *objFaces = new quadFace[facesSize];
-    vec3 *faceMidpoints = new vec3[facesSize];
-    int *localFaceMidpointVertIDs = new int[facesSize];
-    quadFace *newFaces = new quadFace[facesSize * 4];
+    long long int threadID_host = 1LL;
+
+    vertex *objVertices_host = new vertex[verticesSize]; 
+    quadFace *objFaces_host = new quadFace[facesSize]; 
+    vec3 *faceMidpoints_host = new vec3[facesSize]; 
+    long long int *localFaceMidpointVertIDs_host = new long long int[facesSize]; 
+    quadFace *newFaces_host = new quadFace[facesSize * 4]; 
+    vertex *newVertices_host = new vertex[verticesSize + (facesSize * 5)]; 
 
     for (int j = 0; j < verticesSize; j++) {
 
-        objVertices[j] = vertices[j];
+        objVertices_host[j] = vertices[j];
     } 
 
     for (int j = 0; j < facesSize; j++) {
 
-        objFaces[j] = faces[j];
+        objFaces_host[j] = faces[j];
     }
 
-    int faceID = facesSize;
-
-    for (int j = 0; j < facesSize; j++) {
+    for (long long int j = 0; j < facesSize; j++) {
 
         vec3 faceAverageMiddlePoint;
 
@@ -421,15 +416,44 @@ int main (void) {
             (objVertices[objFaces[j].vertexIndex[3]].position.z)
         ) / 4;
 
-        faceMidpoints[j] = faceAverageMiddlePoint;
-        localFaceMidpointVertIDs[j] = (verticesSize + (j * 5) + 0);
+        faceMidpoints_host[j] = faceAverageMiddlePoint;
+        localFaceMidpointVertIDs_host[j] = (verticesSize + (j * 5) + 0);
     }
+
+    cudaMemset(&threadID, 0, sizeof(long long int));
+    cudaMemcpy((void *)threadID, &threadID_host, sizeof(long long int), cudaMemcpyHostToDevice);
+
+    cudaMemset(&objVertices_host, 0, verticesSize * sizeof(vertex));
+    cudaMemcpy(objVertices, &objVertices_host, verticesSize * sizeof(vertex), cudaMemcpyHostToDevice);
+
+    cudaMemset(&objFaces_host, 0, facesSize * sizeof(quadFace));
+    cudaMemcpy(objFaces, &objFaces_host, facesSize * sizeof(quadFace), cudaMemcpyHostToDevice);
+    
+    cudaMemset(&faceMidpoints_host, 0, facesSize * sizeof(vec3));
+    cudaMemcpy(faceMidpoints, &faceMidpoints_host, facesSize * sizeof(vec3), cudaMemcpyHostToDevice);
+    
+    cudaMemset(&localFaceMidpointVertIDs_host, 0, facesSize * sizeof(long long int));
+    cudaMemcpy(localFaceMidpointVertIDs, &localFaceMidpointVertIDs_host, facesSize * sizeof(long long int), cudaMemcpyHostToDevice);
+    
+    cudaMemset(&newFaces_host, 0, (facesSize * 4) * sizeof(vertex));
+    cudaMemcpy(newFaces, &newFaces_host, (facesSize * 4) * sizeof(vertex), cudaMemcpyHostToDevice);
+    
+    cudaMemset(&newVertices_host, 0, (verticesSize + (facesSize * 5)) * sizeof(vertex));
+    cudaMemcpy(newVertices, &newVertices_host, (verticesSize + (facesSize * 5)) * sizeof(vertex), cudaMemcpyHostToDevice);
 
     catmullClarkFacePointsAndEdges<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(facesSize, verticesSize);
 
     cudaDeviceSynchronize();
 
-    averageCornerVertices<<<(faceSize + blockSize - 1) / blockSize, blockSize>>>();
+    int tmpCopyThreadID;
+
+    cudaMemcpyFromSymbol(&threadID, tmpCopyThreadID, sizeof(int), 0, cudaMemcpyDeviceToHost);
+
+    std::cout << tmpCopyThreadID << endl;
+
+    facesSize *= 4;
+
+    //averageCornerVertices<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(facesSize, *&threadID);
 
     cudaDeviceSynchronize();
 
