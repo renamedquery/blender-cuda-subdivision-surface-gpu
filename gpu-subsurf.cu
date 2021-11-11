@@ -228,9 +228,13 @@ __global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAt
 
     objVertices[objFaces[i].midpointVertID].position = faceMidpoints[i];
 }
-/*
+
 __global__
-void averageCornerVertices(int facesSize, const int * const & i) {
+void averageCornerVertices(int facesSize) {
+
+    int i = (blockIdx.x * blockDim.x) + threadIdx.x;
+
+    if (i > facesSize) return;
 
     for (int j = 0; j < 4; j++) {
 
@@ -247,6 +251,8 @@ void averageCornerVertices(int facesSize, const int * const & i) {
 
                 if (objFaces[i].vertexIndex[j] == objFaces[k].vertexIndex[l]) {
 
+                    if (matchedPoints > 3) printf("%d | %d | %d | %d | %d\n", i, j, l, k, matchedPoints);
+
                     neighboringFaceIDs[matchedPoints] = k;
 
                     edgeMidpointsAverage.x += (objVertices[objFaces[i].vertexIndex[j]].position.x + objVertices[objFaces[k].vertexIndex[(l + 1) % 4]].position.x) / 2;
@@ -254,6 +260,12 @@ void averageCornerVertices(int facesSize, const int * const & i) {
                     edgeMidpointsAverage.z += (objVertices[objFaces[i].vertexIndex[j]].position.z + objVertices[objFaces[k].vertexIndex[(l + 1) % 4]].position.z) / 2;
 
                     matchedPoints++;
+
+                    if (matchedPoints > 3) {
+
+                        l = 4;
+                        k = facesSize;
+                    }
                 }
             }
         }
@@ -280,7 +292,7 @@ void averageCornerVertices(int facesSize, const int * const & i) {
         newVertices[objFaces[i].vertexIndex[j]].position = edgeMidpointsAverage; // find a way to get the finalMidpointAverage to work properly
     }
 }
-*/
+
 /*
 __global__
 void mergeByDistance(std::vector<vertex>& vertices, int i, int& completeThreads, std::vector<quadFace>& faces) {
@@ -347,6 +359,7 @@ int main (void) {
     readObj(objPath, vertices, faces); 
 
     int facesSize = faces.size();
+    int facesSizeAfterSubdivision = facesSize * 4;
     int verticesSize = vertices.size();
     int totalNewVertsToAllocate = facesSize * 5;
 
@@ -413,7 +426,11 @@ int main (void) {
     CUDA_CHECK_RETURN(cudaMemcpyToSymbol(newFaces, &newFaces_tmp, sizeof(newFaces_tmp)));
     CUDA_CHECK_RETURN(cudaMemcpyToSymbol(newVertices, &newVertices_tmp, sizeof(newVertices_tmp)));
 
-    catmullClarkFacePointsAndEdges<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(*&facesSize, *&verticesSize, *&totalNewVertsToAllocate); //, &objFaces, &objVertices, &faceMidpoints, &newFaces, &newVertices);
+    catmullClarkFacePointsAndEdges<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(*&facesSize, *&verticesSize, *&totalNewVertsToAllocate);
+
+    CUDA_CHECK_RETURN(cudaDeviceSynchronize());
+
+    averageCornerVertices<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(*&facesSizeAfterSubdivision);
 
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
 
