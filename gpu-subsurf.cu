@@ -367,7 +367,7 @@ int main (void) {
     quadFace* objFaces_tmp = new quadFace[facesSize]; 
     vec3* faceMidpoints_tmp = new vec3[facesSize]; 
     quadFace* newFaces_tmp = new quadFace[facesSize * 4]; 
-    vertex* newVertices_tmp = new vertex[verticesSize + (facesSize * 5)]; 
+    vertex* newVertices_tmp = new vertex[verticesSize + totalNewVertsToAllocate]; 
     
     CUDA_CHECK_RETURN(cudaMallocManaged((void **)&objVertices_tmp, sizeof(vertex) * (verticesSize + totalNewVertsToAllocate)));
     CUDA_CHECK_RETURN(cudaMallocManaged((void **)&objFaces_tmp, sizeof(quadFace) * (facesSize)));
@@ -428,11 +428,19 @@ int main (void) {
 
     catmullClarkFacePointsAndEdges<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(*&facesSize, *&verticesSize, *&totalNewVertsToAllocate);
 
+    std::cout << "[GPU] [catmullClarkFacePointsAndEdges] FINISHED CALLING KERNELS" << endl;
+
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
+
+    std::cout << "[GPU] [catmullClarkFacePointsAndEdges] DONE" << endl;
 
     averageCornerVertices<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(*&facesSizeAfterSubdivision);
 
+    std::cout << "[GPU] [catmullClarkFacePointsAndEdges] FINISHED CALLING KERNELS" << endl;
+
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
+    
+    std::cout << "[GPU] [catmullClarkFacePointsAndEdges] DONE" << endl;
 
     //facesSize_host *= 4;
 
