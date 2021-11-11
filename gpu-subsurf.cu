@@ -1,5 +1,3 @@
-// trying to get the catmull clark subdiv method working in c++ so I can translate it to cuda
-
 #include <iostream>
 #include <string>
 #include <fstream>
