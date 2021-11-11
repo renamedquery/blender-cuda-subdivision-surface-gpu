@@ -48,11 +48,11 @@ struct quadFace {
     int edgeSimplificationMatches = 0;
 };
 
-__device__ vertex *objVertices;
-__device__ quadFace *objFaces;
-__device__ vec3 *faceMidpoints;
-__device__ quadFace *newFaces;
-__device__ vertex *newVertices;
+__device__ vertex* objVertices;
+__device__ quadFace* objFaces;
+__device__ vec3* faceMidpoints;
+__device__ quadFace* newFaces;
+__device__ vertex* newVertices;
 
 std::vector<std::string> stringSplit(std::string string, char delimiter) {
 
@@ -186,22 +186,21 @@ __global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAt
 
     int i = (blockIdx.x * blockDim.x) + threadIdx.x;
 
-    printf("A %d\n", i);
-
     if (i > facesSize_lcl) return;
 
     quadFace currentSubdividedFaces[4];
 
-    printf("B %d\n", facesSize_lcl);
+    printf("A %d\n", i);
     
     for (int j = 0; j < 4; j++) currentSubdividedFaces[j].vertexIndex[3] = objFaces[i].midpointVertID; // face point [0] will be the center of the subdivided face
 
-    printf("C %d\n", i);
+    printf("B %d\n", i);
 
     // vertex ids for the edges
-    /*
+
     int vertexIDs[4];
 
+    /*
     for (int j = 0; j < 4; j++) {
 
         vec3 edgeAveragePoint;
@@ -355,74 +354,74 @@ int main (void) {
 
     readObj(objPath, vertices, faces); 
 
-    int facesSize_host = faces.size();
-    int verticesSize_host = vertices.size();
-    int totalNewVertsToAllocate_host = facesSize_host * 5;
+    int facesSize = faces.size();
+    int verticesSize = vertices.size();
+    int totalNewVertsToAllocate = facesSize * 5;
 
-    vertex *objVertices_host = new vertex[verticesSize_host + totalNewVertsToAllocate_host]; 
-    quadFace *objFaces_host = new quadFace[facesSize_host]; 
-    vec3 *faceMidpoints_host = new vec3[facesSize_host]; 
-    quadFace *newFaces_host = new quadFace[facesSize_host * 4]; 
-    vertex *newVertices_host = new vertex[verticesSize_host + (facesSize_host * 5)]; 
+    vertex* objVertices_tmp = new vertex[verticesSize + totalNewVertsToAllocate]; 
+    quadFace* objFaces_tmp = new quadFace[facesSize]; 
+    vec3* faceMidpoints_tmp = new vec3[facesSize]; 
+    quadFace* newFaces_tmp = new quadFace[facesSize * 4]; 
+    vertex* newVertices_tmp = new vertex[verticesSize + (facesSize * 5)]; 
+    
+    CUDA_CHECK_RETURN(cudaMallocManaged((void **)&objVertices_tmp, sizeof(vertex) * (verticesSize + totalNewVertsToAllocate)));
+    CUDA_CHECK_RETURN(cudaMallocManaged((void **)&objFaces_tmp, sizeof(quadFace) * (facesSize)));
+    CUDA_CHECK_RETURN(cudaMallocManaged((void **)&faceMidpoints_tmp, sizeof(vec3) * (facesSize)));
+    CUDA_CHECK_RETURN(cudaMallocManaged((void **)&newFaces_tmp, sizeof(quadFace) * (facesSize * 4)));
+    CUDA_CHECK_RETURN(cudaMallocManaged((void **)&newVertices_tmp, sizeof(vertex) * (verticesSize + (facesSize * 5))));
 
-    for (int j = 0; j < verticesSize_host; j++) {
+    for (int j = 0; j < verticesSize; j++) {
 
-        objVertices_host[j] = vertices[j];
+        objVertices_tmp[j] = vertices[j];
     } 
 
-    for (int j = verticesSize_host; j < verticesSize_host + totalNewVertsToAllocate_host; j++) {
+    for (int j = verticesSize; j < verticesSize + totalNewVertsToAllocate; j++) {
 
         vertex tmp;
-        objVertices_host[j] = tmp;
+        objVertices_tmp[j] = tmp;
     }
 
-    for (int j = 0; j < facesSize_host; j++) {
+    for (int j = 0; j < facesSize; j++) {
 
-        objFaces_host[j] = faces[j];
+        objFaces_tmp[j] = faces[j];
     }
 
-    for (int j = 0; j < facesSize_host; j++) {
+    for (int j = 0; j < facesSize; j++) {
 
         vec3 faceAverageMiddlePoint;
 
         faceAverageMiddlePoint.x = (
-            (objVertices_host[objFaces_host[j].vertexIndex[0]].position.x) + 
-            (objVertices_host[objFaces_host[j].vertexIndex[1]].position.x) + 
-            (objVertices_host[objFaces_host[j].vertexIndex[2]].position.x) + 
-            (objVertices_host[objFaces_host[j].vertexIndex[3]].position.x)
+            (objVertices_tmp[objFaces_tmp[j].vertexIndex[0]].position.x) + 
+            (objVertices_tmp[objFaces_tmp[j].vertexIndex[1]].position.x) + 
+            (objVertices_tmp[objFaces_tmp[j].vertexIndex[2]].position.x) + 
+            (objVertices_tmp[objFaces_tmp[j].vertexIndex[3]].position.x)
         ) / 4;
 
         faceAverageMiddlePoint.y = (
-            (objVertices_host[objFaces_host[j].vertexIndex[0]].position.y) + 
-            (objVertices_host[objFaces_host[j].vertexIndex[1]].position.y) + 
-            (objVertices_host[objFaces_host[j].vertexIndex[2]].position.y) + 
-            (objVertices_host[objFaces_host[j].vertexIndex[3]].position.y)
+            (objVertices_tmp[objFaces_tmp[j].vertexIndex[0]].position.y) + 
+            (objVertices_tmp[objFaces_tmp[j].vertexIndex[1]].position.y) + 
+            (objVertices_tmp[objFaces_tmp[j].vertexIndex[2]].position.y) + 
+            (objVertices_tmp[objFaces_tmp[j].vertexIndex[3]].position.y)
         ) / 4;
 
         faceAverageMiddlePoint.z = (
-            (objVertices_host[objFaces_host[j].vertexIndex[0]].position.z) + 
-            (objVertices_host[objFaces_host[j].vertexIndex[1]].position.z) + 
-            (objVertices_host[objFaces_host[j].vertexIndex[2]].position.z) + 
-            (objVertices_host[objFaces_host[j].vertexIndex[3]].position.z)
+            (objVertices_tmp[objFaces_tmp[j].vertexIndex[0]].position.z) + 
+            (objVertices_tmp[objFaces_tmp[j].vertexIndex[1]].position.z) + 
+            (objVertices_tmp[objFaces_tmp[j].vertexIndex[2]].position.z) + 
+            (objVertices_tmp[objFaces_tmp[j].vertexIndex[3]].position.z)
         ) / 4;
 
-        faceMidpoints_host[j] = faceAverageMiddlePoint;
-        objFaces_host[j].midpointVertID = verticesSize_host + (j * 5);
+        faceMidpoints_tmp[j] = faceAverageMiddlePoint;
+        objFaces_tmp[j].midpointVertID = verticesSize + (j * 5);
     }
 
-    CUDA_CHECK_RETURN(cudaMalloc((void**)&objVertices_host, sizeof(objVertices_host)));
-    CUDA_CHECK_RETURN(cudaMalloc((void**)&objFaces_host, sizeof(objFaces_host)));
-    CUDA_CHECK_RETURN(cudaMalloc((void**)&faceMidpoints_host, sizeof(faceMidpoints_host)));
-    CUDA_CHECK_RETURN(cudaMalloc((void**)&newFaces_host, sizeof(newFaces_host)));
-    CUDA_CHECK_RETURN(cudaMalloc((void**)&newVertices_host, sizeof(newVertices_host)));
+    CUDA_CHECK_RETURN(cudaMemcpyToSymbol(objVertices, &objVertices_tmp, sizeof(objVertices_tmp)));
+    CUDA_CHECK_RETURN(cudaMemcpyToSymbol(objFaces, &objFaces_tmp, sizeof(objFaces_tmp)));
+    CUDA_CHECK_RETURN(cudaMemcpyToSymbol(faceMidpoints, &faceMidpoints_tmp, sizeof(faceMidpoints_tmp)));
+    CUDA_CHECK_RETURN(cudaMemcpyToSymbol(newFaces, &newFaces_tmp, sizeof(newFaces_tmp)));
+    CUDA_CHECK_RETURN(cudaMemcpyToSymbol(newVertices, &newVertices_tmp, sizeof(newVertices_tmp)));
 
-    CUDA_CHECK_RETURN(cudaMemcpyToSymbol(objVertices, &objVertices_host, sizeof(objVertices_host)));
-    CUDA_CHECK_RETURN(cudaMemcpyToSymbol(objFaces, &objFaces_host, sizeof(objFaces_host)));
-    CUDA_CHECK_RETURN(cudaMemcpyToSymbol(faceMidpoints, &faceMidpoints_host, sizeof(faceMidpoints_host)));
-    CUDA_CHECK_RETURN(cudaMemcpyToSymbol(newFaces, &newFaces_host, sizeof(newFaces_host)));
-    CUDA_CHECK_RETURN(cudaMemcpyToSymbol(newVertices, &newVertices_host, sizeof(newVertices_host)));
-
-    catmullClarkFacePointsAndEdges<<<(facesSize_host + blockSize - 1) / blockSize, blockSize>>>(*&facesSize_host, *&verticesSize_host, *&totalNewVertsToAllocate_host); //, &objFaces, &objVertices, &faceMidpoints, &newFaces, &newVertices);
+    catmullClarkFacePointsAndEdges<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(*&facesSize, *&verticesSize, *&totalNewVertsToAllocate); //, &objFaces, &objVertices, &faceMidpoints, &newFaces, &newVertices);
 
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
 
