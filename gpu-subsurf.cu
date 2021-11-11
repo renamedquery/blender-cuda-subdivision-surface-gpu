@@ -190,11 +190,11 @@ __global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAt
 
     int i = (blockIdx.x * blockDim.x) + threadIdx.x;
 
+    if (i > facesSize_lcl) return;
+
     quadFace currentSubdividedFaces[4];
     
-    for (int j = 0; j < 4; j++) currentSubdividedFaces[j].vertexIndex[3] = (uintptr_t)&objFaces[i].midpointVertID; // face point [0] will be the center of the subdivided face
-
-    printf("B%d/%d\n", (i), facesSize_lcl);
+    for (int j = 0; j < 4; j++) currentSubdividedFaces[j].vertexIndex[3] = *&objFaces[i].midpointVertID; // face point [0] will be the center of the subdivided face
 
     // vertex ids for the edges
 
@@ -206,15 +206,13 @@ __global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAt
 
         vertex edgePoint;
 
-        int knownFaceID = i;
+        edgeAveragePoint.x = (*&objVertices[*&objFaces[i].vertexIndex[(j + 1) % 4]].position.x + *&objVertices[*&objFaces[i].vertexIndex[(j + 0) % 4]].position.x) / 2;
+        edgeAveragePoint.y = (*&objVertices[*&objFaces[i].vertexIndex[(j + 1) % 4]].position.y + *&objVertices[*&objFaces[i].vertexIndex[(j + 0) % 4]].position.y) / 2;
+        edgeAveragePoint.z = (*&objVertices[*&objFaces[i].vertexIndex[(j + 1) % 4]].position.z + *&objVertices[*&objFaces[i].vertexIndex[(j + 0) % 4]].position.z) / 2;
 
-        edgeAveragePoint.x = (objVertices[(uintptr_t)&objFaces[knownFaceID].vertexIndex[(j + 1) % 4]].position.x + objVertices[(uintptr_t)&objFaces[knownFaceID].vertexIndex[(j + 0) % 4]].position.x) / 2;
-        edgeAveragePoint.y = (objVertices[(uintptr_t)&objFaces[knownFaceID].vertexIndex[(j + 1) % 4]].position.y + objVertices[(uintptr_t)&objFaces[knownFaceID].vertexIndex[(j + 0) % 4]].position.y) / 2;
-        edgeAveragePoint.z = (objVertices[(uintptr_t)&objFaces[knownFaceID].vertexIndex[(j + 1) % 4]].position.z + objVertices[(uintptr_t)&objFaces[knownFaceID].vertexIndex[(j + 0) % 4]].position.z) / 2;
+        printf("%d\n", edgeAveragePoint.x);
 
-        printf("C%d\n", (i));
-
-        currentSubdividedFaces[j].vertexIndex[1] = (uintptr_t)&objFaces[knownFaceID].vertexIndex[(j + 0) % 4];
+        currentSubdividedFaces[j].vertexIndex[1] = *&objFaces[i].vertexIndex[(j + 0) % 4];
 
         // find the averages for the face points
 
@@ -234,7 +232,7 @@ __global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAt
         newFaces[(i * 4) + j] = currentSubdividedFaces[j];
     }
 
-    objVertices[(uintptr_t)&objFaces[i].midpointVertID].position = faceMidpoints[i];
+    objVertices[*&objFaces[i].midpointVertID].position = faceMidpoints[i];
 }
 /*
 __global__
@@ -423,9 +421,9 @@ int main (void) {
 
     catmullClarkFacePointsAndEdges<<<(facesSize_host + blockSize - 1) / blockSize, blockSize>>>(facesSize_host, verticesSize_host, verticesSize_host + totalNewVertsToAllocate_host);
 
-    cudaDeviceSynchronize();
+    CUDA_CHECK_RETURN(cudaDeviceSynchronize());
 
-    facesSize_host *= 4;
+    //facesSize_host *= 4;
 
     //averageCornerVertices<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(facesSize, *&threadID);
 
@@ -607,8 +605,6 @@ int main (void) {
 
     //printVerts(objVertices);
     //printFaces(objFaces, objVertices);*/
-    
-    printf("Cuda errors: %s\n", cudaGetErrorString(cudaGetLastError())); // from http://www.alecjacobson.com/weblog/?p=1537
 
     return 0;
 }
