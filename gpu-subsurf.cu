@@ -227,6 +227,8 @@ __global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAt
     }
 
     objVertices[objFaces[i].midpointVertID].position = faceMidpoints[i];
+
+    __syncthreads();
 }
 
 __global__
@@ -250,8 +252,6 @@ void averageCornerVertices(int facesSize) {
             for (int l = 0; l < 4; l++) {
 
                 if (objFaces[i].vertexIndex[j] == objFaces[k].vertexIndex[l]) {
-
-                    if (matchedPoints > 3) printf("%d | %d | %d | %d | %d\n", i, j, l, k, matchedPoints);
 
                     neighboringFaceIDs[matchedPoints] = k;
 
@@ -290,6 +290,8 @@ void averageCornerVertices(int facesSize) {
         finalMidpointAverage.z = (neighboringFaceMidpointsAverage.z + edgeMidpointsAverage.z) / 2;
 
         newVertices[objFaces[i].vertexIndex[j]].position = edgeMidpointsAverage; // find a way to get the finalMidpointAverage to work properly
+
+        __syncthreads();
     }
 }
 
