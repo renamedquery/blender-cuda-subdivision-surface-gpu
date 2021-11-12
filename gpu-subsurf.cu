@@ -230,7 +230,11 @@ void averageCornerVertices(int facesSize) {
 
             for (int l = 0; l < 4; l++) {
 
-                if (objFaces[i].vertexIndex[j] == objFaces[k].vertexIndex[l]) {
+                if (
+                    newVertices[objFaces[i].vertexIndex[j]].position.x == newVertices[objFaces[k].vertexIndex[l]].position.x &&
+                    newVertices[objFaces[i].vertexIndex[j]].position.y == newVertices[objFaces[k].vertexIndex[l]].position.y &&
+                    newVertices[objFaces[i].vertexIndex[j]].position.z == newVertices[objFaces[k].vertexIndex[l]].position.z
+                ) {
 
                     neighboringFaceIDs[matchedPoints] = k;
 
@@ -270,7 +274,7 @@ void averageCornerVertices(int facesSize) {
 
         newVertices[objFaces[i].vertexIndex[j]].position = edgeMidpointsAverage;
         for (int k = 0; k < 4; k++) newVertices[objFaces[i].vertexIndex[j]].neighboringFaceIDs[k] = neighboringFaceIDs[k];
-        if (matchedPoints < 3) newVertices[objFaces[i].vertexIndex[j]].neighboringFaces = matchedPoints;
+        newVertices[objFaces[i].vertexIndex[j]].neighboringFaces = matchedPoints;
     }
 }
 
@@ -280,13 +284,25 @@ void mergeByDistance(int facesSize, int verticesSize) {
 
     int i = (blockIdx.x * blockDim.x) + threadIdx.x;
 
-    for (int j = 0; j < 4; j++) { // for corner j in face i
+    for (int j = 0; j < verticesSize; j++) {
+
+        for (int k = 0; k < 4; k++) {
+
+            if (
+                newVertices[newFaces[i].vertexIndex[k]].position.x == newVertices[j].position.x &&
+                newVertices[newFaces[i].vertexIndex[k]].position.y == newVertices[j].position.y &&
+                newVertices[newFaces[i].vertexIndex[k]].position.z == newVertices[j].position.z
+            ) {
+                newFaces[i].vertexIndex[k] = j;
+            }
+        }
+    }
+
+    /*for (int j = 0; j < 4; j++) { // for corner j in face i
 
         int cornerVertexID = newFaces[i].vertexIndex[j];
 
-        if (cornerVertexID > verticesSize || cornerVertexID < 0) continue;
-
-        for (int k = 0; k < 4; k++) { // for neighboring face k in corner j
+        for (int k = 0; k < newVertices[cornerVertexID].neighboringFaces; k++) { // for neighboring face k in corner j
 
             int neighboringFaceID = newVertices[cornerVertexID].neighboringFaceIDs[k];
 
@@ -295,18 +311,18 @@ void mergeByDistance(int facesSize, int verticesSize) {
             for (int l = 0; l < 4; l++) { // for corner l in face k
 
                 int neighboringFaceCornerVertexID = newFaces[neighboringFaceID].vertexIndex[l];
-
-                if (neighboringFaceCornerVertexID > verticesSize || neighboringFaceCornerVertexID < 0) continue;
                 
                 if (
-                    newVertices[cornerVertexID].position.x == newVertices[neighboringFaceCornerVertexID].position.x
+                    newVertices[cornerVertexID].position.x == newVertices[neighboringFaceCornerVertexID].position.x &&
+                    newVertices[cornerVertexID].position.y == newVertices[neighboringFaceCornerVertexID].position.y &&
+                    newVertices[cornerVertexID].position.z == newVertices[neighboringFaceCornerVertexID].position.z
                 ) {
 
-                    printf("%d\n", i);
+                    printf("AAAAA\n");
                 }
             }
         }
-    }
+    }*/
 
     /*if (newFaces[i].edgeSimplificationMatches < 4) {
 
