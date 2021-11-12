@@ -243,7 +243,6 @@ void averageCornerVertices(int facesSize) {
 
                     if (matchedPoints > 3) {
 
-                        l = 4;
                         k = facesSize;
                     }
                 }
@@ -269,9 +268,9 @@ void averageCornerVertices(int facesSize) {
         finalMidpointAverage.y = (neighboringFaceMidpointsAverage.y + edgeMidpointsAverage.y) / 2;
         finalMidpointAverage.z = (neighboringFaceMidpointsAverage.z + edgeMidpointsAverage.z) / 2;
 
-        newVertices[objFaces[i].vertexIndex[j]].position = edgeMidpointsAverage; // find a way to get the finalMidpointAverage to work properly
+        newVertices[objFaces[i].vertexIndex[j]].position = neighboringFaceMidpointsAverage;
     }
-
+    
     __syncthreads();
 }
 
@@ -335,7 +334,9 @@ int main (void) {
 
     const int blockSize = 256;
 
+    std::cout << "[CPU] READING MESH" << endl;
     readObj(objPath, vertices, faces); 
+    std::cout << "[CPU] FINISHED READING MESH" << endl;
 
     int facesSize = faces.size();
     int facesSizeAfterSubdivision = facesSize * 4;
