@@ -4,9 +4,9 @@
 
 # Current Progress:
 
-![](https://i.imgur.com/xBXRA6w.png?raw=true)
+![](https://i.imgur.com/gZAbyqv.png?raw=true)
 
-*An input mesh generated in blender (left) next to the sudivided version of the mesh using my program (right). The current version still has a few errors when calculating midpoints, so that is what the hole on the bottom left is.*
+*Wireframe of a mesh generated my program (left) and the input mesh (left).*
 
 ![](https://i.imgur.com/2Hgt3gv.png?raw=true)
 
