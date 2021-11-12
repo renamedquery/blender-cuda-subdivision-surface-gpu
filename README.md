@@ -44,6 +44,8 @@ TODO:
 
 - Make `averageCornerVertices()` work on low-poly meshes.
 
+- Speed up `mergeByDistance()`.
+
 # Compiling Instructions:
 
 Compiling the CUDA file on Win64 (not completed):
