@@ -301,13 +301,13 @@ void mergeByDistance(int facesSize, int verticesSize) {
                         newVertices[newFaces[i].vertexIndex[k]].position.x == newVertices[newFaces[j].vertexIndex[l]].position.x &&
                         newVertices[newFaces[i].vertexIndex[k]].position.y == newVertices[newFaces[j].vertexIndex[l]].position.y &&
                         newVertices[newFaces[i].vertexIndex[k]].position.z == newVertices[newFaces[j].vertexIndex[l]].position.z &&
-                        i != k
+                        newFaces[i].vertexIndex[k] != newFaces[j].vertexIndex[l]
                     ) {
 
                         matches++;
 
-                        atomicAdd(&newFaces[j].edgeSimplificationMatches, 1);
-                        atomicAdd(&newFaces[i].edgeSimplificationMatches, 1);
+                        newFaces[j].edgeSimplificationMatches++;
+                        newFaces[i].edgeSimplificationMatches++;
 
                         if (!(matches < 1) && newVertices[newFaces[j].vertexIndex[l]].position.status == 0) {
 
