@@ -55,6 +55,7 @@ __device__ vec3* faceMidpoints;
 __device__ quadFace* newFaces;
 __device__ vertex* newVertices;
 
+__host__
 std::vector<std::string> stringSplit(std::string string, char delimiter) {
 
     std::vector<std::string> splitString;
@@ -78,7 +79,6 @@ std::vector<std::string> stringSplit(std::string string, char delimiter) {
     return splitString;
 }
 
-// currently only reads verts, faces and edges are todo
 __host__
 void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFace>& faces) {
     
