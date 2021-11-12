@@ -8,9 +8,9 @@
 
 *Wireframe of a mesh generated my program (left) and the input mesh (left).*
 
-![](https://i.imgur.com/2Hgt3gv.png?raw=true)
+![](https://i.imgur.com/MfCeLJB.png?raw=true)
 
-*While open faced meshes with quad topology will not crash the program, they will not be subdivided properly. This input mesh (left) and the output mesh (right) are an example of this misbehavior.*
+*Open faced meshes are now supported by this program. (Output on the right)*
 
 ![](https://i.imgur.com/PrWCvy5.png?raw=true)
 
@@ -39,8 +39,6 @@ TODO:
 - Read normals and texture coordinates from `.obj` files.
 
 - Write normals, texture coordinates, and faces to `.obj` files.
-
-- Add support for open faced meshes with quad topology.
 
 - Make `averageCornerVertices()` work on low-poly meshes.
 
