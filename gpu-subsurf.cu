@@ -205,6 +205,12 @@ __global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAt
 }
 
 __global__
+void replaceNewVerticesWithOldVertices() {
+
+    newVertices = objVertices;
+}
+
+__global__
 void averageCornerVertices(int facesSize) {
 
     int i = (blockIdx.x * blockDim.x) + threadIdx.x;
@@ -407,12 +413,17 @@ int main (void) {
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     std::cout << "[GPU] [catmullClarkFacePointsAndEdges] DONE" << endl;
 
+    replaceNewVerticesWithOldVertices<<<1, 1>>>();
+    std::cout << "[GPU] [replaceNewVerticesWithOldVertices] FINISHED CALLING KERNEL" << endl;
+    CUDA_CHECK_RETURN(cudaDeviceSynchronize());
+    std::cout << "[GPU] [replaceNewVerticesWithOldVertices] DONE" << endl;
+
     averageCornerVertices<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(facesSizeAfterSubdivision);
     std::cout << "[GPU] [averageCornerVertices] FINISHED CALLING KERNELS" << endl;
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     std::cout << "[GPU] [averageCornerVertices] DONE" << endl;
 
-    mergeByDistance<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(facesSizeAfterSubdivision, verticesSize + totalNewVertsToAllocate);
+    mergeByDistance<<<(facesSizeAfterSubdivision + blockSize - 1) / blockSize, blockSize>>>(facesSizeAfterSubdivision, verticesSize + totalNewVertsToAllocate);
     std::cout << "[GPU] [mergeByDistance] FINISHED CALLING KERNELS" << endl;
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     std::cout << "[GPU] [mergeByDistance] DONE" << endl;
@@ -433,18 +444,18 @@ int main (void) {
 
     objFile << "o EXPERIMENTAL_MESH" << endl;
 
-    for (int i = 0; i < verticesSize; i++) {
+    for (int i = 0; i < verticesSize + totalNewVertsToAllocate; i++) {
         
-        objFile << "v " << std::to_string(vertices[i].position.x) << " " << std::to_string(vertices[i].position.y) << " " << std::to_string(vertices[i].position.z) << endl;
+        objFile << "v " << std::to_string(newVertices_tmp_returnVal[i].position.x) << " " << std::to_string(newVertices_tmp_returnVal[i].position.y) << " " << std::to_string(newVertices_tmp_returnVal[i].position.z) << endl;
     }
 
-    for (int i = 0; i < facesSize ; i++) {
+    for (int i = 0; i < facesSizeAfterSubdivision ; i++) {
 
         objFile << "f ";
 
         for (int j = 0; j < 4; j++) {
 
-            objFile << std::to_string(faces[i].vertexIndex[j] + 1) << " ";
+            objFile << std::to_string(newFaces_tmp_returnVal[i].vertexIndex[j] + 1) << " ";
         }
 
         objFile << endl;
