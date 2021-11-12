@@ -36,6 +36,7 @@ struct vertex {
     vec3 normal;
     int id;
     int neighboringFaceIDs[4];
+    int neighboringFaces = 4;
     bool alreadyAveraged = false;
 };
 
@@ -268,6 +269,8 @@ void averageCornerVertices(int facesSize) {
         finalMidpointAverage.z = (neighboringFaceMidpointsAverage.z + edgeMidpointsAverage.z) / 2;
 
         newVertices[objFaces[i].vertexIndex[j]].position = edgeMidpointsAverage;
+        for (int k = 0; k < 4; k++) newVertices[objFaces[i].vertexIndex[j]].neighboringFaceIDs[k] = neighboringFaceIDs[k];
+        if (matchedPoints < 3) newVertices[objFaces[i].vertexIndex[j]].neighboringFaces = matchedPoints;
     }
 }
 
@@ -277,7 +280,35 @@ void mergeByDistance(int facesSize, int verticesSize) {
 
     int i = (blockIdx.x * blockDim.x) + threadIdx.x;
 
-    if (newFaces[i].edgeSimplificationMatches < 4) {
+    for (int j = 0; j < 4; j++) { // for corner j in face i
+
+        int cornerVertexID = newFaces[i].vertexIndex[j];
+
+        if (cornerVertexID > verticesSize || cornerVertexID < 0) continue;
+
+        for (int k = 0; k < 4; k++) { // for neighboring face k in corner j
+
+            int neighboringFaceID = newVertices[cornerVertexID].neighboringFaceIDs[k];
+
+            if (neighboringFaceID > facesSize || neighboringFaceID < 0) continue;
+
+            for (int l = 0; l < 4; l++) { // for corner l in face k
+
+                int neighboringFaceCornerVertexID = newFaces[neighboringFaceID].vertexIndex[l];
+
+                if (neighboringFaceCornerVertexID > verticesSize || neighboringFaceCornerVertexID < 0) continue;
+                
+                if (
+                    newVertices[cornerVertexID].position.x == newVertices[neighboringFaceCornerVertexID].position.x
+                ) {
+
+                    printf("%d\n", i);
+                }
+            }
+        }
+    }
+
+    /*if (newFaces[i].edgeSimplificationMatches < 4) {
 
         for (int j = 0; j < facesSize; j++) {
 
@@ -315,7 +346,7 @@ void mergeByDistance(int facesSize, int verticesSize) {
                 }
             }
         }
-    }
+    }*/
 }
 
 int main (void) {
