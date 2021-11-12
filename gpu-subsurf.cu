@@ -292,6 +292,7 @@ void mergeByDistance(int facesSize, int verticesSize) {
                 for (int l = 0; l < 4; l++) {
 
                     if (!(newFaces[j].edgeSimplificationMatches < 4)) continue;
+                    if (newVertices[newFaces[j].vertexIndex[l]].position.status != 0) continue;
 
                     if (
                         newVertices[newFaces[i].vertexIndex[k]].position.x == newVertices[newFaces[j].vertexIndex[l]].position.x &&
