@@ -40,8 +40,6 @@ TODO:
 
 - Write normals, texture coordinates, and faces to `.obj` files.
 
-- Fix broken vertices that cause holes.
-
 - Add support for open faced meshes with quad topology.
 
 - Make `averageCornerVertices()` work on low-poly meshes.
