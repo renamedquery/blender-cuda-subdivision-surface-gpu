@@ -423,7 +423,7 @@ int main (void) {
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     std::cout << "[GPU] [replaceNewVerticesWithOldVertices] DONE" << endl;
 
-    averageCornerVertices<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(facesSizeAfterSubdivision);
+    averageCornerVertices<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(facesSize);
     std::cout << "[GPU] [averageCornerVertices] FINISHED CALLING KERNELS" << endl;
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     std::cout << "[GPU] [averageCornerVertices] DONE" << endl;
