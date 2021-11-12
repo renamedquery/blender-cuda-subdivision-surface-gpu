@@ -12,11 +12,11 @@
 
 *While open faced meshes with quad topology will not crash the program, they will not be subdivided properly. This input mesh (left) and the output mesh (right) are an example of this misbehavior.*
 
-![](https://i.imgur.com/qn0Zjil.png?raw=true)
+![](https://i.imgur.com/PrWCvy5.png?raw=true)
 
-![](https://i.imgur.com/EVQtgq1.png?raw=true)
+![](https://i.imgur.com/pbs97J1.png?raw=true)
 
-*The CPU program that I made took 11 seconds to subdivide a mesh that was subdivided in 2 seconds by the GPU*
+*The multithreaded CPU program took 2 minutes and 46 seconds to subdivide a cube with 24578 vertices and 24576 faces, while the GPU accelerated version only took ~8.5 seconds.*
 
 Completed tasks:
 
@@ -45,8 +45,6 @@ TODO:
 - Add support for open faced meshes with quad topology.
 
 - Make `averageCornerVertices()` work on low-poly meshes.
-
-- Speed up `mergeByDistance()`.
 
 # Compiling Instructions:
 
