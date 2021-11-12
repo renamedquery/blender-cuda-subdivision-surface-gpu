@@ -78,6 +78,7 @@ std::vector<std::string> stringSplit(std::string string, char delimiter) {
 }
 
 // currently only reads verts, faces and edges are todo
+__host__
 void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFace>& faces) {
     
     std::ifstream objFile(path);
@@ -149,34 +150,6 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFa
 
             id++;
         }
-    }
-
-    objFile.close();
-}
-
-// can not be gpu accelerated - is sequental
-void writeObj(std::string path, vertex *vertices[], quadFace *faces[], int verticesSize, int facesSize) {
-
-    std::ofstream objFile;
-    objFile.open(path, ios::out | ios::trunc);
-
-    objFile << "o EXPERIMENTAL_MESH" << endl;
-
-    for (int i = 0; i < verticesSize; i++) {
-        
-        objFile << "v " << std::to_string(vertices[i]->position.x) << " " << std::to_string(vertices[i]->position.y) << " " << std::to_string(vertices[i]->position.z) << endl;
-    }
-
-    for (int i = 0; i < facesSize; i++) {
-
-        objFile << "f ";
-
-        for (int j = 0; j < 4; j++) {
-
-            objFile << std::to_string(faces[i]->vertexIndex[j] + 1) << " ";
-        }
-
-        objFile << endl;
     }
 
     objFile.close();
@@ -290,9 +263,9 @@ void averageCornerVertices(int facesSize) {
         finalMidpointAverage.z = (neighboringFaceMidpointsAverage.z + edgeMidpointsAverage.z) / 2;
 
         newVertices[objFaces[i].vertexIndex[j]].position = edgeMidpointsAverage; // find a way to get the finalMidpointAverage to work properly
-
-        __syncthreads();
     }
+
+    __syncthreads();
 }
 
 
@@ -447,11 +420,39 @@ int main (void) {
     quadFace* newFaces_tmp_returnVal = new quadFace[facesSize * 4]; 
     vertex* newVertices_tmp_returnVal = new vertex[verticesSize + totalNewVertsToAllocate]; 
 
-    CUDA_CHECK_RETURN(cudaMemcpyFromSymbol(&newFaces_tmp_returnVal, newFaces, sizeof(newFaces_tmp_returnVal)));
-    CUDA_CHECK_RETURN(cudaMemcpyFromSymbol(&newVertices_tmp_returnVal, newVertices, sizeof(newVertices_tmp_returnVal)));
+    std::cout << "[GPU] COPYING MESH DATA TO HOST" << endl;
+    CUDA_CHECK_RETURN(cudaMemcpyFromSymbol(&newFaces_tmp_returnVal, newFaces, sizeof(newFaces)));
+    CUDA_CHECK_RETURN(cudaMemcpyFromSymbol(&newVertices_tmp_returnVal, newVertices, sizeof(newVertices)));
+    CUDA_CHECK_RETURN(cudaDeviceSynchronize());
+    std::cout << "[GPU] DONE COPYING MESH DATA TO HOST" << endl;
 
     std::cout << "[CPU] WRITING MESH TO DISK" << endl;
-    writeObj(objOutputPath, &newVertices_tmp_returnVal, &newFaces_tmp_returnVal, verticesSize + totalNewVertsToAllocate, facesSize * 4);
+
+    std::ofstream objFile;
+    objFile.open(objOutputPath, ios::out | ios::trunc);
+
+    objFile << "o EXPERIMENTAL_MESH" << endl;
+
+    for (int i = 0; i < verticesSize; i++) {
+        
+        objFile << "v " << std::to_string(vertices[i].position.x) << " " << std::to_string(vertices[i].position.y) << " " << std::to_string(vertices[i].position.z) << endl;
+    }
+
+    for (int i = 0; i < facesSize ; i++) {
+
+        objFile << "f ";
+
+        for (int j = 0; j < 4; j++) {
+
+            objFile << std::to_string(faces[i].vertexIndex[j] + 1) << " ";
+        }
+
+        objFile << endl;
+    }
+
+    objFile.close();
+
+    std::cout << "[CPU] DONE WRITING MESH TO DISK" << endl;
 
     return 0;
 }
