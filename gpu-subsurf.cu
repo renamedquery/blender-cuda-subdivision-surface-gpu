@@ -182,7 +182,7 @@ void writeObj(std::string path, std::vector<vertex> vertices, std::vector<quadFa
     objFile.close();
 }
 
-__global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAtStart_lcl, int totalNewVertsToAllocate) { //, quadFace *objFaces[], vertex *objVertices[], vec3 *faceMidpoints[], quadFace *newFaces[], vertex *newVertices[]) {
+__global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAtStart_lcl, int totalNewVertsToAllocate) {
 
     int i = (blockIdx.x * blockDim.x) + threadIdx.x;
 
@@ -297,42 +297,42 @@ void averageCornerVertices(int facesSize) {
 
 
 __global__
-void mergeByDistance(int facesSize) {
+void mergeByDistance(int facesSize, int verticesSize) {
 
     int i = (blockIdx.x * blockDim.x) + threadIdx.x;
 
-    if (objFaces[i].edgeSimplificationMatches < 4) {
+    if (newFaces[i].edgeSimplificationMatches < 4) {
 
         for (int j = 0; j < facesSize; j++) {
 
-            if (!(objFaces[j].edgeSimplificationMatches < 4)) continue;
+            if (!(newFaces[j].edgeSimplificationMatches < 4)) continue;
 
             int matches = 0;
 
             for (int k = 0; k < 4; k ++) {
 
-                if (!(objFaces[j].edgeSimplificationMatches < 4)) continue;
+                if (!(newFaces[j].edgeSimplificationMatches < 4)) continue;
 
                 for (int l = 0; l < 4; l++) {
 
-                    if (!(objFaces[j].edgeSimplificationMatches < 4)) continue;
+                    if (!(newFaces[j].edgeSimplificationMatches < 4)) continue;
 
                     if (
-                        objVertices[objFaces[i].vertexIndex[k]].position.x == objVertices[objFaces[j].vertexIndex[l]].position.x &&
-                        objVertices[objFaces[i].vertexIndex[k]].position.y == objVertices[objFaces[j].vertexIndex[l]].position.y &&
-                        objVertices[objFaces[i].vertexIndex[k]].position.z == objVertices[objFaces[j].vertexIndex[l]].position.z &&
-                        objFaces[i].vertexIndex[k] != objFaces[j].vertexIndex[l]
+                        newVertices[newFaces[i].vertexIndex[k]].position.x == newVertices[newFaces[j].vertexIndex[l]].position.x &&
+                        newVertices[newFaces[i].vertexIndex[k]].position.y == newVertices[newFaces[j].vertexIndex[l]].position.y &&
+                        newVertices[newFaces[i].vertexIndex[k]].position.z == newVertices[newFaces[j].vertexIndex[l]].position.z &&
+                        i != k
                     ) {
-                        
+
                         matches++;
 
-                        objFaces[j].edgeSimplificationMatches++;
-                        objFaces[i].edgeSimplificationMatches++;
+                        atomicAdd(&newFaces[j].edgeSimplificationMatches, 1);
+                        atomicAdd(&newFaces[i].edgeSimplificationMatches, 1);
 
-                        if (!(matches < 1) && objVertices[objFaces[j].vertexIndex[l]].position.status == 0) {
+                        if (!(matches < 1) && newVertices[newFaces[j].vertexIndex[l]].position.status == 0) {
 
-                            objVertices[objFaces[i].vertexIndex[k]].position.status = 1;
-                            objFaces[j].vertexIndex[l] = objFaces[i].vertexIndex[k];
+                            newVertices[newFaces[i].vertexIndex[k]].position.status = 1;
+                            newFaces[j].vertexIndex[l] = newFaces[i].vertexIndex[k];
                         }
                     }
                 }
@@ -388,6 +388,12 @@ int main (void) {
         objFaces_tmp[j] = faces[j];
     }
 
+    for (int j = 0; j < verticesSize + totalNewVertsToAllocate; j++) {
+
+        vertex tmp;
+        newVertices_tmp[j] = tmp;
+    }
+
     for (int j = 0; j < facesSize; j++) {
 
         vec3 faceAverageMiddlePoint;
@@ -429,11 +435,11 @@ int main (void) {
     std::cout << "[GPU] [catmullClarkFacePointsAndEdges] DONE" << endl;
 
     averageCornerVertices<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(facesSizeAfterSubdivision);
-    std::cout << "[GPU] [catmullClarkFacePointsAndEdges] FINISHED CALLING KERNELS" << endl;
+    std::cout << "[GPU] [averageCornerVertices] FINISHED CALLING KERNELS" << endl;
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
-    std::cout << "[GPU] [catmullClarkFacePointsAndEdges] DONE" << endl;
+    std::cout << "[GPU] [averageCornerVertices] DONE" << endl;
 
-    mergeByDistance<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(facesSizeAfterSubdivision);
+    mergeByDistance<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(facesSizeAfterSubdivision, verticesSize + totalNewVertsToAllocate);
     std::cout << "[GPU] [mergeByDistance] FINISHED CALLING KERNELS" << endl;
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     std::cout << "[GPU] [mergeByDistance] DONE" << endl;
