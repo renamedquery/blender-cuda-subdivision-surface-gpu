@@ -12,6 +12,12 @@
 
 *While open faced meshes with quad topology will not crash the program, they will not be subdivided properly. This input mesh (left) and the output mesh (right) are an example of this misbehavior.*
 
+![](https://i.imgur.com/qn0Zjil.png?raw=true)
+
+![](https://i.imgur.com/EVQtgq1.png?raw=true)
+
+*The CPU program that I made took 11 seconds to subdivide a mesh that was subdivided in 2 seconds by the GPU*
+
 Completed tasks:
 
 - Reading from a `.obj` file to take in data (verts + faces).
@@ -22,6 +28,8 @@ Completed tasks:
 
 - CPU Multithreading.
 
+- GPU Acceleration.
+
 - Merge by distance algorithm.
 
 TODO:
@@ -29,8 +37,6 @@ TODO:
 - Read normals and texture coordinates from `.obj` files.
 
 - Write normals, texture coordinates, and faces to `.obj` files.
-
-- Accelerate the algorithm by using CUDA.
 
 - Fix broken vertices that cause holes.
 
