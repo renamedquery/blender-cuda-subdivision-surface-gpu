@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <chrono>
 
 using namespace std;
 
@@ -323,6 +324,8 @@ void mergeByDistance(int facesSize, int verticesSize) {
 }
 
 int main (void) {
+
+    auto startTime = std::chrono::steady_clock::now();
     
     std::string objPath = "./testMesh.obj";
     std::string objOutputPath = "./testMeshOutput.obj";
@@ -464,6 +467,9 @@ int main (void) {
     objFile.close();
 
     std::cout << "[CPU] DONE WRITING MESH TO DISK" << endl;
+
+    auto endTime = std::chrono::steady_clock::now();
+    std::cout << "[END] PROGRAM TOOK " << std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << "MS" << endl;
 
     return 0;
 }
