@@ -42,6 +42,8 @@ TODO:
 
 - Add support for open faced meshes with quad topology.
 
+- Make `averageCornerVertices()` work on low-poly meshes.
+
 # Compiling Instructions:
 
 Compiling the CUDA file on Win64 (not completed):

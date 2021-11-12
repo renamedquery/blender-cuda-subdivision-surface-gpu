@@ -244,12 +244,13 @@ void averageCornerVertices(int facesSize) {
                     if (matchedPoints > 3) {
 
                         k = facesSize;
+                        l = 4;
                     }
                 }
             }
         }
 
-        for (int k = 0; k < 4; k++) {
+        for (int k = 0; k < matchedPoints; k++) {
 
             neighboringFaceMidpointsAverage.x += faceMidpoints[neighboringFaceIDs[k]].x;
             neighboringFaceMidpointsAverage.y += faceMidpoints[neighboringFaceIDs[k]].y;
@@ -268,7 +269,7 @@ void averageCornerVertices(int facesSize) {
         finalMidpointAverage.y = (neighboringFaceMidpointsAverage.y + edgeMidpointsAverage.y) / 2;
         finalMidpointAverage.z = (neighboringFaceMidpointsAverage.z + edgeMidpointsAverage.z) / 2;
 
-        newVertices[objFaces[i].vertexIndex[j]].position = neighboringFaceMidpointsAverage;
+        newVertices[objFaces[i].vertexIndex[j]].position = edgeMidpointsAverage;
     }
     
     __syncthreads();
