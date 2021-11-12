@@ -155,25 +155,25 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFa
 }
 
 // can not be gpu accelerated - is sequental
-void writeObj(std::string path, std::vector<vertex> vertices, std::vector<quadFace> faces) {
+void writeObj(std::string path, vertex *vertices[], quadFace *faces[], int verticesSize, int facesSize) {
 
     std::ofstream objFile;
     objFile.open(path, ios::out | ios::trunc);
 
     objFile << "o EXPERIMENTAL_MESH" << endl;
 
-    for (int i = 0; i < vertices.size(); i++) {
+    for (int i = 0; i < verticesSize; i++) {
         
-        objFile << "v " << std::to_string(vertices[i].position.x) << " " << std::to_string(vertices[i].position.y) << " " << std::to_string(vertices[i].position.z) << endl;
+        objFile << "v " << std::to_string(vertices[i]->position.x) << " " << std::to_string(vertices[i]->position.y) << " " << std::to_string(vertices[i]->position.z) << endl;
     }
 
-    for (int i = 0; i < faces.size(); i++) {
+    for (int i = 0; i < facesSize; i++) {
 
         objFile << "f ";
 
         for (int j = 0; j < 4; j++) {
 
-            objFile << std::to_string(faces[i].vertexIndex[j] + 1) << " ";
+            objFile << std::to_string(faces[i]->vertexIndex[j] + 1) << " ";
         }
 
         objFile << endl;
@@ -444,188 +444,14 @@ int main (void) {
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     std::cout << "[GPU] [mergeByDistance] DONE" << endl;
 
-    //facesSize_host *= 4;
+    quadFace* newFaces_tmp_returnVal = new quadFace[facesSize * 4]; 
+    vertex* newVertices_tmp_returnVal = new vertex[verticesSize + totalNewVertsToAllocate]; 
 
-    //averageCornerVertices<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(facesSize, *&threadID);
+    CUDA_CHECK_RETURN(cudaMemcpyFromSymbol(&newFaces_tmp_returnVal, newFaces, sizeof(newFaces_tmp_returnVal)));
+    CUDA_CHECK_RETURN(cudaMemcpyFromSymbol(&newVertices_tmp_returnVal, newVertices, sizeof(newVertices_tmp_returnVal)));
 
-    //std::thread(averageCornerVertices, std::ref(vertices), std::ref(newVertices), std::ref(faces), i, std::ref(completeThreads), maxVertsAtStart, std::ref(faceMidpoints), std::ref(localFaceMidpointVertIDs)).detach();
-
-    /*
-    //catmullClarkSubdiv(objVertices, objFaces, MAX_CORES, objFaces.size());
-    const int originalMaxVertID = maxVertsAtStart; // for finding the original non-interpolated verts
-
-    // face points and edge points
-
-    int completeThreads = 0;
-    int threadCountOverrunHalts = 0; // the amount of times the program has to stop spawning new threads to wait for the old ones to fall below the MAX_CORES limit
-
-    
-    std::atomic<int> workInProgressThreads(0);
-
-    // each thread adds 5 new face points
-    // calculate the total new points
-
-    int totalNewVertsToAllocate = faces.size() * 5;
-
-    std::vector<quadFace> newFaces;
-
-    // make new placeholder vertices
-
-    for (int i = 0; i < totalNewVertsToAllocate; i++) {
-        
-        vertex vert;
-        vertices.push_back(vert);
-    }
-
-    std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] SPAWNING " << faces.size() << " THREADS" << endl;
-
-    std::vector<vec3> faceMidpoints;
-    std::vector<int> localFaceMidpointVertIDs;
-
-    for (int j = 0; j < faces.size(); j++) {
-
-        vec3 faceAverageMiddlePoint;
-
-        faceAverageMiddlePoint.x = (
-            (vertices[faces[j].vertexIndex[0]].position.x) + 
-            (vertices[faces[j].vertexIndex[1]].position.x) + 
-            (vertices[faces[j].vertexIndex[2]].position.x) + 
-            (vertices[faces[j].vertexIndex[3]].position.x)
-        ) / 4;
-
-        faceAverageMiddlePoint.y = (
-            (vertices[faces[j].vertexIndex[0]].position.y) + 
-            (vertices[faces[j].vertexIndex[1]].position.y) + 
-            (vertices[faces[j].vertexIndex[2]].position.y) + 
-            (vertices[faces[j].vertexIndex[3]].position.y)
-        ) / 4;
-
-        faceAverageMiddlePoint.z = (
-            (vertices[faces[j].vertexIndex[0]].position.z) + 
-            (vertices[faces[j].vertexIndex[1]].position.z) + 
-            (vertices[faces[j].vertexIndex[2]].position.z) + 
-            (vertices[faces[j].vertexIndex[3]].position.z)
-        ) / 4;
-
-        faceMidpoints.push_back(faceAverageMiddlePoint);
-        localFaceMidpointVertIDs.push_back(maxVertsAtStart + (j * 5) + 0);
-    }
-
-    for (int i = 0; i < faces.size(); i++) {
-
-        workInProgressThreads++;
-        std::thread(catmullClarkFacePointsAndEdges, std::ref(vertices), std::ref(faces), std::ref(newFaces), originalMaxVertID, i, std::ref(completeThreads), maxVertsAtStart, std::ref(faceMidpoints), std::ref(localFaceMidpointVertIDs)).detach();
-
-        if (i % 100 == 0) {
-
-            std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] " << std::to_string(((float)i / (float)faces.size()) * 100) << "% DONE" << endl;
-        }
-
-        while (workInProgressThreads - completeThreads > MAX_CORES) {
-            
-            threadCountOverrunHalts++;
-
-            if (workInProgressThreads - completeThreads <= MAX_CORES) break;
-        }
-    };
-
-    std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] THREAD SPAWNING IS DONE" << endl;
-    std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] threadCountOverrunHalts=" << std::to_string(threadCountOverrunHalts) << endl;
-    std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] WAITING FOR THREADS TO FINISH" << endl;
-
-    while (true) {
-
-        if (workInProgressThreads <= completeThreads) break;
-    }
-
-    std::cout << "[CPU] [catmullClarkFacePointsAndEdges()] ALL THREADS ARE DONE" << endl;
-
-    std::cout << "[CPU] [averageCornerVertices()] SPAWNING " << originalMaxVertID << " THREADS" << endl;
-
-    completeThreads = 0;
-    workInProgressThreads = 0;
-    threadCountOverrunHalts = 0;
-
-    auto newVertices = vertices;
-
-    // neighboring face midpoint gathering
-    for (int i = 0; i < faces.size(); i++) {
-
-        workInProgressThreads++;
-        std::thread(averageCornerVertices, std::ref(vertices), std::ref(newVertices), std::ref(faces), i, std::ref(completeThreads), maxVertsAtStart, std::ref(faceMidpoints), std::ref(localFaceMidpointVertIDs)).detach();
-
-        //if (i % 100 == 0) {
-
-            //std::cout << "[CPU] [averageCornerVertices()] " << std::to_string(((float)i / (float)faces.size()) * 100) << "% DONE" << endl;
-        //}
-
-        while (workInProgressThreads - completeThreads > MAX_CORES) {
-            
-            threadCountOverrunHalts++;
-
-            if (workInProgressThreads - completeThreads <= MAX_CORES) break;
-        }
-    }
-
-    //std::cout << "[CPU] [averageCornerVertices()] THREAD SPAWNING IS DONE" << endl;
-    //std::cout << "[CPU] [averageCornerVertices()] threadCountOverrunHalts=" << std::to_string(threadCountOverrunHalts) << endl;
-    //std::cout << "[CPU] [averageCornerVertices()] WAITING FOR THREADS TO FINISH" << endl;
-
-    while (true) {
-
-        if (workInProgressThreads <= completeThreads) break;
-    }
-
-    vertices = newVertices;
-
-    //std::cout << "[CPU] [averageCornerVertices()] ALL THREADS ARE DONE" << endl;
-
-    //std::cout << "[CPU] [mergeByDistance()] SPAWNING " << originalMaxVertID << " THREADS" << endl;
-
-    completeThreads = 0;
-    workInProgressThreads = 0;
-    threadCountOverrunHalts = 0;
-
-    faces.clear();
-    faces = newFaces;
-
-    // neighboring face midpoint gathering
-    for (int i = 0; i < faces.size(); i++) {
-
-        workInProgressThreads++;
-        //std::thread(mergeByDistance, std::ref(vertices), i, std::ref(completeThreads), std::ref(faces)).detach();
-
-        //if (i % (100 * 4) == 0) {
-
-            //std::cout << "[CPU] [mergeByDistance()] " << std::to_string(((float)i / (float)faces.size()) * 100) << "% DONE" << endl;
-        //}
-
-        while (workInProgressThreads - completeThreads > MAX_CORES) {
-            
-            threadCountOverrunHalts++;
-
-            if (workInProgressThreads - completeThreads <= MAX_CORES) break;
-        }
-    }
-
-    //std::cout << "[CPU] [mergeByDistance()] THREAD SPAWNING IS DONE" << endl;
-    //std::cout << "[CPU] [mergeByDistance()] threadCountOverrunHalts=" << std::to_string(threadCountOverrunHalts) << endl;
-    //std::cout << "[CPU] [mergeByDistance()] WAITING FOR THREADS TO FINISH" << endl;
-
-    while (true) {
-
-        if (workInProgressThreads <= completeThreads) break;
-    }
-
-    //std::cout << "[CPU] [mergeByDistance()] ALL THREADS ARE DONE" << endl;
-
-    vertCount = std::to_string(objVertices.size());
-    faceCount = std::to_string(objFaces.size());
-
-    writeObj(objOutputPath, objVertices, objFaces);
-
-    //printVerts(objVertices);
-    //printFaces(objFaces, objVertices);*/
+    std::cout << "[CPU] WRITING MESH TO DISK" << endl;
+    writeObj(objOutputPath, &newVertices_tmp_returnVal, &newFaces_tmp_returnVal, verticesSize + totalNewVertsToAllocate, facesSize * 4);
 
     return 0;
 }
