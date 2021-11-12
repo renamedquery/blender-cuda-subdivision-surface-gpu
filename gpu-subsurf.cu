@@ -201,8 +201,6 @@ __global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAt
     }
 
     objVertices[objFaces[i].midpointVertID].position = faceMidpoints[i];
-
-    __syncthreads();
 }
 
 __global__
@@ -271,8 +269,6 @@ void averageCornerVertices(int facesSize) {
 
         newVertices[objFaces[i].vertexIndex[j]].position = edgeMidpointsAverage;
     }
-    
-    __syncthreads();
 }
 
 
@@ -319,8 +315,6 @@ void mergeByDistance(int facesSize, int verticesSize) {
             }
         }
     }
-
-    __syncthreads();
 }
 
 int main (void) {
