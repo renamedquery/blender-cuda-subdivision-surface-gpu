@@ -39,11 +39,18 @@ struct quadFace {
     int edgeSimplificationMatches = 0;
 };
 
+struct double_3 {
+    int x = 0;
+    int y = 0;
+    int z = 0;
+};
+
 __device__ vertex* objVertices;
 __device__ quadFace* objFaces;
 __device__ vec3* faceMidpoints;
 __device__ quadFace* newFaces;
 __device__ vertex* newVertices;
+__device__ double_3* vertexLookupTable; // [["hash", vertexID_1, vertexID_2]...]
 
 __host__
 std::vector<std::string> stringSplit(std::string string, char delimiter) {
@@ -314,12 +321,14 @@ int main (void) {
     vec3* faceMidpoints_tmp = new vec3[facesSize]; 
     quadFace* newFaces_tmp = new quadFace[facesSize * 4]; 
     vertex* newVertices_tmp = new vertex[verticesSize + totalNewVertsToAllocate]; 
+    double_3* vertexLookupTable_tmp = new double_3[verticesSize + totalNewVertsToAllocate];
     
     CUDA_CHECK_RETURN(cudaMallocManaged((void **)&objVertices_tmp, sizeof(vertex) * (verticesSize + totalNewVertsToAllocate)));
     CUDA_CHECK_RETURN(cudaMallocManaged((void **)&objFaces_tmp, sizeof(quadFace) * (facesSize)));
     CUDA_CHECK_RETURN(cudaMallocManaged((void **)&faceMidpoints_tmp, sizeof(vec3) * (facesSize)));
     CUDA_CHECK_RETURN(cudaMallocManaged((void **)&newFaces_tmp, sizeof(quadFace) * (facesSize * 4)));
     CUDA_CHECK_RETURN(cudaMallocManaged((void **)&newVertices_tmp, sizeof(vertex) * (verticesSize + (facesSize * 5))));
+    CUDA_CHECK_RETURN(cudaMallocManaged((void **)&vertexLookupTable_tmp, sizeof(double_3) * (verticesSize + totalNewVertsToAllocate)));
 
     for (int j = 0; j < verticesSize; j++) {
 
