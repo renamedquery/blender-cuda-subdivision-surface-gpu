@@ -34,7 +34,7 @@ Completed tasks:
 
 TODO:
 
-- Create a "hash map" (not exactly a hash, but a unique representation) of all the vertex coordinates that allows the program to efficiently locate multiple vertices that share the same coordinate in 1 function call instead of *n* function calls.
+- Create a "hash map" (not exactly a hash, but a unique representation) of all the vertex coordinates that allows the program to efficiently locate multiple vertices that share the same coordinate in *n(1)* function calls instead of *n^2* function calls.
 
 - Test feasibility of using GPUDirect Storage to read the `.obj` files from disk (reading large files can be pretty slow).
 
