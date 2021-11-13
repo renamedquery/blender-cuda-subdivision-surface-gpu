@@ -291,20 +291,18 @@ void mergeByDistance(int facesSize, int verticesSize) {
     }
 }
 
-int main (void) {
+__host__
+void subdivideMeshFromFile(std::string inputFilePath, std::string outputFilePath) {
 
     auto startTime = std::chrono::steady_clock::now();
-    
-    std::string objPath = "./testMesh.obj";
-    std::string objOutputPath = "./testMeshOutput.obj";
 
     std::vector<vertex> vertices;
     std::vector<quadFace> faces;
 
     const int BLOCK_SIZE = 256;
 
-    std::cout << "[CPU] [readObj] READING MESH" << endl;
-    readObj(objPath, vertices, faces); 
+    std::cout << "[CPU] [readObj] READING MESH FROM " << inputFilePath << endl;
+    readObj(inputFilePath, vertices, faces); 
     std::cout << "[CPU] [readObj] FINISHED READING MESH" << endl;
 
     int facesSize = faces.size();
@@ -413,10 +411,10 @@ int main (void) {
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     std::cout << "[GPU] [cudaMemcpyFromSymbol] DONE COPYING MESH DATA TO HOST" << endl;
 
-    std::cout << "[CPU] [main] WRITING MESH TO DISK" << endl;
+    std::cout << "[CPU] [main] WRITING MESH TO " << outputFilePath << endl;
 
     std::ofstream objFile;
-    objFile.open(objOutputPath, ios::out | ios::trunc);
+    objFile.open(outputFilePath, ios::out | ios::trunc);
 
     objFile << "o EXPERIMENTAL_MESH" << endl;
 
@@ -443,6 +441,11 @@ int main (void) {
 
     auto endTime = std::chrono::steady_clock::now();
     std::cout << "[END] PROGRAM TOOK " << std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << "MS" << endl;
+}
+
+int main (void) {
+
+    subdivideMeshFromFile("./testMesh.obj", "./testMeshOutput.obj");
 
     return 0;
 }
