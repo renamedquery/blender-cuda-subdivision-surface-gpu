@@ -309,6 +309,9 @@ int main (void) {
     int verticesSize = vertices.size();
     int totalNewVertsToAllocate = facesSize * 5;
 
+    std::cout << "[CPU] [main] " << std::to_string(facesSize) << " FACES AND " << std::to_string(verticesSize) << " VERTICES READ FROM DISK" << endl;
+    std::cout << "[CPU] [main] " << std::to_string(facesSizeAfterSubdivision) << " FACES AND " << std::to_string(verticesSize + totalNewVertsToAllocate) << " VERTICES WILL BE ALLOCATED" << endl;
+
     vertex* objVertices_tmp = new vertex[verticesSize + totalNewVertsToAllocate]; 
     quadFace* objFaces_tmp = new quadFace[facesSize]; 
     vec3* faceMidpoints_tmp = new vec3[facesSize]; 
