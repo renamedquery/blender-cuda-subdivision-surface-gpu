@@ -34,6 +34,8 @@ Completed tasks:
 
 TODO:
 
+- Test feasibility of using GPUDirect Storage to read the `.obj` files from disk (reading large files can be pretty slow).
+
 - Investigate the feasibility of using the method described in the paper ["Efficient GPU Rendering of Subdivision Surfaces using Adaptive Quadtrees"](http://www.graphics.stanford.edu/~niessner/papers/2016/4subdiv/brainerd2016efficient.pdf).
 
 - Read normals and texture coordinates from `.obj` files.
