@@ -58,6 +58,6 @@ Compiling the C++ file on Ubuntu 20.04:
 
 - Only works on quads.
 
-# Tested hardware
+# Tested Hardware
 
 - RTX 3080
