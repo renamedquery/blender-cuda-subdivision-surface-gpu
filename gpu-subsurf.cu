@@ -222,9 +222,9 @@ void averageCornerVertices(int facesSize) {
         int matchedPoints = 0;
         int neighboringFaceIDs[4];
 
-        vec3 neighboringFaceMidpointsAverage;
+        //vec3 neighboringFaceMidpointsAverage;
         vec3 edgeMidpointsAverage;
-        vec3 finalMidpointAverage;
+        //vec3 finalMidpointAverage;
 
         for (int k = 0; k < facesSize; k++) {
 
@@ -253,6 +253,8 @@ void averageCornerVertices(int facesSize) {
             }
         }
 
+        // will be re-implemented later
+        /*
         for (int k = 0; k < matchedPoints; k++) {
 
             neighboringFaceMidpointsAverage.x += faceMidpoints[neighboringFaceIDs[k]].x;
@@ -263,14 +265,18 @@ void averageCornerVertices(int facesSize) {
         neighboringFaceMidpointsAverage.x /= matchedPoints;
         neighboringFaceMidpointsAverage.y /= matchedPoints;
         neighboringFaceMidpointsAverage.z /= matchedPoints;
+        */
 
         edgeMidpointsAverage.x /= matchedPoints;
         edgeMidpointsAverage.y /= matchedPoints;
         edgeMidpointsAverage.z /= matchedPoints;
 
+        // will be re-implemented later
+        /*
         finalMidpointAverage.x = (neighboringFaceMidpointsAverage.x + edgeMidpointsAverage.x) / 2;
         finalMidpointAverage.y = (neighboringFaceMidpointsAverage.y + edgeMidpointsAverage.y) / 2;
         finalMidpointAverage.z = (neighboringFaceMidpointsAverage.z + edgeMidpointsAverage.z) / 2;
+        */
 
         newVertices[objFaces[i].vertexIndex[j]].position = edgeMidpointsAverage;
         for (int k = 0; k < 4; k++) newVertices[objFaces[i].vertexIndex[j]].neighboringFaceIDs[k] = neighboringFaceIDs[k];
@@ -293,6 +299,7 @@ void mergeByDistance(int facesSize, int verticesSize) {
                 newVertices[newFaces[i].vertexIndex[k]].position.y == newVertices[j].position.y &&
                 newVertices[newFaces[i].vertexIndex[k]].position.z == newVertices[j].position.z
             ) {
+
                 newFaces[i].vertexIndex[k] = j;
             }
         }
@@ -309,7 +316,7 @@ int main (void) {
     std::vector<vertex> vertices;
     std::vector<quadFace> faces;
 
-    const int blockSize = 256;
+    const int BLOCK_SIZE = 256;
 
     std::cout << "[CPU] READING MESH" << endl;
     readObj(objPath, vertices, faces); 
@@ -389,7 +396,7 @@ int main (void) {
     CUDA_CHECK_RETURN(cudaMemcpyToSymbol(newFaces, &newFaces_tmp, sizeof(newFaces_tmp)));
     CUDA_CHECK_RETURN(cudaMemcpyToSymbol(newVertices, &newVertices_tmp, sizeof(newVertices_tmp)));
 
-    catmullClarkFacePointsAndEdges<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(facesSize, verticesSize, totalNewVertsToAllocate);
+    catmullClarkFacePointsAndEdges<<<(facesSize + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(facesSize, verticesSize, totalNewVertsToAllocate);
     std::cout << "[GPU] [catmullClarkFacePointsAndEdges] FINISHED CALLING KERNELS" << endl;
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     std::cout << "[GPU] [catmullClarkFacePointsAndEdges] DONE" << endl;
@@ -399,12 +406,12 @@ int main (void) {
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     std::cout << "[GPU] [replaceNewVerticesWithOldVertices] DONE" << endl;
 
-    averageCornerVertices<<<(facesSize + blockSize - 1) / blockSize, blockSize>>>(facesSize);
+    averageCornerVertices<<<(facesSize + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(facesSize);
     std::cout << "[GPU] [averageCornerVertices] FINISHED CALLING KERNELS" << endl;
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     std::cout << "[GPU] [averageCornerVertices] DONE" << endl;
 
-    mergeByDistance<<<(facesSizeAfterSubdivision + blockSize - 1) / blockSize, blockSize>>>(facesSizeAfterSubdivision, verticesSize + totalNewVertsToAllocate);
+    mergeByDistance<<<(facesSizeAfterSubdivision + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(facesSizeAfterSubdivision, verticesSize + totalNewVertsToAllocate);
     std::cout << "[GPU] [mergeByDistance] FINISHED CALLING KERNELS" << endl;
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     std::cout << "[GPU] [mergeByDistance] DONE" << endl;
