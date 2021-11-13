@@ -12,11 +12,11 @@
 
 *Open faced meshes are now supported by this program. (Output on the right)*
 
-![](https://i.imgur.com/aKQ06JN.png?raw=true)
+![](https://i.imgur.com/7lvIJfI.png?raw=true)
 
 ![](https://i.imgur.com/pbs97J1.png?raw=true)
 
-*The multithreaded CPU program took 2 minutes and 46 seconds to subdivide a cube with 24578 vertices and 24576 faces, while the GPU accelerated version only took ~7 seconds.*
+*The multithreaded CPU program took 2 minutes and 46 seconds to subdivide a cube with 24578 vertices and 24576 faces, while the GPU accelerated version only took ~5.5 seconds.*
 
 Completed tasks:
 
