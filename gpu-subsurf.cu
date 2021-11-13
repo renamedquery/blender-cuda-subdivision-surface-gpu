@@ -28,7 +28,6 @@ struct vec3 {
 struct vertex {
     vec3 position;
     int id;
-    int neighboringFaceIDs[4];
     int neighboringFaces = 4;
 };
 
@@ -208,7 +207,6 @@ void averageCornerVertices(int facesSize) {
     for (int j = 0; j < 4; j++) {
 
         int matchedPoints = 0;
-        int neighboringFaceIDs[4];
 
         //vec3 neighboringFaceMidpointsAverage;
         vec3 edgeMidpointsAverage;
@@ -223,8 +221,6 @@ void averageCornerVertices(int facesSize) {
                     newVertices[objFaces[i].vertexIndex[j]].position.y == newVertices[objFaces[k].vertexIndex[l]].position.y &&
                     newVertices[objFaces[i].vertexIndex[j]].position.z == newVertices[objFaces[k].vertexIndex[l]].position.z
                 ) {
-
-                    neighboringFaceIDs[matchedPoints] = k;
 
                     edgeMidpointsAverage.x += (objVertices[objFaces[i].vertexIndex[j]].position.x + objVertices[objFaces[k].vertexIndex[(l + 1) % 4]].position.x) / 2;
                     edgeMidpointsAverage.y += (objVertices[objFaces[i].vertexIndex[j]].position.y + objVertices[objFaces[k].vertexIndex[(l + 1) % 4]].position.y) / 2;
@@ -267,8 +263,6 @@ void averageCornerVertices(int facesSize) {
         */
 
         newVertices[objFaces[i].vertexIndex[j]].position = edgeMidpointsAverage;
-        for (int k = 0; k < 4; k++) newVertices[objFaces[i].vertexIndex[j]].neighboringFaceIDs[k] = neighboringFaceIDs[k];
-        newVertices[objFaces[i].vertexIndex[j]].neighboringFaces = matchedPoints;
     }
 }
 
