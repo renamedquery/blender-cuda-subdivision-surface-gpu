@@ -306,9 +306,9 @@ int main (void) {
 
     const int BLOCK_SIZE = 256;
 
-    std::cout << "[CPU] READING MESH" << endl;
+    std::cout << "[CPU] [readObj] READING MESH" << endl;
     readObj(objPath, vertices, faces); 
-    std::cout << "[CPU] FINISHED READING MESH" << endl;
+    std::cout << "[CPU] [readObj] FINISHED READING MESH" << endl;
 
     int facesSize = faces.size();
     int facesSizeAfterSubdivision = facesSize * 4;
@@ -407,13 +407,13 @@ int main (void) {
     quadFace* newFaces_tmp_returnVal = new quadFace[facesSize * 4]; 
     vertex* newVertices_tmp_returnVal = new vertex[verticesSize + totalNewVertsToAllocate]; 
 
-    std::cout << "[GPU] COPYING MESH DATA TO HOST" << endl;
+    std::cout << "[GPU] [cudaMemcpyFromSymbol] COPYING MESH DATA TO HOST" << endl;
     CUDA_CHECK_RETURN(cudaMemcpyFromSymbol(&newFaces_tmp_returnVal, newFaces, sizeof(newFaces)));
     CUDA_CHECK_RETURN(cudaMemcpyFromSymbol(&newVertices_tmp_returnVal, newVertices, sizeof(newVertices)));
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
-    std::cout << "[GPU] DONE COPYING MESH DATA TO HOST" << endl;
+    std::cout << "[GPU] [cudaMemcpyFromSymbol] DONE COPYING MESH DATA TO HOST" << endl;
 
-    std::cout << "[CPU] WRITING MESH TO DISK" << endl;
+    std::cout << "[CPU] [main] WRITING MESH TO DISK" << endl;
 
     std::ofstream objFile;
     objFile.open(objOutputPath, ios::out | ios::trunc);
@@ -439,7 +439,7 @@ int main (void) {
 
     objFile.close();
 
-    std::cout << "[CPU] DONE WRITING MESH TO DISK" << endl;
+    std::cout << "[CPU] [main] DONE WRITING MESH TO DISK" << endl;
 
     auto endTime = std::chrono::steady_clock::now();
     std::cout << "[END] PROGRAM TOOK " << std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << "MS" << endl;
