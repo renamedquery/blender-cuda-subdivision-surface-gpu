@@ -445,7 +445,7 @@ void subdivideMeshFromFile(std::string inputFilePath, std::string outputFilePath
 
 int main (void) {
 
-    subdivideMeshFromFile("./testMesh.obj", "./testMeshOutput.obj");
+    subdivideMeshFromFile("testMesh.obj", "testMeshOutput.obj");
 
     return 0;
 }
