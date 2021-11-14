@@ -148,8 +148,6 @@ __global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAt
 
     int i = (blockIdx.x * blockDim.x) + threadIdx.x;
 
-    if (i > facesSize_lcl) return;
-
     quadFace currentSubdividedFaces[4];
     
     for (int j = 0; j < 4; j++) currentSubdividedFaces[j].vertexIndex[3] = objFaces[i].midpointVertID; // face point [0] will be the center of the subdivided face
@@ -201,8 +199,6 @@ __global__
 void averageCornerVertices(int facesSize) {
 
     int i = (blockIdx.x * blockDim.x) + threadIdx.x;
-
-    if (i > facesSize) return;
 
     for (int j = 0; j < 4; j++) {
 
