@@ -6,21 +6,6 @@ bl_info = {
     'category':'Object'
 }
 
-class GPUSubsurfClientUseMenu(bpy.types.Operator):
-
-    bl_idname = "addon_gpusubsurf.clientmenu_use"
-    bl_label = "Subdivide Mesh Using CUDA"
-    bl_options = {
-        'REGISTER',
-        'UNDO'
-    }
-
-    def execute(self, context) -> set:
-
-        print('[gpu-subsurf-client.py] [GPUSubsurfClientUseMenu.execute] DONE')
-
-        return {'FINISHED'}
-
 class GPUSubsurfClientStartMenu(bpy.types.Operator):
 
     bl_idname = "addon_gpusubsurf.clientmenu_start"
@@ -53,13 +38,11 @@ class GPUSubsurfClientStopMenu(bpy.types.Operator):
 
 def addFunctionsToMenu(self, context) -> None:
 
-    self.layout.operator(GPUSubsurfClientUseMenu.bl_idname)
     self.layout.operator(GPUSubsurfClientStartMenu.bl_idname)
     self.layout.operator(GPUSubsurfClientStopMenu.bl_idname)
 
 def register() -> None:
 
-    bpy.utils.register_class(GPUSubsurfClientUseMenu)
     bpy.utils.register_class(GPUSubsurfClientStartMenu)
     bpy.utils.register_class(GPUSubsurfClientStopMenu)
     bpy.types.VIEW3D_MT_object.append(addFunctionsToMenu)
