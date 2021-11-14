@@ -29,6 +29,7 @@ struct vertex {
     vec3 position;
     int id;
     int neighboringFaces = 4;
+    int neighboringFaceIDs[4];
 };
 
 struct quadFace {
