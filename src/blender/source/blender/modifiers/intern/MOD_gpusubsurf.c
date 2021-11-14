@@ -14,11 +14,11 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
 
     /* copyData */ NULL,
 
-    /* deformVerts */ NULL,
-    /* deformMatrices */ NULL,
-    /* deformVertsEM */ NULL,
-    /* deformMatricesEM */ NULL,
-    /* applyModifier */ NULL,
+    /* deformVerts */ true,
+    /* deformMatrices */ true,
+    /* deformVertsEM */ true,
+    /* deformMatricesEM */ true,
+    /* applyModifier */ true,
 
     /* initData */ NULL,
     /* requiredDataMask */ NULL,
