@@ -12,7 +12,7 @@
 
 *Open faced meshes are now supported by this program. (Output on the right)*
 
-![](https://i.imgur.com/7lvIJfI.png?raw=true)
+![](https://i.imgur.com/Z9CokPC.png?raw=true)
 
 ![](https://i.imgur.com/pbs97J1.png?raw=true)
 
