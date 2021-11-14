@@ -144,7 +144,8 @@ void readObj(std::string path, std::vector<vertex>& vertices, std::vector<quadFa
     objFile.close();
 }
 
-__global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAtStart_lcl, int totalNewVertsToAllocate) {
+__global__ 
+void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAtStart_lcl, int totalNewVertsToAllocate) {
 
     int i = (blockIdx.x * blockDim.x) + threadIdx.x;
 
