@@ -282,6 +282,8 @@ void mergeByDistance(int facesSize, int verticesSize) {
                 newFaces[i].edgeSimplificationMatches++;
 
                 if (newFaces[i].edgeSimplificationMatches >= 3) return;
+
+                k = 4;
             }
         }
     }
