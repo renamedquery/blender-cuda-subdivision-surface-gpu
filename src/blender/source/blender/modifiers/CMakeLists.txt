@@ -64,6 +64,7 @@ set(SRC
   intern/MOD_edgesplit.c
   intern/MOD_explode.c
   intern/MOD_fluid.c
+  intern/MOD_gpusubsurf.c
   intern/MOD_hook.c
   intern/MOD_laplaciandeform.c
   intern/MOD_laplaciansmooth.c
