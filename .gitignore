@@ -10,7 +10,6 @@
 *.log
 *.old
 *.exe
-cudaInclude
 *.pdb
 *.obj
 
@@ -67,3 +66,4 @@ src/blender/release/scripts/startup/bl_ui/*
 
 builds
 lib
+build_windows_x64_vc15_release
