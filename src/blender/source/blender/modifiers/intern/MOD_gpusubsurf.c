@@ -1,6 +1,8 @@
 // adapted from the instructions on https://blog.exppad.com/article/writing-blender-modifier
 
 #include "BKE_modifier.h"
+#include "BKE_mesh.h"
+
 #include "DNA_mesh_types.h"
 
 ModifierTypeInfo modifierType_GPUSubsurf = {

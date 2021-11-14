@@ -65,8 +65,7 @@ const EnumPropertyItem rna_enum_object_modifier_type_items[] = {
      "GPUSubsurf",
      ICON_MOD_SUBSURF,
      "GPU Subdivision Surface",
-     "Subdivides a mesh using CUDA"
-    }
+     "Subdivides a mesh using CUDA"},
     {eModifierType_DataTransfer,
      "DATA_TRANSFER",
      ICON_MOD_DATA_TRANSFER,

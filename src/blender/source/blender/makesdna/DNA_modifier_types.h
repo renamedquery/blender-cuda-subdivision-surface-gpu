@@ -2359,7 +2359,7 @@ typedef enum VolumeToMeshFlag {
 typedef struct GPUSubsurfData {
   ModifierData modifier;
   int iterations;
-  int _pad0;
+  int *_pad0;
 } GPUSubsurfData;
 
 #ifdef __cplusplus
