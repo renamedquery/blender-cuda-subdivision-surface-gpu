@@ -33,7 +33,6 @@ struct vertex {
 
 struct quadFace {
     int vertexIndex[4];
-    int edgeVertexIndex[4];
     vec3 midpoint;
     int midpointVertID;
     int edgeSimplificationMatches = 0;
@@ -178,7 +177,6 @@ __global__ void catmullClarkFacePointsAndEdges(int facesSize_lcl, int maxVertsAt
         currentSubdividedFaces[(j + 1) % 4].vertexIndex[2] = edgePoint.id;
 
         objVertices[vertexIDs[j]].position = edgeAveragePoint;
-        objFaces[i].edgeVertexIndex[j] = vertexIDs[j];
     }
 
     for (int j = 0; j < 4; j++) {
