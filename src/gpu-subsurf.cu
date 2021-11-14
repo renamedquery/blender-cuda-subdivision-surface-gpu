@@ -15,7 +15,8 @@ using namespace std;
         fprintf(stderr, "Error %s at line %d in file %s\n",\
                 cudaGetErrorString(_m_cudaStat), __LINE__, __FILE__);\
         exit(1);\
-    } }
+    }\
+}
 
 struct vec3 {
     double x = 0;
