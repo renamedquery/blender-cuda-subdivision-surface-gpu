@@ -52,8 +52,8 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
 };
 
 
-static Mesh *gpusubsurf_applyModifier(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh) {
+/*static Mesh *gpusubsurf_applyModifier(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh) {
     
     // function will be empty for now
     return mesh;
-}
+}*/
