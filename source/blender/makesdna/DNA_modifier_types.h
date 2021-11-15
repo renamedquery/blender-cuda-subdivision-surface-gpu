@@ -2363,9 +2363,9 @@ typedef struct GPUSubsurfData {
   int gpusubsurf_iterations;
   int _pad0;
 
-  bool gpusubsurf_mergebydistance;
+  int gpusubsurf_mergebydistance;
   int _pad1;
-
+  
 } GPUSubsurfData;
 
 #ifdef __cplusplus
