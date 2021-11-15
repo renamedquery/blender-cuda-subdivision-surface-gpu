@@ -1,6 +1,6 @@
 # blender-cuda-subdivison-surface-gpu
 
-*An experiment to see if Catmull Clark subdividing can be accelerated on a GPU using CUDA. Written by katznboyz, and adapted from the instructions on [wikipedia](https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface).*
+*A branch of Blender 3.0.0 with support for a CUDA accelerated Subdivision Surface modifier. Subdivison Surface algorithm is adapted from the instructions on [Wikipedia](https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface).*
 
 # Current Progress:
 
@@ -16,7 +16,7 @@
 
 ![](https://i.imgur.com/pbs97J1.png?raw=true)
 
-*The multithreaded CPU program took 2 minutes and 46 seconds to subdivide a cube with 24578 vertices and 24576 faces, while the GPU accelerated version only took ~5.5 seconds.*
+*The multithreaded CPU program (now removed from the repository) took 2 minutes and 46 seconds to subdivide a cube with 24578 vertices and 24576 faces, while the GPU accelerated version only took ~5.5 seconds.*
 
 Completed tasks:
 
@@ -33,6 +33,8 @@ Completed tasks:
 - Merge by distance algorithm.
 
 TODO:
+
+- Add a modifier to Blender's source code that enables users to use the CUDA Subdivision Surface modifier easily.
 
 - Create a "hash map" (not exactly a hash, but a unique representation) of all the vertex coordinates that allows the program to efficiently locate multiple vertices that share the same coordinate in *n(1)* function calls instead of *n^2* function calls.
 
