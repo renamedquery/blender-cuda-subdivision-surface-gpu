@@ -31,7 +31,7 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
     /* structName */ "GPUSubsurfData",
     /* structSize */ sizeof(GPUSubsurfData),
     /* srna */ NULL,
-    /* type */ eModifierType_GPUSubsurf,
+    /* type */ eModifierTypeType_Constructive,
     /* flags */ eModifierTypeType_None,
     /* icon */ NULL,
     /* copyData */ NULL,
