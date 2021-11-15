@@ -98,7 +98,6 @@ typedef enum ModifierType {
   eModifierType_MeshToVolume = 58,
   eModifierType_VolumeDisplace = 59,
   eModifierType_VolumeToMesh = 60,
-  eModifierType_GPUSubsurf = 4,
   NUM_MODIFIER_TYPES,
 } ModifierType;
 
@@ -2355,12 +2354,6 @@ typedef enum VolumeToMeshResolutionMode {
 typedef enum VolumeToMeshFlag {
   VOLUME_TO_MESH_USE_SMOOTH_SHADE = 1 << 0,
 } VolumeToMeshFlag;
-
-typedef struct GPUSubsurfData {
-  ModifierData modifier;
-  int gpusubsurf_level;
-  int _pad0;
-} GPUSubsurfData;
 
 #ifdef __cplusplus
 }
