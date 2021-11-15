@@ -93,8 +93,6 @@ static void copyData(const ModifierData *md, ModifierData *target, const int fla
 
     printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] STARTING\n");
 
-    GPUSubsurfData *gsd = (GPUSubsurfData *)target;
-
     BKE_modifier_copydata_generic(md, target, flag);
 
     printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] FINISHED\n");
@@ -118,7 +116,7 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
     /* flags */ eModifierTypeType_OnlyDeform,
     /* icon */ ICON_MOD_SUBSURF,
 
-    /* copyData */ NULL,
+    /* copyData */ copyData,
 
     /* deformVerts */ deformVerts,
     /* deformMatrices */ NULL,
