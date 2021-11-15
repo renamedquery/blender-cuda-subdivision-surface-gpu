@@ -65,6 +65,11 @@ static void panel_draw(const bContext *C, Panel *panel) {
     modifier_panel_end(layout, ptr);
 }
 
+static void initData(ModifierData *md) {
+
+    printf("[DEBUG] [GPUSubsurf::initData] PASSED");
+}
+
 static void panelRegister(ARegionType *region_type) {
     
     printf("[DEBUG] [GPUSubsurf::panelRegister] STARTING");
@@ -102,7 +107,7 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
     /* modifyHair */ NULL,
     /* modifyGeometrySet */ NULL,
 
-    /* initData */ NULL,
+    /* initData */ initData,
     /* requiredDataMask */ NULL,
     /* freeData */ NULL,
     /* isDisabled */ NULL,
