@@ -44,15 +44,9 @@ TODO:
 
 - Create a "hash map" (not exactly a hash, but a unique representation) of all the vertex coordinates that allows the program to efficiently locate multiple vertices that share the same coordinate in *n(1)* function calls instead of *n^2* function calls.
 
-- Test feasibility of using GPUDirect Storage to read the `.obj` files from disk (reading large files can be pretty slow).
-
-- Investigate the feasibility of using the method described in the paper ["Efficient GPU Rendering of Subdivision Surfaces using Adaptive Quadtrees"](http://www.graphics.stanford.edu/~niessner/papers/2016/4subdiv/brainerd2016efficient.pdf).
-
 - Read normals and texture coordinates from `.obj` files.
 
 - Write normals, texture coordinates, and faces to `.obj` files.
-
-- Make `averageCornerVertices()` work on low-poly meshes.
 
 # Compiling Instructions:
 
