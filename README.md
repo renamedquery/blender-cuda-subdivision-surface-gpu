@@ -18,7 +18,7 @@
 
 *The multithreaded CPU program (now removed from the repository) took 2 minutes and 46 seconds to subdivide a cube with 24578 vertices and 24576 faces, while the GPU accelerated version only took ~5.5 seconds.*
 
-![](https://i.imgur.com/SQ9dsyJ.png?raw=true)
+![](https://i.imgur.com/kQ1NVKq.png?raw=true)
 
 *Currently, the modifier is a work in progress, however it has been somewhat implemented into my custom build of Blender for now. Unfortunately, Blender doesn't expose the modifiers to `bpy` so the only way that I could add one was through modifying Blender's source code.*
 
