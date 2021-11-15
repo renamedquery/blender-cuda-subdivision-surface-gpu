@@ -6,26 +6,45 @@
  * \ingroup modifiers
  */
 
-#include "DNA_defaults.h"
-#include "DNA_mesh_types.h"
-#include "DNA_meshdata_types.h"
-#include "DNA_object_types.h"
-#include "DNA_screen_types.h"
+#include "MEM_guardedalloc.h"
+
+#include "BLI_string.h"
+#include "BLI_utildefines.h"
 
 #include "BLT_translation.h"
 
-#include "BKE_deform.h"
-#include "BKE_editmesh.h"
-#include "BKE_mesh.h"
-#include "BKE_modifier.h"
+#include "DNA_defaults.h"
+#include "DNA_mesh_types.h"
+#include "DNA_object_types.h"
+#include "DNA_scene_types.h"
+#include "DNA_screen_types.h"
 
-#include "RNA_access.h"
+#include "BKE_context.h"
+#include "BKE_mesh.h"
+#include "BKE_scene.h"
+#include "BKE_screen.h"
+#include "BKE_subdiv.h"
+#include "BKE_subdiv_ccg.h"
+#include "BKE_subdiv_deform.h"
+#include "BKE_subdiv_mesh.h"
+#include "BKE_subsurf.h"
 
 #include "UI_interface.h"
 #include "UI_resources.h"
 
+#include "RE_engine.h"
+
+#include "RNA_access.h"
+
+#include "DEG_depsgraph.h"
+#include "DEG_depsgraph_query.h"
+
 #include "MOD_modifiertypes.h"
 #include "MOD_ui_common.h"
+
+#include "BLO_read_write.h"
+
+#include "intern/CCGSubSurf.h"
 
 static void panel_draw(const bContext *C, Panel *panel) {
 
@@ -38,22 +57,9 @@ static void panel_draw(const bContext *C, Panel *panel) {
 
     uiLayout *col = uiLayoutColumn(layout, true);
     uiItemR(col, ptr, "gpusubsurf_iterations", 0, IFACE_("Levels Viewport"), ICON_NONE);
+    uiLayoutSetActive(col, RNA_boolean_get(ptr, "gpusubsurf_mergebydistance"));
 
     modifier_panel_end(layout, ptr);
-}
-
-static void advanced_panel_draw(const bContext *C, Panel *panel) {
-
-    uiLayout *layout = panel->layout;
-    
-    PointerRNA ob_ptr;
-    PointerRNA *ptr = modifier_panel_get_property_pointers(panel, &ob_ptr);
-
-    uiLayoutSetPropSep(layout, true);
-
-    uiLayout *col = uiLayoutColumn(layout, true);
-    uiLayoutSetActive(col, RNA_boolean_get(ptr, "gpusubsurf_mergebydistance"));
-    uiItemR(col, ptr, "merge_by_distance", 0, NULL, ICON_NONE);
 }
 
 static void initData(ModifierData *md) {
@@ -68,7 +74,6 @@ static void initData(ModifierData *md) {
 static void panelRegister(ARegionType *region_type) {
 
     PanelType *panel_type = modifier_panel_register(region_type, eModifierType_GPUSubsurf, panel_draw);
-    modifier_subpanel_register(region_type, "advanced", "Advanced", NULL, advanced_panel_draw, panel_type);
 }
 
 static Mesh *gpusubsurf_applyModifier(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh) {

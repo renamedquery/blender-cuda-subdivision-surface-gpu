@@ -7192,6 +7192,7 @@ static void rna_def_modifier_gpusubsurf(BlenderRNA *brna) {
   RNA_def_property_update(prop, 0, "rna_Modifier_update");
 
   prop = RNA_def_property(srna, "gpusubsurf_mergebydistance", PROP_BOOLEAN, PROP_NONE);
+  RNA_def_property_boolean_sdna(prop, NULL, "mode", eModifierMode_Realtime);
   RNA_def_property_ui_text(prop, "Merge By Distance On GPU", "Merge by distance using CUDA (Slow)");
   RNA_def_property_flag(prop, PROP_LIB_EXCEPTION);
   RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
