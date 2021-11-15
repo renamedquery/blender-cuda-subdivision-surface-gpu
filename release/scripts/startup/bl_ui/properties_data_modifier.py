@@ -42,6 +42,7 @@ class DATA_PT_modifiers(ModifierButtonsPanel, Panel):
     
     def GPUSubsurf(self, layout, ob, md):
         layout.prop(md, "gpusubsurf_iterations")
+        layout.prop(md, "gpusubsurf_mergebydistance")
 
 
 class DATA_PT_gpencil_modifiers(ModifierButtonsPanel, Panel):
