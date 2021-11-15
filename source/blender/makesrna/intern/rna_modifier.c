@@ -61,11 +61,6 @@
 
 const EnumPropertyItem rna_enum_object_modifier_type_items[] = {
     {0, "", 0, N_("Modify"), ""},
-    {eModifierType_GPUSubsurf,
-     "GPUSubsurf",
-     ICON_MOD_SUBSURF,
-     "GPU Subdivision Surface",
-     "Subdivides a mesh using CUDA"},
     {eModifierType_DataTransfer,
      "DATA_TRANSFER",
      ICON_MOD_DATA_TRANSFER,
@@ -149,6 +144,11 @@ const EnumPropertyItem rna_enum_object_modifier_type_items[] = {
      "Edge Split",
      "Split away joined faces at the edges"},
     {eModifierType_Nodes, "NODES", ICON_NODETREE, "Geometry Nodes", ""},
+    {eModifierType_GPUSubsurf,
+     "GPUSubsurf",
+     ICON_MOD_SUBSURF,
+     "GPU Subdivision Surface",
+     "Subdivides a mesh using CUDA"},
     {eModifierType_Mask,
      "MASK",
      ICON_MOD_MASK,
