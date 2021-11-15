@@ -290,7 +290,7 @@ void mergeByDistance(int facesSize, int verticesSize) {
 }
 
 __host__
-void subdivideMeshFromFile(std::string inputFilePath, std::string outputFilePath) {
+void subdivideMeshFromFile(std::string inputFilePath, std::string outputFilePath, bool mergeMeshByDistance) {
 
     auto startTime = std::chrono::steady_clock::now();
 
@@ -395,10 +395,13 @@ void subdivideMeshFromFile(std::string inputFilePath, std::string outputFilePath
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     std::cout << "[GPU] [averageCornerVertices] DONE" << endl;
 
-    mergeByDistance<<<(facesSizeAfterSubdivision + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(facesSizeAfterSubdivision, verticesSize + totalNewVertsToAllocate);
-    std::cout << "[GPU] [mergeByDistance] FINISHED CALLING KERNELS" << endl;
-    CUDA_CHECK_RETURN(cudaDeviceSynchronize());
-    std::cout << "[GPU] [mergeByDistance] DONE" << endl;
+    if (mergeByDistance) {
+        
+        mergeByDistance<<<(facesSizeAfterSubdivision + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE>>>(facesSizeAfterSubdivision, verticesSize + totalNewVertsToAllocate);
+        std::cout << "[GPU] [mergeByDistance] FINISHED CALLING KERNELS" << endl;
+        CUDA_CHECK_RETURN(cudaDeviceSynchronize());
+        std::cout << "[GPU] [mergeByDistance] DONE" << endl;
+    }
 
     quadFace* newFaces_tmp_returnVal = new quadFace[facesSize * 4]; 
     vertex* newVertices_tmp_returnVal = new vertex[verticesSize + totalNewVertsToAllocate]; 
@@ -443,7 +446,7 @@ void subdivideMeshFromFile(std::string inputFilePath, std::string outputFilePath
 
 int main (void) {
 
-    subdivideMeshFromFile("testMesh.obj", "testMeshOutput.obj");
+    subdivideMeshFromFile("testMesh.obj", "testMeshOutput.obj", false);
 
     return 0;
 }
