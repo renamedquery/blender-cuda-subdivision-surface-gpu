@@ -24,7 +24,7 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
     /* structSize */ sizeof(GPUSubsurfData),
     /* srna */ NULL,
     /* type */ eModifierTypeType_Constructive,
-    /* flags */ eModifierTypeFlag_AcceptsMesh,
+    /* flags */ eModifierTypeFlag_AcceptsMesh | eModifierTypeFlag_SupportsEditmode | eModifierTypeFlag_EnableInEditmode,
     /* icon */ NULL,
     /* copyData */ NULL,
 
