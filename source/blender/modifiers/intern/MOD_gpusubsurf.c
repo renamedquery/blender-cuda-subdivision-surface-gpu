@@ -76,15 +76,34 @@ static void panelRegister(ARegionType *region_type) {
 
 static void deformVerts(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh, float *vertexCos[3], int numVerts) {
     
-    printf("[DEBUG] [GPUSubsurf::deformVerts] PRINTF\n");
+    printf("[DEBUG] [GPUSubsurf::deformVerts] PASS\n");
 
     // function will be empty for now
     return mesh;
 }
 
+static bool dependsOnNormals(struct ModifierData *md) {
+
+    printf("[DEBUG] [GPUSubsurf::dependsOnNormals] PASS\n");
+
+    return false;
+}
+
+static void copyData(const ModifierData *md, ModifierData *target, const int flag) {
+
+    printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] STARTING\n");
+
+    GPUSubsurfData *gsd = (GPUSubsurfData *)target;
+
+    BKE_modifier_copydata_generic(md, target, flag);
+
+    printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] FINISHED\n");
+}
+
+
 static Mesh *gpusubsurf_applyModifier(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh) {
     
-    printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] PRINTF\n");
+    printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] PASS\n");
 
     // function will be empty for now
     return mesh;
@@ -97,7 +116,8 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
     /* srna */ &RNA_GPUSubsurf,
     /* type */ eModifierTypeType_Constructive,
     /* flags */ eModifierTypeType_OnlyDeform,
-    /* icon */ NULL,
+    /* icon */ ICON_MOD_SUBSURF,
+
     /* copyData */ NULL,
 
     /* deformVerts */ deformVerts,
@@ -114,7 +134,7 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
     /* isDisabled */ NULL,
     /* updateDepsgraph */ NULL,
     /* dependsOnTime */ NULL,
-    /* dependsOnNormals */ NULL,
+    /* dependsOnNormals */ dependsOnNormals,
     /* foreachIDLink */ NULL,
     /* foreachTexLink */ NULL,
     /* freeRuntimeData */ NULL,
