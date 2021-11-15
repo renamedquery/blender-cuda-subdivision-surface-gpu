@@ -22,6 +22,8 @@
 
 *Currently, the modifier is a work in progress, however it has been somewhat implemented into my custom build of Blender for now. Unfortunately, Blender doesn't expose the modifiers to `bpy` so the only way that I could add one was through modifying Blender's source code.*
 
+You can view the CUDA file [here](https://github.com/katznboyz1/blender-cuda-subdivision-surface-gpu/blob/master/custom_source/gpu-subsurf.cu)
+
 Completed tasks:
 
 - Reading from a `.obj` file to take in data (verts + faces).
