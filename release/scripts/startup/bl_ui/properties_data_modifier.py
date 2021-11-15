@@ -37,11 +37,11 @@ class DATA_PT_modifiers(ModifierButtonsPanel, Panel):
 
     def draw(self, _context):
         layout = self.layout
-        layout.operator_menu_enum("object.modifier_add", "type")
+        layout.operator_menu_enum("object.gpusubsurf_modifier_add", "type")
         layout.template_modifiers()
     
     def GPUSubsurf(self, layout, ob, md):
-        layout.prop(md, "gpusubsurf_level")
+        layout.prop(md, "gpusubsurf_iterations")
 
 
 class DATA_PT_gpencil_modifiers(ModifierButtonsPanel, Panel):

@@ -6,23 +6,15 @@
  * \ingroup modifiers
  */
 
-#include "DNA_defaults.h"
 #include "DNA_mesh_types.h"
 #include "DNA_meshdata_types.h"
 #include "DNA_object_types.h"
 #include "DNA_screen_types.h"
 
-#include "BKE_action.h"
-#include "BKE_colortools.h"
-#include "BKE_context.h"
 #include "BKE_deform.h"
 #include "BKE_editmesh.h"
-#include "BKE_lib_id.h"
-#include "BKE_lib_query.h"
 #include "BKE_mesh.h"
-#include "BKE_mesh_wrapper.h"
 #include "BKE_modifier.h"
-#include "BKE_screen.h"
 
 #include "RNA_access.h"
 
@@ -32,7 +24,7 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
     /* structSize */ sizeof(GPUSubsurfData),
     /* srna */ NULL,
     /* type */ eModifierTypeType_Constructive,
-    /* flags */ eModifierTypeType_None,
+    /* flags */ eModifierTypeFlag_AcceptsMesh,
     /* icon */ NULL,
     /* copyData */ NULL,
 

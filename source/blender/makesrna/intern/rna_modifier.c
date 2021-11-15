@@ -1664,7 +1664,7 @@ static void rna_def_modifier_gpusubsurf(BlenderRNA *brna) {
   RNA_def_struct_sdna(srna, "GPUSubsurfData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_SUBSURF);
 
-  prop = RNA_def_property(srna, "gpusubsurf_level", PROP_INT, PROP_NONE);
+  prop = RNA_def_property(srna, "gpusubsurf_iterations", PROP_INT, PROP_NONE);
   RNA_def_property_range(prop, 0, 4);
   RNA_def_property_ui_range(prop, 0, 4, 1, -1);
   RNA_def_property_ui_text(prop, "Subdivison Level", "The amount of times the mesh will be subdivided.");
