@@ -22,7 +22,7 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
     /* name */ "GPU Subdivision Surface",
     /* structName */ "GPUSubsurfData",
     /* structSize */ sizeof(GPUSubsurfData),
-    /* srna */ &RNA_GPUSubsurfModifier,
+    /* srna */ &RNA_GPUSubsurf,
     /* type */ eModifierTypeType_Constructive,
     /* flags */ eModifierTypeFlag_AcceptsMesh | eModifierTypeFlag_SupportsEditmode | eModifierTypeFlag_EnableInEditmode,
     /* icon */ NULL,
