@@ -74,6 +74,14 @@ static void panelRegister(ARegionType *region_type) {
     printf("[DEBUG] [GPUSubsurf::panelRegister] FINISHED\n");
 }
 
+static void deformVerts(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh, float *vertexCos[3], int numVerts) {
+    
+    printf("[DEBUG] [GPUSubsurf::deformVerts] PRINTF\n");
+
+    // function will be empty for now
+    return mesh;
+}
+
 static Mesh *gpusubsurf_applyModifier(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh) {
     
     printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] PRINTF\n");
@@ -88,11 +96,11 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
     /* structSize */ sizeof(GPUSubsurfData),
     /* srna */ &RNA_GPUSubsurf,
     /* type */ eModifierTypeType_Constructive,
-    /* flags */ eModifierTypeType_None,
+    /* flags */ eModifierTypeType_OnlyDeform,
     /* icon */ NULL,
     /* copyData */ NULL,
 
-    /* deformVerts */ NULL,
+    /* deformVerts */ deformVerts,
     /* deformMatrices */ NULL,
     /* deformVertsEM */ NULL,
     /* deformMatricesEM */ NULL,
