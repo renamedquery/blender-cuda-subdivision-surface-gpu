@@ -65,19 +65,6 @@ static void panel_draw(const bContext *C, Panel *panel) {
     modifier_panel_end(layout, ptr);
 }
 
-static void initData(ModifierData *md) {
-
-    printf("[DEBUG] [GPUSubsurf::initData] STARTING");
-
-    GPUSubsurfData *gsd = (GPUSubsurfData *)md;
-
-    BLI_assert(MEMCMP_STRUCT_AFTER_IS_ZERO(gsd, modifier));
-
-    MEMCPY_STRUCT_AFTER(gsd, DNA_struct_default_get(GPUSubsurfData), modifier);
-
-    printf("[DEBUG] [GPUSubsurf::initData] FINISHED");
-}
-
 static void panelRegister(ARegionType *region_type) {
     
     printf("[DEBUG] [GPUSubsurf::panelRegister] STARTING");
@@ -115,7 +102,7 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
     /* modifyHair */ NULL,
     /* modifyGeometrySet */ NULL,
 
-    /* initData */ initData,
+    /* initData */ NULL,
     /* requiredDataMask */ NULL,
     /* freeData */ NULL,
     /* isDisabled */ NULL,
