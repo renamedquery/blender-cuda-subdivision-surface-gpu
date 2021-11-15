@@ -36,6 +36,8 @@ TODO:
 
 - Add a modifier to Blender's source code that enables users to use the CUDA Subdivision Surface modifier easily.
 
+- In the Blender modifier, make the CUDA `mergeByDistance()` function a tick box to enable or disable it for faster subdivision times. This will allow the user to use Blender's built in *"merge by distance"* modifier. The CUDA merge option will be un-ticked by default.
+
 - Create a "hash map" (not exactly a hash, but a unique representation) of all the vertex coordinates that allows the program to efficiently locate multiple vertices that share the same coordinate in *n(1)* function calls instead of *n^2* function calls.
 
 - Test feasibility of using GPUDirect Storage to read the `.obj` files from disk (reading large files can be pretty slow).
