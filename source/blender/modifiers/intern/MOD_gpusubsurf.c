@@ -6,6 +6,9 @@
  * \ingroup modifiers
  */
 
+#include <stdio.h>
+#include <string.h>
+
 #include "MEM_guardedalloc.h"
 
 #include "BLI_string.h"
@@ -64,22 +67,34 @@ static void panel_draw(const bContext *C, Panel *panel) {
 
 static void initData(ModifierData *md) {
 
+    printf("[DEBUG] [GPUSubsurf::initData] STARTING");
+
     GPUSubsurfData *gsd = (GPUSubsurfData *)md;
 
     BLI_assert(MEMCMP_STRUCT_AFTER_IS_ZERO(gsd, modifier));
 
     MEMCPY_STRUCT_AFTER(gsd, DNA_struct_default_get(GPUSubsurfData), modifier);
+
+    printf("[DEBUG] [GPUSubsurf::initData] FINISHED");
 }
 
 static void panelRegister(ARegionType *region_type) {
+    
+    printf("[DEBUG] [GPUSubsurf::panelRegister] STARTING");
 
     PanelType *panel_type = modifier_panel_register(region_type, eModifierType_GPUSubsurf, panel_draw);
+
+    printf("[DEBUG] [GPUSubsurf::panelRegister] FINISHED");
 }
 
 static Mesh *gpusubsurf_applyModifier(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh) {
     
+    printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] STARTING");
+
     // function will be empty for now
     return mesh;
+
+    printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] FINISHED");
 }
 
 ModifierTypeInfo modifierType_GPUSubsurf = {
