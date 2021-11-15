@@ -109,8 +109,8 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
     /* structName */ "GPUSubsurfData",
     /* structSize */ sizeof(GPUSubsurfData),
     /* srna */ &RNA_GPUSubsurf,
-    /* type */ eModifierTypeType_Constructive,
-    /* flags */ eModifierTypeType_OnlyDeform,
+    /* type */ eModifierTypeType_Nonconstructive,
+    /* flags */ eModifierTypeFlag_AcceptsMesh | eModifierTypeFlag_SupportsEditmode | eModifierTypeFlag_EnableInEditmode,
     /* icon */ ICON_MOD_SUBSURF,
 
     /* copyData */ copyData,
