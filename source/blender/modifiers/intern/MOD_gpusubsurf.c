@@ -18,6 +18,12 @@
 
 #include "RNA_access.h"
 
+static Mesh *gpusubsurf_applyModifier(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh) {
+    
+    // function will be empty for now
+    return mesh;
+}
+
 ModifierTypeInfo modifierType_GPUSubsurf = {
     /* name */ "GPU Subdivision Surface",
     /* structName */ "GPUSubsurfData",
@@ -50,10 +56,3 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
     /* blendWrite */ NULL,
     /* blendRead */ NULL,
 };
-
-
-/*static Mesh *gpusubsurf_applyModifier(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh) {
-    
-    // function will be empty for now
-    return mesh;
-}*/
