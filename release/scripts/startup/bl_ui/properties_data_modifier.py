@@ -41,8 +41,11 @@ class DATA_PT_modifiers(ModifierButtonsPanel, Panel):
         layout.template_modifiers()
     
     def GPUSubsurf(self, layout, ob, md):
+        print('[properties_data_modifier.py] [GPUSubsurf] ADDING LAYOUT')
+        layout = self.layout
         layout.prop(md, "gpusubsurf_iterations")
         layout.prop(md, "gpusubsurf_mergebydistance")
+        print('[properties_data_modifier.py] [GPUSubsurf] DONE ADDING LAYOUT')
 
 
 class DATA_PT_gpencil_modifiers(ModifierButtonsPanel, Panel):
