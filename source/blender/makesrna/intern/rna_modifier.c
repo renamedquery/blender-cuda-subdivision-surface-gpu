@@ -1656,21 +1656,6 @@ static void rna_def_property_subdivision_common(StructRNA *srna)
   RNA_define_lib_overridable(false);
 }
 
-static void rna_def_modifier_gpusubsurf(BlenderRNA *brna) {
-  StructRNA *srna;
-  PropertyRNA *prop;
-  srna = RNA_def_struct(brna, "GPUSubsurf", "Modifier");
-  RNA_def_struct_ui_text(srna, "GPU Subdivision Surface", "");
-  RNA_def_struct_sdna(srna, "GPUSubsurfData");
-  RNA_def_struct_ui_icon(srna, ICON_MOD_SUBSURF);
-
-  prop = RNA_def_property(srna, "gpusubsurf_iterations", PROP_INT, PROP_NONE);
-  RNA_def_property_range(prop, 0, 4);
-  RNA_def_property_ui_range(prop, 0, 4, 1, -1);
-  RNA_def_property_ui_text(prop, "Subdivison Level", "The amount of times the mesh will be subdivided.");
-  RNA_def_property_update(prop, 0, "rna_Modifier_update");
-}
-
 static void rna_def_modifier_subsurf(BlenderRNA *brna)
 {
   static const EnumPropertyItem prop_subdivision_type_items[] = {
@@ -7190,6 +7175,21 @@ static void rna_def_modifier_volume_to_mesh(BlenderRNA *brna)
   RNA_def_property_update(prop, 0, "rna_Modifier_update");
 
   RNA_define_lib_overridable(false);
+}
+
+static void rna_def_modifier_gpusubsurf(BlenderRNA *brna) {
+  StructRNA *srna;
+  PropertyRNA *prop;
+  srna = RNA_def_struct(brna, "GPUSubsurf", "Modifier");
+  RNA_def_struct_ui_text(srna, "GPU Subdivision Surface", "");
+  RNA_def_struct_sdna(srna, "GPUSubsurfData");
+  RNA_def_struct_ui_icon(srna, ICON_MOD_SUBSURF);
+
+  prop = RNA_def_property(srna, "gpusubsurf_iterations", PROP_INT, PROP_NONE);
+  RNA_def_property_range(prop, 0, 4);
+  RNA_def_property_ui_range(prop, 0, 4, 1, -1);
+  RNA_def_property_ui_text(prop, "Subdivison Level", "The amount of times the mesh will be subdivided.");
+  RNA_def_property_update(prop, 0, "rna_Modifier_update");
 }
 
 void RNA_def_modifier(BlenderRNA *brna)

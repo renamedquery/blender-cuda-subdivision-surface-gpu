@@ -37,6 +37,7 @@ class DATA_PT_modifiers(ModifierButtonsPanel, Panel):
 
     def draw(self, _context):
         layout = self.layout
+        layout.operator_menu_enum("object.gpusubsurf_modifier_add", "type")
         layout.template_modifiers()
     
     def GPUSubsurf(self, layout, ob, md):
