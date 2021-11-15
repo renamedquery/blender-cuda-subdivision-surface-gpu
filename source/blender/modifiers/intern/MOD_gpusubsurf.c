@@ -77,9 +77,6 @@ static void panelRegister(ARegionType *region_type) {
 static void deformVerts(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh, float *vertexCos[3], int numVerts) {
     
     printf("[DEBUG] [GPUSubsurf::deformVerts] PASS\n");
-
-    // function will be empty for now
-    return mesh;
 }
 
 static bool dependsOnNormals(struct ModifierData *md) {
@@ -99,13 +96,13 @@ static void copyData(const ModifierData *md, ModifierData *target, const int fla
 }
 
 
-/*static Mesh *gpusubsurf_applyModifier(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh) {
+static Mesh *gpusubsurf_applyModifier(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh) {
     
     printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] PASS\n");
 
     // function will be empty for now
     return mesh;
-}*/
+}
 
 ModifierTypeInfo modifierType_GPUSubsurf = {
     /* name */ "GPU Subdivision Surface",
