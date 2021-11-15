@@ -1,4 +1,4 @@
-@echo off
+@echo on
 REM This batch file does an out-of-source CMake build in ../build_windows
 REM This is for users who like to configure & build Blender with a single command.
 setlocal EnableDelayedExpansion
