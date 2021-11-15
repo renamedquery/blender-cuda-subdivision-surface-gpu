@@ -65,28 +65,21 @@ static void panel_draw(const bContext *C, Panel *panel) {
     modifier_panel_end(layout, ptr);
 }
 
-static void initData(ModifierData *md) {
-
-    printf("[DEBUG] [GPUSubsurf::initData] PASSED");
-}
-
 static void panelRegister(ARegionType *region_type) {
     
-    printf("[DEBUG] [GPUSubsurf::panelRegister] STARTING");
+    printf("[DEBUG] [GPUSubsurf::panelRegister] STARTING\n");
 
     PanelType *panel_type = modifier_panel_register(region_type, eModifierType_GPUSubsurf, panel_draw);
 
-    printf("[DEBUG] [GPUSubsurf::panelRegister] FINISHED");
+    printf("[DEBUG] [GPUSubsurf::panelRegister] FINISHED\n");
 }
 
 static Mesh *gpusubsurf_applyModifier(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh) {
     
-    printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] STARTING");
+    printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] PRINTF\n");
 
     // function will be empty for now
     return mesh;
-
-    printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] FINISHED");
 }
 
 ModifierTypeInfo modifierType_GPUSubsurf = {
@@ -107,7 +100,7 @@ ModifierTypeInfo modifierType_GPUSubsurf = {
     /* modifyHair */ NULL,
     /* modifyGeometrySet */ NULL,
 
-    /* initData */ initData,
+    /* initData */ NULL,
     /* requiredDataMask */ NULL,
     /* freeData */ NULL,
     /* isDisabled */ NULL,
