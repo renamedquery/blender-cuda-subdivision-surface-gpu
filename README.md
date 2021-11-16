@@ -12,17 +12,17 @@
 
 *Open faced meshes are now supported by this program. (Output on the right)*
 
-![](https://i.imgur.com/Z9CokPC.png?raw=true)
-
-![](https://i.imgur.com/pbs97J1.png?raw=true)
-
-*The multithreaded CPU program (now removed from the repository) took 2 minutes and 46 seconds to subdivide a cube with 24578 vertices and 24576 faces, while the GPU accelerated version only took ~5.5 seconds.*
-
 ![](https://i.imgur.com/kQ1NVKq.png?raw=true)
 
 ![](https://i.imgur.com/m19QGxP.png?raw=true)
 
 *Currently, the modifier is a work in progress, however it has been somewhat implemented into my custom build of Blender for now. Unfortunately, Blender doesn't expose the modifiers to `bpy` so the only way that I could add one was through modifying Blender's source code.*
+
+![](https://i.imgur.com/Z9CokPC.png?raw=true)
+
+![](https://i.imgur.com/pbs97J1.png?raw=true)
+
+*The multithreaded CPU program (now removed from the repository) took 2 minutes and 46 seconds to subdivide a cube with 24578 vertices and 24576 faces, while the GPU accelerated version only took ~5.5 seconds.*
 
 You can view the CUDA file [here](https://github.com/katznboyz1/blender-cuda-subdivision-surface-gpu/blob/master/custom_source/gpu-subsurf.cu).
 
