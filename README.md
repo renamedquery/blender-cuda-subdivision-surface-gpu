@@ -1,6 +1,6 @@
 # blender-cuda-subdivison-surface-gpu
 
-*A branch of [Blender 3.0.0](https://github.com/blender/blender/tree/blender-v3.0-release) with support for a CUDA accelerated Subdivision Surface modifier. Subdivison Surface algorithm is adapted from the instructions on [Wikipedia](https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface).*
+*A fork of [Blender 3.0.0](https://github.com/blender/blender/tree/blender-v3.0-release) with support for a CUDA accelerated Subdivision Surface modifier. Subdivison Surface algorithm is adapted from the instructions on [Wikipedia](https://en.wikipedia.org/wiki/Catmull%E2%80%93Clark_subdivision_surface).*
 
 # Current Progress:
 
