@@ -3,4 +3,5 @@
 win64_vc15
 custom_source/*
 !custom_source/gpu-subsurf.cu
+!custom_source/gpu-subsurf.old.cu
 !custom_source/README.md
