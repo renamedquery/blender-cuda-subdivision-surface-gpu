@@ -60,7 +60,7 @@ static void panel_draw(const bContext *C, Panel *panel) {
 
     uiLayout *col = uiLayoutColumn(layout, true);
     uiItemR(col, ptr, "gpusubsurf_iterations", 0, IFACE_("Levels Viewport"), ICON_NONE);
-    uiLayoutSetActive(col, RNA_boolean_get(ptr, "gpusubsurf_mergebydistance"));
+    //uiLayoutSetActive(col, RNA_boolean_get(&ptr, "gpusubsurf_mergebydistance"));
 
     modifier_panel_end(layout, ptr);
 }
@@ -68,58 +68,56 @@ static void panel_draw(const bContext *C, Panel *panel) {
 static void panelRegister(ARegionType *region_type) {
     
     printf("[DEBUG] [GPUSubsurf::panelRegister] STARTING\n");
-
-    PanelType *panel_type = modifier_panel_register(region_type, eModifierType_GPUSubsurf, panel_draw);
-
-    printf("[DEBUG] [GPUSubsurf::panelRegister] FINISHED\n");
-}
-
-static void deformVerts(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh, float *vertexCos[3], int numVerts) {
-    
-    printf("[DEBUG] [GPUSubsurf::deformVerts] PASS\n");
+    modifier_panel_register(region_type, eModifierType_GPUSubsurf, panel_draw);
 }
 
 static bool dependsOnNormals(struct ModifierData *md) {
 
     printf("[DEBUG] [GPUSubsurf::dependsOnNormals] PASS\n");
-
     return false;
 }
 
 static void copyData(const ModifierData *md, ModifierData *target, const int flag) {
 
-    printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] STARTING\n");
-
+    printf("[DEBUG] [GPUSubsurf::copyData] COPYING MODIFIER DATA\n");
     BKE_modifier_copydata_generic(md, target, flag);
-
-    printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] FINISHED\n");
 }
 
+static void deformMatrices(ModifierData *md, const ModifierEvalContext *ctx, Mesh *mesh, float (*vertex_cos)[3], float (*deform_matrices)[3][3], int num_verts) {
 
-static Mesh *gpusubsurf_applyModifier(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh) {
+    printf("[DEBUG] [GPUSubsurf::deformMatrices] DOING NOTHING\n");
+}
+
+static Mesh *modifyMesh(ModifierData *md, const ModifierEvalContext *ctx, Mesh *mesh) {
+
+    printf("[DEBUG] [GPUSubsurf::modifyMesh] RETURNING MESH\n");
+    return mesh;
+}
+
+/*static Mesh *gpusubsurf_applyModifier(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh) {
     
     printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] PASS\n");
 
     // function will be empty for now
     return mesh;
-}
+}*/
 
 ModifierTypeInfo modifierType_GPUSubsurf = {
     /* name */ "GPU Subdivision Surface",
     /* structName */ "GPUSubsurfData",
     /* structSize */ sizeof(GPUSubsurfData),
     /* srna */ &RNA_GPUSubsurf,
-    /* type */ eModifierTypeType_Nonconstructive,
+    /* type */ eModifierTypeType_Constructive,
     /* flags */ eModifierTypeFlag_AcceptsMesh | eModifierTypeFlag_SupportsEditmode | eModifierTypeFlag_EnableInEditmode,
     /* icon */ ICON_MOD_SUBSURF,
 
     /* copyData */ copyData,
 
-    /* deformVerts */ deformVerts,
-    /* deformMatrices */ NULL,
+    /* deformVerts */ NULL,
+    /* deformMatrices */ deformMatrices,
     /* deformVertsEM */ NULL,
     /* deformMatricesEM */ NULL,
-    /* modifyMesh */ NULL,
+    /* modifyMesh */ modifyMesh,
     /* modifyHair */ NULL,
     /* modifyGeometrySet */ NULL,
 
