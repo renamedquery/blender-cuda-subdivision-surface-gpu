@@ -144,11 +144,6 @@ const EnumPropertyItem rna_enum_object_modifier_type_items[] = {
      "Edge Split",
      "Split away joined faces at the edges"},
     {eModifierType_Nodes, "NODES", ICON_NODETREE, "Geometry Nodes", ""},
-    {eModifierType_GPUSubsurf,
-     "GPUSubsurf",
-     ICON_MOD_SUBSURF,
-     "GPU Subdivision Surface",
-     "Subdivides a mesh using CUDA"},
     {eModifierType_Mask,
      "MASK",
      ICON_MOD_MASK,
@@ -191,6 +186,11 @@ const EnumPropertyItem rna_enum_object_modifier_type_items[] = {
      ICON_MOD_SUBSURF,
      "Subdivision Surface",
      "Split the faces into smaller parts, giving it a smoother appearance"},
+     {eModifierType_GPUSubsurf,
+     "GPUSubsurf",
+     ICON_MOD_SUBSURF,
+     "GPU Subdivision Surface",
+     "Subdivides a mesh using CUDA"},
     {eModifierType_Triangulate,
      "TRIANGULATE",
      ICON_MOD_TRIANGULATE,
@@ -7178,13 +7178,27 @@ static void rna_def_modifier_volume_to_mesh(BlenderRNA *brna)
 }
 
 static void rna_def_modifier_gpusubsurf(BlenderRNA *brna) {
+
   StructRNA *srna;
   PropertyRNA *prop;
+
   srna = RNA_def_struct(brna, "GPUSubsurf", "Modifier");
-  RNA_def_struct_ui_text(srna, "GPU Subdivision Surface", "");
+  RNA_def_struct_ui_text(srna, "Subdivision Surface (GPU)", "");
   RNA_def_struct_sdna(srna, "GPUSubsurfData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_SUBSURF);
 
+  RNA_define_lib_overridable(true);
+
+  prop = RNA_def_property(srna, "gpusubsurf_iterations", PROP_INT, PROP_NONE);
+  RNA_def_property_ui_text(prop, "Subdivision Level", "The amount of times the mesh will be subdivided");
+  RNA_def_property_range(prop, 0, 4);
+  RNA_def_property_update(prop, 0, "rna_Modifier_update");
+
+  prop = RNA_def_property(srna, "gpusubsurf_mergebydistance", PROP_BOOLEAN, PROP_NONE);
+  RNA_def_property_ui_text(prop, "Merge By Distance Using CUDA", "Merge by distance using CUDA acceleration (temporarily slower than the builtin join modifier)");
+  RNA_def_property_update(prop, 0, "rna_Modifier_update");
+
+  /*
   prop = RNA_def_property(srna, "gpusubsurf_iterations", PROP_INT, PROP_NONE);
   RNA_def_property_range(prop, 0, 4);
   RNA_def_property_ui_range(prop, 0, 4, 1, -1);
@@ -7194,6 +7208,7 @@ static void rna_def_modifier_gpusubsurf(BlenderRNA *brna) {
   prop = RNA_def_property(srna, "gpusubsurf_mergebydistance", PROP_BOOLEAN, PROP_NONE);
   RNA_def_property_ui_text(prop, "Merge By Distance (GPU)", "Merge by distance using CUDA acceleration (temporarily slower than the builtin join modifier)");
   RNA_def_property_update(prop, 0, "rna_Modifier_update");
+  */
 }
 
 void RNA_def_modifier(BlenderRNA *brna)
