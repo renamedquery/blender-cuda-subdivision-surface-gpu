@@ -52,10 +52,6 @@ Compiling the CUDA file on Win64 (not completed):
 
 `nvcc gpu-subsurf.cu -o gpu-subsurf.cuda -ccbin "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\bin\Hostx64\x64" -G -g -arch=sm_86`
 
-Compiling the C++ file on Ubuntu 20.04:
-
-`clang++ ./cpu-subsurf.cpp -o ./cpu-subsurf.o -fsanitize=address -fno-omit-frame-pointer -O1 -g`
-
 # Limitations:
 
 - Only works on quads.
