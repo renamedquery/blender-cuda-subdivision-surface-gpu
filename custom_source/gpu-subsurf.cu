@@ -303,6 +303,9 @@ void subdivideMeshFromFile(std::string inputFilePath, std::string outputFilePath
     readObj(inputFilePath, vertices, faces); 
     std::cout << "[CPU] [readObj] FINISHED READING MESH" << endl;
 
+    auto endTime = std::chrono::steady_clock::now();
+    std::cout << "[CPU] [readObj] READING MESH TOOK " << std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << "MS" << endl;
+
     int facesSize = faces.size();
     int facesSizeAfterSubdivision = facesSize * 4;
     int verticesSize = vertices.size();
@@ -440,7 +443,7 @@ void subdivideMeshFromFile(std::string inputFilePath, std::string outputFilePath
 
     std::cout << "[CPU] [main] DONE WRITING MESH TO DISK" << endl;
 
-    auto endTime = std::chrono::steady_clock::now();
+    endTime = std::chrono::steady_clock::now();
     std::cout << "[END] PROGRAM TOOK " << std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << "MS" << endl;
 }
 
