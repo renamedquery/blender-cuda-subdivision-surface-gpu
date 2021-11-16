@@ -189,7 +189,7 @@ const EnumPropertyItem rna_enum_object_modifier_type_items[] = {
      {eModifierType_GPUSubsurf,
      "GPUSubsurf",
      ICON_MOD_SUBSURF,
-     "Subdivision Surface (GPU)",
+     "Subdivision Surface (CUDA)",
      "Subdivides a mesh using CUDA"},
     {eModifierType_Triangulate,
      "TRIANGULATE",
@@ -7183,7 +7183,7 @@ static void rna_def_modifier_gpusubsurf(BlenderRNA *brna) {
   PropertyRNA *prop;
 
   srna = RNA_def_struct(brna, "GPUSubsurf", "Modifier");
-  RNA_def_struct_ui_text(srna, "Subdivision Surface (GPU)", "");
+  RNA_def_struct_ui_text(srna, "Subdivision Surface (CUDA)", "");
   RNA_def_struct_sdna(srna, "GPUSubsurfData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_SUBSURF);
 

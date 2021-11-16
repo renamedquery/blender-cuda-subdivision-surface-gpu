@@ -60,7 +60,7 @@ static void panel_draw(const bContext *C, Panel *panel) {
 
     uiItemR(layout, ptr, "gpusubsurf_iterations", 0, IFACE_("Levels Viewport"), ICON_NONE);
     uiItemR(layout, ptr, "gpusubsurf_iterationsrender", 0, IFACE_("Levels Render"), ICON_NONE);
-    uiItemR(layout, ptr, "gpusubsurf_mergebydistance", 0, IFACE_("Merge By Distance (CUDA)"), ICON_NONE);
+    uiItemR(layout, ptr, "gpusubsurf_mergebydistance", 0, IFACE_("Merge By Distance (Using CUDA)"), ICON_NONE);
 
     modifier_panel_end(layout, ptr);
 }
@@ -76,7 +76,7 @@ static void deformMatrices(ModifierData *md, const ModifierEvalContext *ctx, Mes
 static Mesh *modifyMesh(ModifierData *md, const ModifierEvalContext *ctx, Mesh *mesh) {return mesh;}
 
 ModifierTypeInfo modifierType_GPUSubsurf = {
-    /* name */ "Subdivision Surface (GPU)",
+    /* name */ "Subdivision Surface (CUDA)",
     /* structName */ "GPUSubsurfData",
     /* structSize */ sizeof(GPUSubsurfData),
     /* srna */ &RNA_GPUSubsurf,
