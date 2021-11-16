@@ -64,42 +64,15 @@ static void panel_draw(const bContext *C, Panel *panel) {
     modifier_panel_end(layout, ptr);
 }
 
-static void panelRegister(ARegionType *region_type) {
-    
-    printf("[DEBUG] [GPUSubsurf::panelRegister] STARTING\n");
-    modifier_panel_register(region_type, eModifierType_GPUSubsurf, panel_draw);
-}
+static void panelRegister(ARegionType *region_type) modifier_panel_register(region_type, eModifierType_GPUSubsurf, panel_draw);
 
-static bool dependsOnNormals(struct ModifierData *md) {
+static bool dependsOnNormals(struct ModifierData *md) return false;
 
-    printf("[DEBUG] [GPUSubsurf::dependsOnNormals] PASS\n");
-    return false;
-}
+static void copyData(const ModifierData *md, ModifierData *target, const int flag) BKE_modifier_copydata_generic(md, target, flag);
 
-static void copyData(const ModifierData *md, ModifierData *target, const int flag) {
+static void deformMatrices(ModifierData *md, const ModifierEvalContext *ctx, Mesh *mesh, float (*vertex_cos)[3], float (*deform_matrices)[3][3], int num_verts) {}
 
-    printf("[DEBUG] [GPUSubsurf::copyData] COPYING MODIFIER DATA\n");
-    BKE_modifier_copydata_generic(md, target, flag);
-}
-
-static void deformMatrices(ModifierData *md, const ModifierEvalContext *ctx, Mesh *mesh, float (*vertex_cos)[3], float (*deform_matrices)[3][3], int num_verts) {
-
-    printf("[DEBUG] [GPUSubsurf::deformMatrices] DOING NOTHING\n");
-}
-
-static Mesh *modifyMesh(ModifierData *md, const ModifierEvalContext *ctx, Mesh *mesh) {
-
-    printf("[DEBUG] [GPUSubsurf::modifyMesh] RETURNING MESH\n");
-    return mesh;
-}
-
-/*static Mesh *gpusubsurf_applyModifier(struct ModifierData *md, const struct ModifierEvalContext *ctx, struct Mesh *mesh) {
-    
-    printf("[DEBUG] [GPUSubsurf::gpusubsurf_applyModifier] PASS\n");
-
-    // function will be empty for now
-    return mesh;
-}*/
+static Mesh *modifyMesh(ModifierData *md, const ModifierEvalContext *ctx, Mesh *mesh) return mesh;
 
 ModifierTypeInfo modifierType_GPUSubsurf = {
     /* name */ "GPU Subdivision Surface",
