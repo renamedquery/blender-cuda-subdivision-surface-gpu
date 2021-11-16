@@ -56,6 +56,10 @@ Compiling the CUDA file on Win64 (not completed):
 
 - Only works on quads.
 
-# Tested Hardware
+# Tested CUDA Capable GPUs
 
 - RTX 3080
+
+# Tested OSes
+
+- Windows 10 (1909, 64bit)
