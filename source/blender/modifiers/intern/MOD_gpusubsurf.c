@@ -58,9 +58,8 @@ static void panel_draw(const bContext *C, Panel *panel) {
 
     uiLayoutSetPropSep(layout, true);
 
-    uiLayout *col = uiLayoutColumn(layout, true);
-    uiItemR(col, ptr, "gpusubsurf_iterations", 0, IFACE_("Levels Viewport"), ICON_NONE);
-    //uiLayoutSetActive(col, RNA_boolean_get(&ptr, "gpusubsurf_mergebydistance"));
+    uiItemR(layout, ptr, "gpusubsurf_iterations", 0, IFACE_("Levels Viewport"), ICON_NONE);
+    uiItemR(layout, ptr, "gpusubsurf_mergebydistance", 0, IFACE_("Merge By Distance (CUDA)"), ICON_NONE);
 
     modifier_panel_end(layout, ptr);
 }
