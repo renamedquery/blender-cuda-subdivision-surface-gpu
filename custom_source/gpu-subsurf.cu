@@ -304,7 +304,7 @@ void subdivideMeshFromFile(std::string inputFilePath, std::string outputFilePath
     std::cout << "[CPU] [readObj] FINISHED READING MESH" << endl;
 
     auto endTime = std::chrono::steady_clock::now();
-    std::cout << "[CPU] [readObj] READING MESH TOOK " << std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << "MS" << endl;
+    std::cout << "[CPU] [main] ELAPSED TIME " << std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << "MS" << endl;
 
     int facesSize = faces.size();
     int facesSizeAfterSubdivision = facesSize * 4;
@@ -414,6 +414,9 @@ void subdivideMeshFromFile(std::string inputFilePath, std::string outputFilePath
     CUDA_CHECK_RETURN(cudaMemcpyFromSymbol(&newVertices_tmp_returnVal, newVertices, sizeof(newVertices)));
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     std::cout << "[GPU] [cudaMemcpyFromSymbol] DONE COPYING MESH DATA TO HOST" << endl;
+
+    endTime = std::chrono::steady_clock::now();
+    std::cout << "[CPU] [main] ELAPSED TIME " << std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count()) << "MS" << endl;
 
     std::cout << "[CPU] [main] WRITING MESH TO " << outputFilePath << endl;
 
