@@ -76,7 +76,7 @@ static void deformMatrices(ModifierData *md, const ModifierEvalContext *ctx, Mes
 static Mesh *modifyMesh(ModifierData *md, const ModifierEvalContext *ctx, Mesh *mesh) {return mesh;}
 
 ModifierTypeInfo modifierType_GPUSubsurf = {
-    /* name */ "GPU Subdivision Surface",
+    /* name */ "Subdivision Surface (GPU)",
     /* structName */ "GPUSubsurfData",
     /* structSize */ sizeof(GPUSubsurfData),
     /* srna */ &RNA_GPUSubsurf,
