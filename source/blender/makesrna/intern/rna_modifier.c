@@ -7194,6 +7194,11 @@ static void rna_def_modifier_gpusubsurf(BlenderRNA *brna) {
   RNA_def_property_range(prop, 0, 4);
   RNA_def_property_update(prop, 0, "rna_Modifier_update");
 
+  prop = RNA_def_property(srna, "gpusubsurf_iterationsrender", PROP_INT, PROP_NONE);
+  RNA_def_property_ui_text(prop, "Subdivision Level", "The amount of times the mesh will be subdivided");
+  RNA_def_property_range(prop, 0, 4);
+  RNA_def_property_update(prop, 0, "rna_Modifier_update");
+
   prop = RNA_def_property(srna, "gpusubsurf_mergebydistance", PROP_BOOLEAN, PROP_NONE);
   RNA_def_property_ui_text(prop, "Merge By Distance Using CUDA", "Merge by distance using CUDA acceleration (temporarily slower than the builtin join modifier)");
   RNA_def_property_update(prop, 0, "rna_Modifier_update");

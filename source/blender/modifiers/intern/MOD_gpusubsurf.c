@@ -59,20 +59,21 @@ static void panel_draw(const bContext *C, Panel *panel) {
     uiLayoutSetPropSep(layout, true);
 
     uiItemR(layout, ptr, "gpusubsurf_iterations", 0, IFACE_("Levels Viewport"), ICON_NONE);
+    uiItemR(layout, ptr, "gpusubsurf_iterationsrender", 0, IFACE_("Levels Render"), ICON_NONE);
     uiItemR(layout, ptr, "gpusubsurf_mergebydistance", 0, IFACE_("Merge By Distance (CUDA)"), ICON_NONE);
 
     modifier_panel_end(layout, ptr);
 }
 
-static void panelRegister(ARegionType *region_type) modifier_panel_register(region_type, eModifierType_GPUSubsurf, panel_draw);
+static void panelRegister(ARegionType *region_type) {modifier_panel_register(region_type, eModifierType_GPUSubsurf, panel_draw);}
 
-static bool dependsOnNormals(struct ModifierData *md) return false;
+static bool dependsOnNormals(struct ModifierData *md) {return false;}
 
-static void copyData(const ModifierData *md, ModifierData *target, const int flag) BKE_modifier_copydata_generic(md, target, flag);
+static void copyData(const ModifierData *md, ModifierData *target, const int flag) {BKE_modifier_copydata_generic(md, target, flag);}
 
 static void deformMatrices(ModifierData *md, const ModifierEvalContext *ctx, Mesh *mesh, float (*vertex_cos)[3], float (*deform_matrices)[3][3], int num_verts) {}
 
-static Mesh *modifyMesh(ModifierData *md, const ModifierEvalContext *ctx, Mesh *mesh) return mesh;
+static Mesh *modifyMesh(ModifierData *md, const ModifierEvalContext *ctx, Mesh *mesh) {return mesh;}
 
 ModifierTypeInfo modifierType_GPUSubsurf = {
     /* name */ "GPU Subdivision Surface",
