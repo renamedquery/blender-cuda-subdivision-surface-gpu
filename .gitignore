@@ -1,3 +1,5 @@
 !*
 .git
 win64_vc15
+custom_source/*
+!custom_source/gpu-subsurf.cu
