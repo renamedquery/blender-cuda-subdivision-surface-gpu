@@ -297,6 +297,8 @@ set(SRC
   intern/workspace.c
   intern/world.c
   intern/writeavi.c
+  intern/subdiv_foreach_gpu.c
+  intern/subdiv_mesh_gpu.c
 
   BKE_DerivedMesh.h
   BKE_action.h

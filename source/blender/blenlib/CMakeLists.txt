@@ -154,6 +154,7 @@ set(SRC
   intern/voxel.c
   intern/winstuff.c
   intern/winstuff_dir.c
+  intern/task_range_gpu.cc
 
   # Private headers.
   intern/BLI_mempool_private.h
