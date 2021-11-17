@@ -73,7 +73,16 @@ static void copyData(const ModifierData *md, ModifierData *target, const int fla
 
 static void deformMatrices(ModifierData *md, const ModifierEvalContext *ctx, Mesh *mesh, float (*vertex_cos)[3], float (*deform_matrices)[3][3], int num_verts) {}
 
-static Mesh *modifyMesh(ModifierData *md, const ModifierEvalContext *ctx, Mesh *mesh) {return mesh;}
+static Mesh *modifyMesh(ModifierData *md, const ModifierEvalContext *ctx, Mesh *mesh) {
+
+    GPUSubsurfData *gsd = (GPUSubsurfData *)md;
+
+    if (gsd->gpusubsurf_iterations == 0) return mesh;
+    
+    Mesh *result = mesh;
+
+    return mesh;
+}
 
 ModifierTypeInfo modifierType_GPUSubsurf = {
     /* name */ "Subdivision Surface (CUDA)",
