@@ -155,7 +155,7 @@ static void panel_draw(const bContext *C, Panel *panel) {
 
     uiItemR(layout, ptr, "gpusubsurf_iterations", 0, IFACE_("Levels Viewport"), ICON_NONE);
     uiItemR(layout, ptr, "gpusubsurf_iterationsrender", 0, IFACE_("Levels Render"), ICON_NONE);
-    uiItemR(layout, ptr, "subdivType", 0, IFACE_("Simple Subdivision"), ICON_NONE);
+    uiItemR(layout, ptr, "subdiv_type", 0, IFACE_("Simple Subdivision"), ICON_NONE);
     uiItemR(layout, ptr, "boundary_smooth", 0, IFACE_("Smooth Boundaries"), ICON_NONE);
     uiItemR(layout, ptr, "gpusubsurf_mergebydistance", 0, IFACE_("Merge By Distance (Using CUDA)"), ICON_NONE);
 
