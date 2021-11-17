@@ -43,43 +43,6 @@
 
 #include "MEM_guardedalloc.h"
 
-/* -------------------------------------------------------------------- */
-/** \name Subdivision Context
- * \{ */
-
-typedef struct SubdivMeshContext {
-  const SubdivToMeshSettings *settings;
-  const Mesh *coarse_mesh;
-  Subdiv *subdiv;
-  Mesh *subdiv_mesh;
-  /* Cached custom data arrays for faster access. */
-  int *vert_origindex;
-  int *edge_origindex;
-  int *loop_origindex;
-  int *poly_origindex;
-  /* UV layers interpolation. */
-  int num_uv_layers;
-  MLoopUV *uv_layers[MAX_MTFACE];
-  /* Accumulated values.
-   *
-   * Averaging is happening for vertices along the coarse edges and corners.
-   * This is needed for both displacement and normals.
-   *
-   * Displacement is being accumulated to a vertices coordinates, since those
-   * are not needed during traversal of edge/corner vertices.
-   *
-   * For normals we are using dedicated array, since we can not use same
-   * vertices (normals are `short`, which will cause a lot of precision
-   * issues). */
-  float (*accumulated_normals)[3];
-  /* Per-subdivided vertex counter of averaged values. */
-  int *accumulated_counters;
-  /* Denotes whether normals can be evaluated from a limit surface. One case
-   * when it's not possible is when displacement is used. */
-  bool can_evaluate_normals;
-  bool have_displacement;
-} SubdivMeshContext;
-
 static void subdiv_mesh_ctx_cache_uv_layers(SubdivMeshContext *ctx)
 {
   Mesh *subdiv_mesh = ctx->subdiv_mesh;
@@ -420,24 +383,6 @@ static void loop_interpolation_end(LoopsForInterpolation *loop_interpolation)
     CustomData_free(&loop_interpolation->loop_data_storage, 4);
   }
 }
-
-/** \} */
-
-/* -------------------------------------------------------------------- */
-/** \name TLS
- * \{ */
-
-typedef struct SubdivMeshTLS {
-  bool vertex_interpolation_initialized;
-  VerticesForInterpolation vertex_interpolation;
-  const MPoly *vertex_interpolation_coarse_poly;
-  int vertex_interpolation_coarse_corner;
-
-  bool loop_interpolation_initialized;
-  LoopsForInterpolation loop_interpolation;
-  const MPoly *loop_interpolation_coarse_poly;
-  int loop_interpolation_coarse_corner;
-} SubdivMeshTLS;
 
 static void subdiv_mesh_tls_free(void *tls_v)
 {
@@ -982,8 +927,6 @@ static void subdiv_mesh_poly(const SubdivForeachContext *foreach_context,
   subdiv_poly->totloop = num_loops;
 }
 
-/** \} */
-
 /* -------------------------------------------------------------------- */
 /** \name Loose elements subdivision process
  * \{ */
@@ -1002,6 +945,26 @@ static void subdiv_mesh_vertex_loose(const SubdivForeachContext *foreach_context
   MVert *subdiv_vertex = &subdiv_mvert[subdiv_vertex_index];
   subdiv_vertex_data_copy(ctx, coarse_vertex, subdiv_vertex);
 }
+
+/** \} */
+
+/* -------------------------------------------------------------------- */
+/** \name TLS
+ * \{ */
+
+typedef struct SubdivMeshTLS {
+  bool vertex_interpolation_initialized;
+  VerticesForInterpolation vertex_interpolation;
+  const MPoly *vertex_interpolation_coarse_poly;
+  int vertex_interpolation_coarse_corner;
+
+  bool loop_interpolation_initialized;
+  LoopsForInterpolation loop_interpolation;
+  const MPoly *loop_interpolation_coarse_poly;
+  int loop_interpolation_coarse_corner;
+} SubdivMeshTLS;
+
+/** \} */
 
 /* Get neighbor edges of the given one.
  * - neighbors[0] is an edge adjacent to edge->v1.
@@ -1150,13 +1113,11 @@ static void subdiv_mesh_vertex_of_loose_edge(const struct SubdivForeachContext *
   normal_float_to_short_v3(subdiv_vertex->no, no);
 }
 
-/** \} */
-
 /* -------------------------------------------------------------------- */
 /** \name Initialization
  * \{ */
 
-static void setup_foreach_callbacks(const SubdivMeshContext *subdiv_context,
+static void setup_foreach_callbacks_cuda(const SubdivMeshContext *subdiv_context,
                                     SubdivForeachContext *foreach_context)
 {
   memset(foreach_context, 0, sizeof(*foreach_context));
@@ -1185,10 +1146,49 @@ static void setup_foreach_callbacks(const SubdivMeshContext *subdiv_context,
 /** \} */
 
 /* -------------------------------------------------------------------- */
+/** \name Subdivision Context
+ * \{ */
+
+typedef struct SubdivMeshContext {
+  const SubdivToMeshSettings *settings;
+  const Mesh *coarse_mesh;
+  Subdiv *subdiv;
+  Mesh *subdiv_mesh;
+  /* Cached custom data arrays for faster access. */
+  int *vert_origindex;
+  int *edge_origindex;
+  int *loop_origindex;
+  int *poly_origindex;
+  /* UV layers interpolation. */
+  int num_uv_layers;
+  MLoopUV *uv_layers[MAX_MTFACE];
+  /* Accumulated values.
+   *
+   * Averaging is happening for vertices along the coarse edges and corners.
+   * This is needed for both displacement and normals.
+   *
+   * Displacement is being accumulated to a vertices coordinates, since those
+   * are not needed during traversal of edge/corner vertices.
+   *
+   * For normals we are using dedicated array, since we can not use same
+   * vertices (normals are `short`, which will cause a lot of precision
+   * issues). */
+  float (*accumulated_normals)[3];
+  /* Per-subdivided vertex counter of averaged values. */
+  int *accumulated_counters;
+  /* Denotes whether normals can be evaluated from a limit surface. One case
+   * when it's not possible is when displacement is used. */
+  bool can_evaluate_normals;
+  bool have_displacement;
+} SubdivMeshContext;
+
+/** \} */
+
+/* -------------------------------------------------------------------- */
 /** \name Public entry point
  * \{ */
 
-Mesh *BKE_subdiv_to_mesh(Subdiv *subdiv,
+Mesh *BKE_subdiv_to_mesh_cuda(Subdiv *subdiv,
                          const SubdivToMeshSettings *settings,
                          const Mesh *coarse_mesh)
 {
@@ -1217,12 +1217,12 @@ Mesh *BKE_subdiv_to_mesh(Subdiv *subdiv,
   /* Multi-threaded traversal/evaluation. */
   BKE_subdiv_stats_begin(&subdiv->stats, SUBDIV_STATS_SUBDIV_TO_MESH_GEOMETRY);
   SubdivForeachContext foreach_context;
-  setup_foreach_callbacks(&subdiv_context, &foreach_context);
+  setup_foreach_callbacks_cuda(&subdiv_context, &foreach_context);
   SubdivMeshTLS tls = {0};
   foreach_context.user_data = &subdiv_context;
   foreach_context.user_data_tls_size = sizeof(SubdivMeshTLS);
   foreach_context.user_data_tls = &tls;
-  BKE_subdiv_foreach_subdiv_geometry(subdiv, &foreach_context, settings, coarse_mesh);
+  BKE_subdiv_foreach_subdiv_geometry_cuda(subdiv, &foreach_context, settings, coarse_mesh);
   BKE_subdiv_stats_end(&subdiv->stats, SUBDIV_STATS_SUBDIV_TO_MESH_GEOMETRY);
   Mesh *result = subdiv_context.subdiv_mesh;
   // BKE_mesh_validate(result, true, true);
