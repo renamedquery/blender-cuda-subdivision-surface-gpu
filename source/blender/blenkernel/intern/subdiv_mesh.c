@@ -22,6 +22,7 @@
  */
 
 #include "BKE_subdiv_mesh.h"
+#include "BKE_subdiv_mesh_gpu.h"
 
 #include "atomic_ops.h"
 
@@ -38,6 +39,7 @@
 #include "BKE_subdiv.h"
 #include "BKE_subdiv_eval.h"
 #include "BKE_subdiv_foreach.h"
+#include "BKE_subdiv_foreach_gpu.h"
 
 #include "MEM_guardedalloc.h"
 
@@ -1221,6 +1223,53 @@ Mesh *BKE_subdiv_to_mesh(Subdiv *subdiv,
   foreach_context.user_data_tls_size = sizeof(SubdivMeshTLS);
   foreach_context.user_data_tls = &tls;
   BKE_subdiv_foreach_subdiv_geometry(subdiv, &foreach_context, settings, coarse_mesh);
+  BKE_subdiv_stats_end(&subdiv->stats, SUBDIV_STATS_SUBDIV_TO_MESH_GEOMETRY);
+  Mesh *result = subdiv_context.subdiv_mesh;
+  // BKE_mesh_validate(result, true, true);
+  BKE_subdiv_stats_end(&subdiv->stats, SUBDIV_STATS_SUBDIV_TO_MESH);
+  if (!subdiv_context.can_evaluate_normals) {
+    BKE_mesh_normals_tag_dirty(result);
+  }
+  /* Free used memory. */
+  subdiv_mesh_context_free(&subdiv_context);
+  return result;
+}
+
+Mesh *BKE_subdiv_to_mesh_cuda(Subdiv *subdiv,
+                         const SubdivToMeshSettings *settings,
+                         const Mesh *coarse_mesh)
+{
+  BKE_subdiv_stats_begin(&subdiv->stats, SUBDIV_STATS_SUBDIV_TO_MESH);
+  /* Make sure evaluator is up to date with possible new topology, and that
+   * it is refined for the new positions of coarse vertices. */
+  if (!BKE_subdiv_eval_begin_from_mesh(subdiv, coarse_mesh, NULL)) {
+    /* This could happen in two situations:
+     * - OpenSubdiv is disabled.
+     * - Something totally bad happened, and OpenSubdiv rejected our
+     *   topology.
+     * In either way, we can't safely continue. */
+    if (coarse_mesh->totpoly) {
+      BKE_subdiv_stats_end(&subdiv->stats, SUBDIV_STATS_SUBDIV_TO_MESH);
+      return NULL;
+    }
+  }
+  /* Initialize subdivision mesh creation context. */
+  SubdivMeshContext subdiv_context = {0};
+  subdiv_context.settings = settings;
+  subdiv_context.coarse_mesh = coarse_mesh;
+  subdiv_context.subdiv = subdiv;
+  subdiv_context.have_displacement = (subdiv->displacement_evaluator != NULL);
+  subdiv_context.can_evaluate_normals = !subdiv_context.have_displacement &&
+                                        subdiv_context.subdiv->settings.is_adaptive;
+  /* Multi-threaded traversal/evaluation. */
+  BKE_subdiv_stats_begin(&subdiv->stats, SUBDIV_STATS_SUBDIV_TO_MESH_GEOMETRY);
+  SubdivForeachContext foreach_context;
+  setup_foreach_callbacks(&subdiv_context, &foreach_context);
+  SubdivMeshTLS tls = {0};
+  foreach_context.user_data = &subdiv_context;
+  foreach_context.user_data_tls_size = sizeof(SubdivMeshTLS);
+  foreach_context.user_data_tls = &tls;
+  BKE_subdiv_foreach_subdiv_geometry_cuda(subdiv, &foreach_context, settings, coarse_mesh);
   BKE_subdiv_stats_end(&subdiv->stats, SUBDIV_STATS_SUBDIV_TO_MESH_GEOMETRY);
   Mesh *result = subdiv_context.subdiv_mesh;
   // BKE_mesh_validate(result, true, true);

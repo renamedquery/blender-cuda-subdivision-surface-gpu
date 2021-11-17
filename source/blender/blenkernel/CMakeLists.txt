@@ -466,6 +466,8 @@ set(SRC
   BKE_workspace.h
   BKE_world.h
   BKE_writeavi.h
+  BKE_subdiv_foreach_gpu.h
+  BKE_subdiv_mesh_gpu.h
 
   nla_private.h
   particle_private.h

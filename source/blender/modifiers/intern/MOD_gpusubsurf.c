@@ -30,6 +30,7 @@
 #include "BKE_subdiv_ccg.h"
 #include "BKE_subdiv_deform.h"
 #include "BKE_subdiv_mesh.h"
+#include "BKE_subdiv_mesh_gpu.h"
 #include "BKE_subsurf.h"
 
 #include "UI_interface.h"
@@ -106,7 +107,7 @@ static void subdiv_mesh_settings_init(SubdivToMeshSettings *settings,
                                   !(ctx->flag & MOD_APPLY_TO_BASE_MESH);
 }
 
-static Mesh *subdiv_as_mesh(SubsurfModifierData *smd,
+static Mesh *subdiv_as_mesh_cuda(SubsurfModifierData *smd,
                             const ModifierEvalContext *ctx,
                             Mesh *mesh,
                             Subdiv *subdiv)
@@ -117,7 +118,7 @@ static Mesh *subdiv_as_mesh(SubsurfModifierData *smd,
   if (mesh_settings.resolution < 3) {
     return result;
   }
-  result = BKE_subdiv_to_mesh(subdiv, &mesh_settings, mesh);
+  result = BKE_subdiv_to_mesh_cuda(subdiv, &mesh_settings, mesh);
   return result;
 }
 
@@ -206,7 +207,7 @@ static Mesh *modifyMesh(ModifierData *md, const ModifierEvalContext *ctx, Mesh *
         CustomData_clear_layer_flag(&mesh->ldata, CD_NORMAL, CD_FLAG_TEMPORARY);
     }
 
-    result = subdiv_as_mesh(smd, ctx, mesh, subdiv);
+    result = subdiv_as_mesh_cuda(smd, ctx, mesh, subdiv);
 
     if (use_clnors) {
         float(*lnors)[3] = CustomData_get_layer(&result->ldata, CD_NORMAL);
