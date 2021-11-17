@@ -181,11 +181,11 @@ static Mesh *modifyMesh(ModifierData *md, const ModifierEvalContext *ctx, Mesh *
 
     smd->levels = gsd->gpusubsurf_iterations;
     smd->renderLevels = gsd->gpusubsurf_iterationsrender;
-    smd->subdivType = SUBSURF_TYPE_CATMULL_CLARK; // add an option for users to toggle between simple and catmull clark
+    smd->subdivType = (gsd->subdiv_type == 0) ? SUBSURF_TYPE_CATMULL_CLARK : SUBSURF_TYPE_SIMPLE; // add an option for users to toggle between simple and catmull clark
     smd->flags = eSubsurfModifierFlag_UseCrease | eSubsurfModifierFlag_UseRecursiveSubdivision;
     smd->uv_smooth = 0; // not sure what this does, ill modify it later
     smd->quality = 0; // also not sure what this does
-    smd->boundary_smooth = SUBSURF_BOUNDARY_SMOOTH_PRESERVE_CORNERS; // add an option for users to toggle this between preserve corners and dont preserve corners
+    smd->boundary_smooth = (gsd->boundary_smooth == 0) ? SUBSURF_BOUNDARY_SMOOTH_PRESERVE_CORNERS : SUBSURF_BOUNDARY_SMOOTH_ALL; // add an option for users to toggle this between preserve corners and dont preserve corners
 
     Mesh *result = mesh;
 
