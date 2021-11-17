@@ -49,6 +49,25 @@
 
 #include "intern/CCGSubSurf.h"
 
+static void subdiv_settings_init_cuda(SubdivSettings *settings,
+                                 const GPUSubsurfData *gsd,
+                                 const ModifierEvalContext *ctx)
+{
+  const bool use_render_params = (ctx->flag & MOD_APPLY_RENDER);
+  const int requested_levels = (use_render_params) ? gsd->gpusubsurf_iterationsrender : gsd->gpusubsurf_iterations;
+
+  settings->is_simple = (gsd->subdivType == SUBSURF_TYPE_SIMPLE);
+  settings->is_adaptive = !(gsd->flags & eSubsurfModifierFlag_UseRecursiveSubdivision);
+  settings->level = settings->is_simple ?
+                        1 :
+                        (settings->is_adaptive ? gsd->quality : requested_levels);
+  settings->use_creases = (gsd->flags & eSubsurfModifierFlag_UseCrease);
+  settings->vtx_boundary_interpolation = BKE_subdiv_vtx_boundary_interpolation_from_subsurf(
+      gsd->boundary_smooth);
+  settings->fvar_linear_interpolation = BKE_subdiv_fvar_interpolation_from_uv_smooth(
+      gsd->uv_smooth);
+}
+
 static void panel_draw(const bContext *C, Panel *panel) {
 
     uiLayout *layout = panel->layout;
@@ -79,6 +98,14 @@ static Mesh *modifyMesh(ModifierData *md, const ModifierEvalContext *ctx, Mesh *
 
     if (gsd->gpusubsurf_iterations == 0) return mesh;
     
+    SubdivSettings cuda_subdiv_settings;
+    cuda_subdiv_settings.is_simple = false; // add an option for this in the modifier menu
+    cuda_subdiv_settings.is_adaptive = false; // add an option for this in the modifier menu
+    cuda_subdiv_settings.level = gsd->gpusubsurf_iterations;
+    cuda_subdiv_settings.use_creases = true; // add an option for this in the modifier menu
+
+    subdiv_settings_init_cuda(&cuda_subdiv_settings, gsd, ctx);
+
     Mesh *result = mesh;
 
     return mesh;
