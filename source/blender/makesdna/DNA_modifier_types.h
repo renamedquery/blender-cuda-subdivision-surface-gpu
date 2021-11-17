@@ -2369,7 +2369,7 @@ typedef struct GPUSubsurfData {
   int gpusubsurf_iterationsrender;
   int _pad2;
 
-  short subdivType, flags;
+  short subdiv_type, flags;
   short uv_smooth;
   short quality;
   short boundary_smooth;
