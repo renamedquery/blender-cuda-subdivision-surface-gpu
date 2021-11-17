@@ -247,6 +247,8 @@ Subdiv *BKE_subdiv_update_from_mesh(Subdiv *subdiv,
 
 void BKE_subdiv_free(Subdiv *subdiv);
 
+void BKE_subdiv_free_cuda(Subdiv *subdiv);
+
 /* ============================ DISPLACEMENT API ============================ */
 
 void BKE_subdiv_displacement_attach_from_multires(Subdiv *subdiv,

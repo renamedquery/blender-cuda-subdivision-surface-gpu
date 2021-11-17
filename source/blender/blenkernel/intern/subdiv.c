@@ -201,6 +201,15 @@ void BKE_subdiv_free(Subdiv *subdiv)
   MEM_freeN(subdiv);
 }
 
+void BKE_subdiv_free_cuda(Subdiv *subdiv)
+{
+  BKE_subdiv_displacement_detach(subdiv);
+  if (subdiv->cache_.face_ptex_offset != NULL) {
+    MEM_freeN(subdiv->cache_.face_ptex_offset);
+  }
+  MEM_freeN(subdiv);
+}
+
 /* =========================== PTEX FACES AND GRIDS ========================= */
 
 int *BKE_subdiv_face_ptex_offset_get(Subdiv *subdiv)
