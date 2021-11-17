@@ -14,7 +14,7 @@
 
 ![](https://i.imgur.com/wSqWEDn.png?raw=true)
 
-![](https://i.imgur.com/5DHRc8Y.png?raw=true)
+![](https://i.imgur.com/sgEMxG7.png?raw=true)
 
 *Currently, the modifier is a work in progress, however it has been somewhat implemented into my custom build of Blender for now. Unfortunately, Blender doesn't expose the modifiers to `bpy` so the only way that I could add one was through modifying Blender's source code.*
 
