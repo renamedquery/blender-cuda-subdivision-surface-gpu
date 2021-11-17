@@ -2373,7 +2373,7 @@ typedef struct GPUSubsurfData {
   short uv_smooth;
   short quality;
   short boundary_smooth;
-  char _pad[2];
+  short _pad3[3];
 
   void *emCache, *mCache;
 
