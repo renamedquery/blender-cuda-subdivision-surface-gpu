@@ -131,6 +131,24 @@ blender_project_hack_post()
 enable_testing()
 
 #-----------------------------------------------------------------------------
+# CUDA
+
+enable_language(CUDA)
+
+add_compile_options(
+  $<$<COMPILE_LANGUAGE:CUDA>:--generate-line-info> 
+  $<$<COMPILE_LANGUAGE:CUDA>:--use_fast_math>
+  $<$<COMPILE_LANGUAGE:CUDA>:--relocatable-device-code=true>
+  $<$<COMPILE_LANGUAGE:CUDA>:-cudart=shared>
+  $<$<COMPILE_LANGUAGE:CUDA>:-arch=sm_86>
+  $<$<COMPILE_LANGUAGE:CUDA>:-std=c++17>
+)
+# tell cuda to ignore intern/cycles/
+# if cuda doesnt ignore cycles then this happens:
+# nvcc fatal   : A single input file is required for a non-link phase when an outputfile is specified
+
+
+#-----------------------------------------------------------------------------
 # Redirect output files
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin CACHE INTERNAL "" FORCE)
@@ -1858,15 +1876,6 @@ endif()
 
 # message(STATUS "Using CFLAGS: ${CMAKE_C_FLAGS}")
 # message(STATUS "Using CXXFLAGS: ${CMAKE_CXX_FLAGS}")
-
-#-----------------------------------------------------------------------------
-# CUDA
-
-enable_language(CUDA)
-set(CUDA_NVCC_FLAGS "-lineinfo --use_fast_math -rdc=true -lcudadevrt -arch=sm_86")
-# tell cuda to ignore intern/cycles/
-# if cuda doesnt ignore cycles then this happens:
-# nvcc fatal   : A single input file is required for a non-link phase when an outputfile is specified
 
 #-----------------------------------------------------------------------------
 # Libraries
