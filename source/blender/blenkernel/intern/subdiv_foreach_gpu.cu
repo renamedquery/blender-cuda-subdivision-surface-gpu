@@ -1875,6 +1875,7 @@ static void subdiv_foreach_boundary_edges_task(void *__restrict userdata,
   subdiv_foreach_boundary_edges(ctx, tls->userdata_chunk, edge_index);
 }
 
+__global__
 bool BKE_subdiv_foreach_subdiv_geometry_cuda(Subdiv *subdiv,
                                         const SubdivForeachContext *context,
                                         const SubdivToMeshSettings *mesh_settings,
@@ -1915,8 +1916,8 @@ bool BKE_subdiv_foreach_subdiv_geometry_cuda(Subdiv *subdiv,
 
   // CUDA TODO below
 
-  BLI_task_parallel_range(
-      0, coarse_mesh->totpoly, &ctx, subdiv_foreach_task, &parallel_range_settings);
+  BLI_task_parallel_range<<<(coarse_mesh->totpoly + &parallel_range_settings.block_size - 1) / &parallel_range_settings.block_size, 
+      &parallel_range_settings.block_size>>>(0, coarse_mesh->totpoly, &ctx, subdiv_foreach_task, &parallel_range_settings);
   if (context->vertex_loose != NULL) {
     BLI_task_parallel_range(0,
                             coarse_mesh->totvert,
