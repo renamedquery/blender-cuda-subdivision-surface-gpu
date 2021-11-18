@@ -176,6 +176,11 @@ typedef struct TaskParallelSettings {
    * having a global use_threading switch based on just range size.
    */
   int min_iter_per_thread;
+  /* The block size for the CUDA Kernels.
+   * For more information, visit: https://en.wikipedia.org/wiki/Thread_block_(CUDA_programming)
+   * Will leave at 256 for testing, but may increase to 512/1024 later on.
+  */
+  int block_size = 256;
 } TaskParallelSettings;
 
 BLI_INLINE void BLI_parallel_range_settings_defaults(TaskParallelSettings *settings);
