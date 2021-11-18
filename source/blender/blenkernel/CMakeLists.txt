@@ -802,18 +802,28 @@ if(COMPILE_LANGUAGE|CUDA)
   string(REGEX MATCH "*source*blender*blenkernel*" current_dir_matches_regex CMAKE_CURRENT_LIST_DIR)
 
   if(current_dir_matches_regex)
+
     enable_language(CUDA)
-    add_compile_options(
+
+    # enable a way for this to auto detect the cuda version
+    set(CUDA_RUNTIME_LIBRARY "/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.4/lib/x64/")
+
+    set(CUDA_NVCC_FLAGS
       --generate-line-info
       --use_fast_math
       --relocatable-device-code=true
-      -cudart=shared
       -arch=sm_86
+      -lcudart
       -std=c++17
       -lcuda
       -lcublas
       -lcublas_device
+      -L${CUDA_RUNTIME_LIBRARY}
     )
+
+    CUDA_COMPILE(__CUDA_SUBDIV_FOREACH_GPU_CU "intern/subdiv_foreach_gpu.cu" OPTIONS ${CUDA_NVCC_FLAGS})
+
+    CUDA_ADD_EXECUTABLE(bf_blenkernel ${__CUDA_SUBDIV_FOREACH_GPU_CU})
   endif()
 endif()
 
