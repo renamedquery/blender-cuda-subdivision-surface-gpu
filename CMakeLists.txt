@@ -130,6 +130,9 @@ enable_language(CUDA)
 
 blender_project_hack_post()
 
+# nessecary to prevent cycles kernels from being compiled with nvcc
+set(CMAKE_CUDA_EXTENSIONS "cudafile")
+
 enable_testing()
 
 #-----------------------------------------------------------------------------

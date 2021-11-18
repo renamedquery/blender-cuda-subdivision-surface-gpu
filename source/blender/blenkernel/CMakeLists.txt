@@ -297,7 +297,7 @@ set(SRC
   intern/workspace.c
   intern/world.c
   intern/writeavi.c
-  intern/subdiv_foreach_gpu.cu
+  intern/subdiv_foreach_gpu.cudafile
   
   #${CUDA_TOOLKIT_ROOT_DIR}/include/lib64/libcublas.so
   #${CUDA_TOOLKIT_ROOT_DIR}/include/lib64/libcudart.so
@@ -800,21 +800,6 @@ endif()
 
 blender_add_lib(bf_blenkernel "${SRC}" "${INC}" "${INC_SYS}" "${LIB}")
 
-target_compile_options(bf_blenkernel PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-  --generate-line-info
-  --use_fast_math
-  --relocatable-device-code=true
-  -arch=sm_86
-  -lcudart
-  -std=c++17
-  -lcuda
-  -lcublas
-  -lcublas_device
->)
-
-set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-set_target_properties(bf_blenkernel PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
-
 # Needed so we can use dna_type_offsets.h for defaults initialization.
 add_dependencies(bf_blenkernel bf_dna)
 
@@ -840,3 +825,20 @@ if(WITH_GTESTS)
   include(GTestTesting)
   blender_add_test_lib(bf_blenkernel_tests "${TEST_SRC}" "${INC};${TEST_INC}" "${INC_SYS}" "${LIB}")
 endif()
+
+target_compile_options(bf_blenkernel PUBLIC $<$<COMPILE_LANGUAGE:CUDA>:
+  --generate-line-info
+  --use_fast_math
+  --relocatable-device-code=true
+  -arch=sm_86
+  -lcudart
+  -std=c++17
+  -lcuda
+  -lcublas
+  -lcublas_device
+>)
+
+set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+set_target_properties(bf_blenkernel PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+
+set_source_files_properties("intern/subdiv_foreach_gpu.cudafile" PROPERTIES LANGUAGE CUDA)
