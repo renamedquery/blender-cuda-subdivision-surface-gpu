@@ -139,17 +139,17 @@ find_package(CUDAToolkit REQUIRED)
 
 set(CUDA_SEPARABLE_COMPILATION ON)
 
-add_compile_options($<$<STREQUAL:${CMAKE_CURRENT_LIST_DIR},"source/blender/blenkernel">:
-  $<$<COMPILE_LANGUAGE:CUDA>:--generate-line-info> 
-  $<$<COMPILE_LANGUAGE:CUDA>:--use_fast_math>
-  $<$<COMPILE_LANGUAGE:CUDA>:--relocatable-device-code=true>
-  $<$<COMPILE_LANGUAGE:CUDA>:-cudart=shared>
-  $<$<COMPILE_LANGUAGE:CUDA>:-arch=sm_86>
-  $<$<COMPILE_LANGUAGE:CUDA>:-std=c++17>
-  $<$<COMPILE_LANGUAGE:CUDA>:-lcuda>
-  $<$<COMPILE_LANGUAGE:CUDA>:-lcublas>
-  $<$<COMPILE_LANGUAGE:CUDA>:-lcublas_device>
->)
+add_compile_options(
+  $<$<STREQUAL:${CMAKE_CURRENT_LIST_DIR},"source/blender/blenkernel">:$<$<COMPILE_LANGUAGE:CUDA>:--generate-line-info>>
+  $<$<STREQUAL:${CMAKE_CURRENT_LIST_DIR},"source/blender/blenkernel">:$<$<COMPILE_LANGUAGE:CUDA>:--use_fast_math>>
+  $<$<STREQUAL:${CMAKE_CURRENT_LIST_DIR},"source/blender/blenkernel">:$<$<COMPILE_LANGUAGE:CUDA>:--relocatable-device-code=true>>
+  $<$<STREQUAL:${CMAKE_CURRENT_LIST_DIR},"source/blender/blenkernel">:$<$<COMPILE_LANGUAGE:CUDA>:-cudart=shared>>
+  $<$<STREQUAL:${CMAKE_CURRENT_LIST_DIR},"source/blender/blenkernel">:$<$<COMPILE_LANGUAGE:CUDA>:-arch=sm_86>>
+  $<$<STREQUAL:${CMAKE_CURRENT_LIST_DIR},"source/blender/blenkernel">:$<$<COMPILE_LANGUAGE:CUDA>:-std=c++17>>
+  $<$<STREQUAL:${CMAKE_CURRENT_LIST_DIR},"source/blender/blenkernel">:$<$<COMPILE_LANGUAGE:CUDA>:-lcuda>>
+  $<$<STREQUAL:${CMAKE_CURRENT_LIST_DIR},"source/blender/blenkernel">:$<$<COMPILE_LANGUAGE:CUDA>:-lcublas>>
+  $<$<STREQUAL:${CMAKE_CURRENT_LIST_DIR},"source/blender/blenkernel">:$<$<COMPILE_LANGUAGE:CUDA>:-lcublas_device>>
+)
 # tell cuda to ignore intern/cycles/
 # if cuda doesnt ignore cycles then this happens:
 # nvcc fatal   : A single input file is required for a non-link phase when an outputfile is specified
