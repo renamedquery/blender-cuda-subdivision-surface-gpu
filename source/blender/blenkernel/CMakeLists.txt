@@ -18,6 +18,10 @@
 # All rights reserved.
 # ***** END GPL LICENSE BLOCK *****
 
+enable_language(CUDA)
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -lineinfo --use_fast_math -rdc=true -lcudadevrt")
+# tell cuda to ignore intern/cycles/
+
 set(INC
   .
   ../blenfont
@@ -297,7 +301,7 @@ set(SRC
   intern/workspace.c
   intern/world.c
   intern/writeavi.c
-  intern/subdiv_foreach_gpu.c
+  intern/subdiv_foreach_gpu.cu
 
   BKE_DerivedMesh.h
   BKE_action.h
