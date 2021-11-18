@@ -180,7 +180,7 @@ typedef struct TaskParallelSettings {
    * For more information, visit: https://en.wikipedia.org/wiki/Thread_block_(CUDA_programming)
    * Will leave at 256 for testing, but may increase to 512/1024 later on.
   */
-  int block_size = 256;
+  int block_size;
 } TaskParallelSettings;
 
 BLI_INLINE void BLI_parallel_range_settings_defaults(TaskParallelSettings *settings);

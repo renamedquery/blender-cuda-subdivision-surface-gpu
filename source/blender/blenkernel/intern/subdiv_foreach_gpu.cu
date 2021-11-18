@@ -1901,6 +1901,7 @@ bool BKE_subdiv_foreach_subdiv_geometry_cuda(Subdiv *subdiv,
   /* Threaded traversal of the rest of topology. */
   TaskParallelSettings parallel_range_settings;
   BLI_parallel_range_settings_defaults(&parallel_range_settings);
+  parallel_range_settings.block_size = 256; // add a user adjustable option for this on the ui
   parallel_range_settings.userdata_chunk = context->user_data_tls;
   parallel_range_settings.userdata_chunk_size = context->user_data_tls_size;
   parallel_range_settings.min_iter_per_thread = 2;
