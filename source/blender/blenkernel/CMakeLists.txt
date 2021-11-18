@@ -297,7 +297,7 @@ set(SRC
   intern/workspace.c
   intern/world.c
   intern/writeavi.c
-  intern/subdiv_foreach_gpu.cudafile
+  intern/subdiv_foreach_gpu.cu
   
   #${CUDA_TOOLKIT_ROOT_DIR}/include/lib64/libcublas.so
   #${CUDA_TOOLKIT_ROOT_DIR}/include/lib64/libcudart.so
@@ -841,4 +841,4 @@ target_compile_options(bf_blenkernel PUBLIC $<$<COMPILE_LANGUAGE:CUDA>:
 set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 set_target_properties(bf_blenkernel PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
 
-set_source_files_properties("intern/subdiv_foreach_gpu.cudafile" PROPERTIES LANGUAGE CUDA)
+set_source_files_properties("intern/subdiv_foreach_gpu.cu" PROPERTIES LANGUAGE CUDA)
