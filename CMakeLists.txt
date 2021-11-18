@@ -126,9 +126,29 @@ blender_project_hack_pre()
 
 project(Blender)
 
+enable_language(CUDA)
+
 blender_project_hack_post()
 
 enable_testing()
+
+#-----------------------------------------------------------------------------
+# CUDA
+
+target_compile_options(Blender PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+  --generate-line-info
+  --use_fast_math
+  --relocatable-device-code=true
+  -arch=sm_86
+  -lcudart
+  -std=c++17
+  -lcuda
+  -lcublas
+  -lcublas_device
+>)
+
+set_target_properties(Blender PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+set_target_properties(Blender PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
 
 #-----------------------------------------------------------------------------
 # Redirect output files
@@ -403,7 +423,7 @@ if(WITH_PYTHON_INSTALL)
   mark_as_advanced(PYTHON_ZSTANDARD_PATH)
 endif()
 
-option(WITH_CPU_SIMD              "Enable SIMD instruction if they're detected on the host machine" ON)
+option(WITH_CPU_SIMD              "Enable SIMD instruction if they're detected on the host machine" OFF)
 mark_as_advanced(WITH_CPU_SIMD)
 
 # Cycles

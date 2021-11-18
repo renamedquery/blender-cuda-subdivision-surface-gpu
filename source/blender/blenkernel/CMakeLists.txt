@@ -475,6 +475,7 @@ set(SRC
   nla_private.h
   particle_private.h
   tracking_private.h
+  cuda.h
   intern/CCGSubSurf.h
   intern/CCGSubSurf_inline.h
   intern/CCGSubSurf_intern.h
@@ -797,41 +798,10 @@ endif()
 #    string(APPEND CMAKE_C_FLAGS " /WX")
 # endif()
 
-if(COMPILE_LANGUAGE|CUDA)
-  # this will work for now, since no other paths should contain those same phrases in the same order
-  string(REGEX MATCH "*source*blender*blenkernel*" current_dir_matches_regex CMAKE_CURRENT_LIST_DIR)
-
-  if(current_dir_matches_regex)
-
-    enable_language(CUDA)
-
-    # enable a way for this to auto detect the cuda version
-    set(CUDA_RUNTIME_LIBRARY "/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.4/lib/x64/")
-
-    set(CUDA_NVCC_FLAGS
-      --generate-line-info
-      --use_fast_math
-      --relocatable-device-code=true
-      -arch=sm_86
-      -lcudart
-      -std=c++17
-      -lcuda
-      -lcublas
-      -lcublas_device
-      -L${CUDA_RUNTIME_LIBRARY}
-    )
-
-    CUDA_COMPILE(__CUDA_SUBDIV_FOREACH_GPU_CU "intern/subdiv_foreach_gpu.cu" OPTIONS ${CUDA_NVCC_FLAGS})
-
-    CUDA_ADD_EXECUTABLE(bf_blenkernel ${__CUDA_SUBDIV_FOREACH_GPU_CU})
-  endif()
-endif()
-
 blender_add_lib(bf_blenkernel "${SRC}" "${INC}" "${INC_SYS}" "${LIB}")
 
 # Needed so we can use dna_type_offsets.h for defaults initialization.
 add_dependencies(bf_blenkernel bf_dna)
-
 
 if(WITH_GTESTS)
   set(TEST_SRC

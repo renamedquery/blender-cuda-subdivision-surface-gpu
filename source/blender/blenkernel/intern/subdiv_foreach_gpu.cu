@@ -43,6 +43,8 @@
 
 #include "MEM_guardedalloc.h"
 
+#include <cuda.h>
+
 
 /* -------------------------------------------------------------------- */
 /** \name General helpers
