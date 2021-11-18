@@ -30,8 +30,9 @@
 #include "BKE_subdiv_ccg.h"
 #include "BKE_subdiv_deform.h"
 #include "BKE_subdiv_mesh.h"
-#include "BKE_subdiv_mesh_gpu.h"
+#include "BKE_subdiv_mesh_gpu.cuh"
 #include "BKE_subsurf.h"
+#include "BKE_subdiv_foreach.h"
 
 #include "UI_interface.h"
 #include "UI_resources.h"

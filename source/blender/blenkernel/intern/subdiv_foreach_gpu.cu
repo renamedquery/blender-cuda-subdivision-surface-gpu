@@ -38,7 +38,8 @@
 #include "BKE_key.h"
 #include "BKE_mesh.h"
 #include "BKE_subdiv.h"
-#include "BKE_subdiv_mesh_gpu.h"
+#include "BKE_subdiv_mesh_gpu.cuh"
+#include "BKE_subdiv_foreach_gpu.cuh"
 
 #include "MEM_guardedalloc.h"
 

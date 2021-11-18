@@ -469,8 +469,8 @@ set(SRC
   BKE_workspace.h
   BKE_world.h
   BKE_writeavi.h
-  BKE_subdiv_foreach_gpu.h
-  BKE_subdiv_mesh_gpu.h
+  BKE_subdiv_foreach_gpu.cuh
+  BKE_subdiv_mesh_gpu.cuh
 
   nla_private.h
   particle_private.h
@@ -796,6 +796,26 @@ endif()
 # if(MSVC)
 #    string(APPEND CMAKE_C_FLAGS " /WX")
 # endif()
+
+if(COMPILE_LANGUAGE|CUDA)
+  # this will work for now, since no other paths should contain those same phrases in the same order
+  string(REGEX MATCH "*source*blender*blenkernel*" current_dir_matches_regex CMAKE_CURRENT_LIST_DIR)
+
+  if(current_dir_matches_regex)
+    enable_language(CUDA)
+    add_compile_options(
+      --generate-line-info
+      --use_fast_math
+      --relocatable-device-code=true
+      -cudart=shared
+      -arch=sm_86
+      -std=c++17
+      -lcuda
+      -lcublas
+      -lcublas_device
+    )
+  endif()
+endif()
 
 blender_add_lib(bf_blenkernel "${SRC}" "${INC}" "${INC_SYS}" "${LIB}")
 

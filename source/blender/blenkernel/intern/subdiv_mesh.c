@@ -21,9 +21,6 @@
  * \ingroup bke
  */
 
-#include "BKE_subdiv_mesh.h"
-#include "BKE_subdiv_mesh_gpu.h"
-
 #include "atomic_ops.h"
 
 #include "DNA_key_types.h"
@@ -39,7 +36,9 @@
 #include "BKE_subdiv.h"
 #include "BKE_subdiv_eval.h"
 #include "BKE_subdiv_foreach.h"
-#include "BKE_subdiv_foreach_gpu.h"
+#include "BKE_subdiv_foreach_gpu.cuh"
+#include "BKE_subdiv_mesh.h"
+#include "BKE_subdiv_mesh_gpu.cuh"
 
 #include "MEM_guardedalloc.h"
 
