@@ -298,6 +298,9 @@ set(SRC
   intern/world.c
   intern/writeavi.c
   intern/subdiv_foreach_gpu.cu
+  
+  #${CUDA_TOOLKIT_ROOT_DIR}/include/lib64/libcublas.so
+  #${CUDA_TOOLKIT_ROOT_DIR}/include/lib64/libcudart.so
 
   BKE_DerivedMesh.h
   BKE_action.h
