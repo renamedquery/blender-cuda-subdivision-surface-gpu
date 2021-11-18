@@ -1863,12 +1863,10 @@ endif()
 # Libraries
 
 if(WITH_BLENDER)
+  # source before intern because cuda is not behaving
+  add_subdirectory(source)
   add_subdirectory(intern)
   add_subdirectory(extern)
-
-  # source after intern and extern to gather all
-  # internal and external library information first, for test linking
-  add_subdirectory(source)
 elseif(WITH_CYCLES_STANDALONE)
   add_subdirectory(intern/glew-mx)
   add_subdirectory(intern/guardedalloc)
