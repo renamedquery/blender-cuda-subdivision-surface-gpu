@@ -800,6 +800,21 @@ endif()
 
 blender_add_lib(bf_blenkernel "${SRC}" "${INC}" "${INC_SYS}" "${LIB}")
 
+target_compile_options(bf_blenkernel PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
+  --generate-line-info
+  --use_fast_math
+  --relocatable-device-code=true
+  -arch=sm_86
+  -lcudart
+  -std=c++17
+  -lcuda
+  -lcublas
+  -lcublas_device
+>)
+
+set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+set_target_properties(bf_blenkernel PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+
 # Needed so we can use dna_type_offsets.h for defaults initialization.
 add_dependencies(bf_blenkernel bf_dna)
 

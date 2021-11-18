@@ -133,24 +133,6 @@ blender_project_hack_post()
 enable_testing()
 
 #-----------------------------------------------------------------------------
-# CUDA
-
-target_compile_options(Blender PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
-  --generate-line-info
-  --use_fast_math
-  --relocatable-device-code=true
-  -arch=sm_86
-  -lcudart
-  -std=c++17
-  -lcuda
-  -lcublas
-  -lcublas_device
->)
-
-set_target_properties(Blender PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-set_target_properties(Blender PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
-
-#-----------------------------------------------------------------------------
 # Redirect output files
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin CACHE INTERNAL "" FORCE)
