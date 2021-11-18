@@ -18,12 +18,6 @@
 # All rights reserved.
 # ***** END GPL LICENSE BLOCK *****
 
-enable_language(CUDA)
-set(CUDA_NVCC_FLAGS "-lineinfo --use_fast_math -rdc=true -lcudadevrt -arch=sm_86")
-# tell cuda to ignore intern/cycles/
-# if cuda doesnt ignore cycles then this happens:
-# nvcc fatal   : A single input file is required for a non-link phase when an outputfile is specified
-
 set(INC
   .
   ../blenfont
