@@ -35,8 +35,6 @@ set(SRC_KERNEL_DEVICE_CUDA
   device/cuda/kernel.cu
 )
 
-set_source_files_properties("device/cuda/kernel.cu" PROPERTIES LANGUAGE CXX)
-
 set(SRC_KERNEL_DEVICE_HIP
   device/hip/kernel.cpp
 )
@@ -46,8 +44,9 @@ set(SRC_KERNEL_DEVICE_OPTIX
   device/optix/kernel_shader_raytrace.cu
 )
 
-set_source_files_properties("device/optix/kernel.cu" PROPERTIES LANGUAGE CXX)
-set_source_files_properties("device/optix/kernel_shader_raytrace.cu" PROPERTIES LANGUAGE CXX)
+set_source_files_properties("device/cuda/kernel.cu" PROPERTIES HEADER_FILE_ONLY TRUE)
+set_source_files_properties("device/optix/kernel.cu" PROPERTIES HEADER_FILE_ONLY TRUE)
+set_source_files_properties("device/optix/kernel_shader_raytrace.cu" PROPERTIES HEADER_FILE_ONLY TRUE)
 
 set(SRC_KERNEL_DEVICE_CPU_HEADERS
   device/cpu/compat.h

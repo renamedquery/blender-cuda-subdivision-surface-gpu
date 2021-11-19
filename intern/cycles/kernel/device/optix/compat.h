@@ -18,7 +18,7 @@
 #pragma once
 
 #define OPTIX_DONT_INCLUDE_CUDA
-#include <optix.h>
+#include "bvh/optix.h"
 
 #define __KERNEL_GPU__
 #define __KERNEL_CUDA__ /* OptiX kernels are implicitly CUDA kernels too */
