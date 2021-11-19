@@ -65,16 +65,13 @@ set(INC_SYS
   ${FREETYPE_INCLUDE_DIRS}
 )
 
-set(CUDA_SRC
-  intern/subdiv_foreach_gpu.cu
-)
+set(SRC
 
-set(CUDA_HEADERS
+  intern/subdiv_foreach_gpu.cu
+
   BKE_subdiv_foreach_gpu.cuh
   BKE_subdiv_mesh_gpu.cuh
-)
 
-set(SRC
   ${CMAKE_SOURCE_DIR}/release/datafiles/userdef/userdef_default.c
   intern/CCGSubSurf.c
   intern/CCGSubSurf_legacy.c
@@ -831,12 +828,3 @@ endif()
 
 set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 set_target_properties(bf_blenkernel PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
-
-set_source_files_properties(${SRC} PROPERTIES HEADER_FILE_ONLY TRUE)
-set_source_files_properties(${CUDA_SRC} PROPERTIES HEADER_FILE_ONLY TRUE)
-set_source_files_properties(${INC} PROPERTIES HEADER_FILE_ONLY TRUE)
-set_source_files_properties(${INC_SYS} PROPERTIES HEADER_FILE_ONLY TRUE)
-set_source_files_properties(${LIB} PROPERTIES HEADER_FILE_ONLY TRUE)
-
-execute_process(COMMAND ${CUDA_NVCC_EXECUTABLE} "${CMAKE_CUDA_FLAGS} ${SRC} -o blenkernel_1.o")
-execute_process(COMMAND ${CUDA_NVCC_EXECUTABLE} "${CMAKE_CUDA_FLAGS} ${CUDA_HEADERS} ${CUDA_SRC} -o blenkernel_2.o")

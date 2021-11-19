@@ -132,7 +132,7 @@ cmake_minimum_required(VERSION 3.17...3.18)
 cmake_policy(SET CMP0104 NEW)
 cmake_policy(SET CMP0105 NEW)
 set(CMAKE_CUDA_ARCHITECTURES 86 80 70 60)
-set(CMAKE_CUDA_FLAGS "--generate-line-info --use_fast_math -rdc=true -arch=sm_86 -lcudart -std=c++17 -lcuda -lcublas -lcublas_device --device-c")
+set(CMAKE_CUDA_FLAGS "--generate-line-info --use_fast_math -rdc=true -arch=sm_86 -lcudart -std=c++17 -lcuda -lcublas -lcublas_device")
 
 blender_project_hack_post()
 
