@@ -65,6 +65,15 @@ set(INC_SYS
   ${FREETYPE_INCLUDE_DIRS}
 )
 
+set(CUDA_SRC
+  intern/subdiv_foreach_gpu.cu
+)
+
+set(CUDA_HEADERS
+  BKE_subdiv_foreach_gpu.cuh
+  BKE_subdiv_mesh_gpu.cuh
+)
+
 set(SRC
   ${CMAKE_SOURCE_DIR}/release/datafiles/userdef/userdef_default.c
   intern/CCGSubSurf.c
@@ -297,7 +306,6 @@ set(SRC
   intern/workspace.c
   intern/world.c
   intern/writeavi.c
-  intern/subdiv_foreach_gpu.cu
 
   BKE_DerivedMesh.h
   BKE_action.h
@@ -466,8 +474,6 @@ set(SRC
   BKE_workspace.h
   BKE_world.h
   BKE_writeavi.h
-  BKE_subdiv_foreach_gpu.cuh
-  BKE_subdiv_mesh_gpu.cuh
 
   nla_private.h
   particle_private.h
@@ -823,19 +829,14 @@ if(WITH_GTESTS)
   blender_add_test_lib(bf_blenkernel_tests "${TEST_SRC}" "${INC};${TEST_INC}" "${INC_SYS}" "${LIB}")
 endif()
 
-target_compile_options(bf_blenkernel PUBLIC $<$<COMPILE_LANGUAGE:CUDA>:
-  --generate-line-info
-  --use_fast_math
-  --relocatable-device-code=true
-  -arch=sm_86
-  -lcudart
-  -std=c++17
-  -lcuda
-  -lcublas
-  -lcublas_device
->)
-
 set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 set_target_properties(bf_blenkernel PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
 
-set_source_files_properties("intern/subdiv_foreach_gpu.cu" PROPERTIES LANGUAGE CUDA)
+set_source_files_properties(${SRC} PROPERTIES HEADER_FILE_ONLY TRUE)
+set_source_files_properties(${CUDA_SRC} PROPERTIES HEADER_FILE_ONLY TRUE)
+set_source_files_properties(${INC} PROPERTIES HEADER_FILE_ONLY TRUE)
+set_source_files_properties(${INC_SYS} PROPERTIES HEADER_FILE_ONLY TRUE)
+set_source_files_properties(${LIB} PROPERTIES HEADER_FILE_ONLY TRUE)
+
+execute_process(COMMAND ${CUDA_NVCC_EXECUTABLE} "${CMAKE_CUDA_FLAGS} ${SRC} -o blenkernel_1.o")
+execute_process(COMMAND ${CUDA_NVCC_EXECUTABLE} "${CMAKE_CUDA_FLAGS} ${CUDA_HEADERS} ${CUDA_SRC} -o blenkernel_2.o")

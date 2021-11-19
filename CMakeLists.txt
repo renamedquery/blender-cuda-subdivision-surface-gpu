@@ -128,6 +128,12 @@ project(Blender)
 
 enable_language(CUDA)
 
+cmake_minimum_required(VERSION 3.17...3.18)
+cmake_policy(SET CMP0104 NEW)
+cmake_policy(SET CMP0105 NEW)
+set(CMAKE_CUDA_ARCHITECTURES 86 80 70 60)
+set(CMAKE_CUDA_FLAGS "--generate-line-info --use_fast_math -rdc=true -arch=sm_86 -lcudart -std=c++17 -lcuda -lcublas -lcublas_device --device-c")
+
 blender_project_hack_post()
 
 # nessecary to prevent cycles kernels from being compiled with nvcc

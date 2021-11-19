@@ -163,7 +163,6 @@ set(SRC
   intern/kdtree_impl.h
   intern/list_sort_impl.h
 
-
   BLI_alloca.h
   BLI_allocator.hh
   BLI_args.h
