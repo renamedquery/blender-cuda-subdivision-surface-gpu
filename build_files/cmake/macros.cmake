@@ -379,9 +379,17 @@ function(blender_add_lib
   includes
   includes_sys
   library_deps
+  ${ARGN}
   )
 
-  add_cc_flags_custom_test(${name} PARENT_SCOPE)
+  set(macro_extra_args ${ARGN})
+  list(LENGTH macro_extra_args macro_extra_args_length)
+
+  if (${macro_extra_args_length} GREATER 0)
+    message(STATUS "Ignoring flags for ${name}")
+  else()
+    add_cc_flags_custom_test(${name} PARENT_SCOPE)
+  endif()
 
   blender_add_lib__impl(${name} "${sources}" "${includes}" "${includes_sys}" "${library_deps}")
 

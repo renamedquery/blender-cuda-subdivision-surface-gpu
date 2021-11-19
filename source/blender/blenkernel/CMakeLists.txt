@@ -800,7 +800,7 @@ endif()
 #    string(APPEND CMAKE_C_FLAGS " /WX")
 # endif()
 
-blender_add_lib(bf_blenkernel "${SRC}" "${INC}" "${INC_SYS}" "${LIB}")
+blender_add_lib(bf_blenkernel "${SRC}" "${INC}" "${INC_SYS}" "${LIB}" "IS CUDA")
 
 # Needed so we can use dna_type_offsets.h for defaults initialization.
 add_dependencies(bf_blenkernel bf_dna)

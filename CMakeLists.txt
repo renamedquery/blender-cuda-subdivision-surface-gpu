@@ -132,7 +132,7 @@ cmake_minimum_required(VERSION 3.17...3.18)
 cmake_policy(SET CMP0104 NEW)
 cmake_policy(SET CMP0105 NEW)
 
-#set(CMAKE_CUDA_FLAGS "; --std c++17 --relocatable-device-code true -arch sm_86 --use_fast_math")
+set(CMAKE_CUDA_FLAGS "; --std c++17 --relocatable-device-code true -arch sm_86 --use_fast_math")
 
 set(__CUDA_ARCHS 86;80;70;60;)
 
