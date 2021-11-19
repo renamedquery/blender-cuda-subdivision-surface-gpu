@@ -18,6 +18,8 @@
 # All rights reserved.
 # ***** END GPL LICENSE BLOCK *****
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 set(INC
   .
   ../blenfont
@@ -826,11 +828,9 @@ if(WITH_GTESTS)
   blender_add_test_lib(bf_blenkernel_tests "${TEST_SRC}" "${INC};${TEST_INC}" "${INC_SYS}" "${LIB}")
 endif()
 
-set_target_properties(bf_blenkernel PROPERTIES CMAKE_CUDA_FLAGS "${__CUDAFLAGS}")
+set_source_files_properties(${SRC} PROPERTIES LANGUAGE CUDA)
 
-#set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-#set_target_properties(bf_blenkernel PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+set_target_properties(bf_blenkernel PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
 
-#target_compile_options(bf_blenkernel INTERFACE $<$<COMPILE_LANGUAGE:CUDA>:${__CUDAFLAGS}>)
-
-#set_target_properties(bf_blenkernel PROPERTIES CUDA_ARCHITECTURES ${__CUDA_ARCHS})
+set_target_properties(bf_blenkernel PROPERTIES CUDA_ARCHITECTURES "${__CUDA_ARCHS}")
