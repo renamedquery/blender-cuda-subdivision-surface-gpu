@@ -735,6 +735,8 @@ cycles_add_library(cycles_kernel "${LIB}"
   ${SRC_KERNEL_DEVICE_OPTIX_HEADERS}
 )
 
+set_target_properties(cycles_kernel PROPERTIES CUDA_ARCHITECTURES ${__CUDA_ARCHS})
+
 source_group("bake" FILES ${SRC_KERNEL_BAKE_HEADERS})
 source_group("bvh" FILES ${SRC_KERNEL_BVH_HEADERS})
 source_group("camera" FILES ${SRC_KERNEL_CAMERA_HEADERS})
