@@ -131,7 +131,7 @@ enable_language(CUDA)
 cmake_minimum_required(VERSION 3.17...3.18)
 cmake_policy(SET CMP0104 NEW)
 cmake_policy(SET CMP0105 NEW)
-set(__CUDAFLAGS --generate-line-info;--use_fast_math;-rdc=true;-arch=sm_86;-lcudart;-std=c++17;-lcuda;-lcublas;-lcublas_device;-dc;)
+set(__CUDAFLAGS -std=c++17;-cudart=shared;-rdc=true;)
 set(__CUDA_ARCHS 86)
 
 blender_project_hack_post()
