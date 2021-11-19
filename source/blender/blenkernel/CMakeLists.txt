@@ -828,4 +828,4 @@ endif()
 
 set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 set_target_properties(bf_blenkernel PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
-target_compile_options(bf_blenkernel PUBLIC ${__CUDAFLAGS})
+target_compile_options(bf_blenkernel INTERFACE ${__CUDAFLAGS})
