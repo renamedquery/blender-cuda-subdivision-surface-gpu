@@ -128,11 +128,14 @@ project(Blender)
 
 enable_language(CUDA)
 
+find_package(CUDAToolkit REQUIRED)
+
 cmake_minimum_required(VERSION 3.17...3.18)
 cmake_policy(SET CMP0104 NEW)
 cmake_policy(SET CMP0105 NEW)
 
-set(CMAKE_CUDA_FLAGS " --std=c++17 --relocatable-device-code=true -arch=sm_86 --use_fast_math")
+message(STATUS "CUDA path is ${CUDAToolkit_BIN_DIR}")
+set(__CUSTOM_CUDA_FLAGS " --cuda-path=\"${CUDAToolkit_BIN_DIR}\" -lcudart_static -lcudart_static -x cuda")
 
 set(__CUDA_ARCHS 86;80;70;60;)
 
@@ -475,7 +478,7 @@ else()
   option(LLVM_STATIC                  "Link with LLVM static libraries" OFF)
 endif()
 mark_as_advanced(LLVM_STATIC)
-option(WITH_CLANG                   "Use Clang" OFF)
+option(WITH_CLANG                   "Use Clang" ON)
 
 # disable for now, but plan to support on all platforms eventually
 option(WITH_MEM_JEMALLOC   "Enable malloc replacement (http://www.canonware.com/jemalloc)" ON)
