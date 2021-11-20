@@ -89,7 +89,7 @@ BLI_INLINE int ptex_face_resolution_get(const MPoly *poly, int resolution)
 
 typedef struct SubdivForeachTaskContext {
   const Mesh *coarse_mesh;
-  const SubdivToMeshSettings *settings;
+  const SubdivToMeshSettings_cuda *settings;
   /* Callbacks. */
   const SubdivForeachContext *foreach_context;
   /* Counters of geometry in subdivided mesh, initialized as a part of
@@ -1881,7 +1881,7 @@ static void subdiv_foreach_boundary_edges_task(void *__restrict userdata,
 __global__
 bool BKE_subdiv_foreach_subdiv_geometry_cuda(Subdiv *subdiv,
                                         const SubdivForeachContext *context,
-                                        const SubdivToMeshSettings *mesh_settings,
+                                        const SubdivToMeshSettings_cuda *mesh_settings,
                                         const Mesh *coarse_mesh)
 {
   SubdivForeachTaskContext ctx = {0};

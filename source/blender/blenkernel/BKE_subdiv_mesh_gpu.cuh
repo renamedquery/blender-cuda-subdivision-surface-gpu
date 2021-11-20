@@ -32,7 +32,7 @@ extern "C" {
 struct Mesh;
 struct Subdiv;
 
-typedef struct SubdivToMeshSettings {
+typedef struct SubdivToMeshSettings_cuda {
   /* Resolution at which regular ptex (created for quad polygon) are being
    * evaluated. This defines how many vertices final mesh will have: every
    * regular ptex has resolution^2 vertices. Special (irregular, or ptex
@@ -42,11 +42,11 @@ typedef struct SubdivToMeshSettings {
   int resolution;
   /* When true, only edges emitted from coarse ones will be displayed. */
   bool use_optimal_display;
-} SubdivToMeshSettings;
+} SubdivToMeshSettings_cuda;
 
 /* Create real hi-res mesh from subdivision, all geometry is "real". */
 struct Mesh *BKE_subdiv_to_mesh_cuda(struct Subdiv *subdiv,
-                                const SubdivToMeshSettings *settings,
+                                const SubdivToMeshSettings_cuda *settings,
                                 const struct Mesh *coarse_mesh);
 
 #ifdef __cplusplus
