@@ -136,7 +136,7 @@ cmake_policy(SET CMP0105 NEW)
 
 message(STATUS "CUDA path is ${CUDAToolkit_BIN_DIR}")
 
-set(__CUSTOM_CUDA_FLAGS "--cuda-gpu-arch=sm_86 -L\"${CUDAToolkit_BIN_DIR}/../lib/x64\" -lcudart_static -ldl -lrt -pthread")
+set(__CUSTOM_CUDA_FLAGS "-x cuda --cuda-gpu-arch=sm_86 --cuda-path=\"${CUDAToolkit_BIN_DIR}/../lib/x64\" -lcudart_static -ldl -lrt -pthread")
 
 set(__CUDA_ARCHS 86;80;70;60;)
 
