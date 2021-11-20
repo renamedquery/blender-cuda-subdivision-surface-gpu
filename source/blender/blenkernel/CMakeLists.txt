@@ -833,7 +833,7 @@ if(WITH_GTESTS)
   blender_add_test_lib(bf_blenkernel_tests "${TEST_SRC}" "${INC};${TEST_INC}" "${INC_SYS}" "${LIB}")
 endif()
 
-set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES LANGUAGE CXX)
+set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES LANGUAGE C)
 set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES COMPILE_DEFINITIONS ${__CUSTOM_CUDA_FLAGS})
 
 #set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
