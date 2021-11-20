@@ -124,7 +124,7 @@ include(build_files/cmake/macros.cmake)
 
 blender_project_hack_pre()
 
-project(Blender LANGUAGES)
+project(Blender)
 
 enable_language(CUDA)
 
