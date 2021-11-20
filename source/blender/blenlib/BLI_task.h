@@ -191,6 +191,12 @@ void BLI_task_parallel_range(const int start,
                              TaskParallelRangeFunc func,
                              const TaskParallelSettings *settings);
 
+void BLI_task_parallel_range_cuda(const int start,
+                             const int stop,
+                             void *userdata,
+                             TaskParallelRangeFunc func,
+                             const TaskParallelSettings *settings);
+
 /* This data is shared between all tasks, its access needs thread lock or similar protection.
  */
 typedef struct TaskParallelIteratorStateShared {

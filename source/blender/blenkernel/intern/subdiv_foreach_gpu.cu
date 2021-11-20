@@ -1877,7 +1877,7 @@ static void subdiv_foreach_boundary_edges_task(void *__restrict userdata,
   SubdivForeachTaskContext *ctx = userdata;
   subdiv_foreach_boundary_edges(ctx, tls->userdata_chunk, edge_index);
 }
- 
+
 void BKE_subdiv_foreach_subdiv_geometry_cuda(Subdiv *subdiv,
                                         const SubdivForeachContext *context,
                                         const SubdivToMeshSettings_cuda *mesh_settings,
@@ -1895,7 +1895,7 @@ void BKE_subdiv_foreach_subdiv_geometry_cuda(Subdiv *subdiv,
                                 ctx.num_subdiv_loops,
                                 ctx.num_subdiv_polygons)) {
       subdiv_foreach_ctx_free_cuda(&ctx);
-      return false;
+      return;
     }
   }
   /* Run all the code which is not supposed to be run from threads. */
