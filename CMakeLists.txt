@@ -43,8 +43,10 @@ endif()
 
 cmake_minimum_required(VERSION 3.20)
 
-set(CMAKE_CUDA_COMPILER_ID "Clang")
-set(CMAKE_CUDA_COMPILER "Clang")
+set(CMAKE_C_COMPILER_ID "Clang")
+set(CMAKE_C_COMPILER "Clang")
+set(CMAKE_CXX_COMPILER_ID "Clang")
+set(CMAKE_CXX_COMPILER "Clang")
 
 # Prefer LEGACY OpenGL to be compatible with all the existing releases and
 # platforms which don't have GLVND yet. Only do it if preference was not set
@@ -138,7 +140,8 @@ cmake_policy(SET CMP0105 NEW)
 
 message(STATUS "CUDA path is ${CUDAToolkit_BIN_DIR}")
 
-set(__CUSTOM_CUDA_FLAGS "-x cuda --cuda-gpu-arch=sm_86 --cuda-path=\"${CUDAToolkit_BIN_DIR}/../lib/x64\" -lcudart_static -ldl -lrt -pthread")
+set(__CUSTOM_CUDA_FLAGS "-x cuda --cuda-gpu-arch=sm_86 --cuda-path=\"${CUDAToolkit_BIN_DIR}/../lib/x64\" -lcudart_static -ldl -lrt -pthread -fcuda-rdc")
+set(__CUSTOM_CUDA_PREPROCESSOR_FLAGS "-DCMAKE_C_COMPILER=Clang -DCMAKE_CXX_COMPILER=Clang")
 
 set(__CUDA_ARCHS 86;80;70;60;)
 
