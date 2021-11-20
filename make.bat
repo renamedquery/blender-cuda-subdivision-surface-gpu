@@ -4,6 +4,7 @@ REM This is for users who like to configure & build Blender with a single comman
 setlocal EnableDelayedExpansion
 setlocal ENABLEEXTENSIONS
 set BLENDER_DIR=%~dp0
+set CMAKE_CUDA_COMPILER=Clang
 
 call "%BLENDER_DIR%\build_files\windows\reset_variables.cmd"
 

@@ -41,7 +41,10 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   endif()
 endif()
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.20)
+
+set(CMAKE_CUDA_COMPILER_ID "Clang")
+set(CMAKE_CUDA_COMPILER "Clang")
 
 # Prefer LEGACY OpenGL to be compatible with all the existing releases and
 # platforms which don't have GLVND yet. Only do it if preference was not set
@@ -130,7 +133,6 @@ enable_language(CUDA)
 
 find_package(CUDAToolkit REQUIRED)
 
-cmake_minimum_required(VERSION 3.17...3.18)
 cmake_policy(SET CMP0104 NEW)
 cmake_policy(SET CMP0105 NEW)
 
