@@ -413,6 +413,8 @@ set_target_properties(bf_blenlib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 set_source_files_properties(intern/task_range_gpu.cu PROPERTIES LANGUAGE CUDA)
 
+set_directory_properties(PROPERTIES COMPILE_DEFINITIONS ${__CUDA_COMPILE_DEFINITIONS})
+
 message(STATUS "bf_blenlib using compiler ${CMAKE_CUDA_COMPILER_ID}")
 
 if(WITH_GTESTS)

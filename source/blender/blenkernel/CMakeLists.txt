@@ -837,5 +837,7 @@ set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES LANGUAGE CUDA)
 
+set_directory_properties(PROPERTIES COMPILE_DEFINITIONS ${__CUDA_COMPILE_DEFINITIONS})
+
 message(STATUS "bf_blenkernel using compiler ${CMAKE_CUDA_COMPILER_ID}")
-message(STATUS "Using CUDA flags: ${CMAKE_CUDA_FLAGS}")
+message(STATUS "bf_blenkernel using CUDA flags: ${CMAKE_CUDA_FLAGS}")

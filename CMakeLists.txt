@@ -136,6 +136,7 @@ cmake_policy(SET CMP0105 NEW)
 message(STATUS "CUDA path is ${CUDAToolkit_BIN_DIR}")
 
 set(__CUDA_ARCHS 86;80;70;60;)
+set(__CUDA_COMPILE_DEFINITIONS -D)
 
 set(CMAKE_CUDA_FLAGS -rdc=true)
 set(CMAKE_CUDA_ARCHITECTURES ${__CUDA_ARCHS})
