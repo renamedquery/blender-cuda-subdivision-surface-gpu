@@ -135,7 +135,8 @@ cmake_policy(SET CMP0104 NEW)
 cmake_policy(SET CMP0105 NEW)
 
 message(STATUS "CUDA path is ${CUDAToolkit_BIN_DIR}")
-set(__CUSTOM_CUDA_FLAGS " --cuda-path=\"${CUDAToolkit_BIN_DIR}\" -lcudart_static -lcudart_static -x cuda")
+
+set(__CUSTOM_CUDA_FLAGS "--cuda-gpu-arch=sm_86 -L\"${CUDAToolkit_BIN_DIR}/../lib/x64\" -lcudart_static -ldl -lrt -pthread")
 
 set(__CUDA_ARCHS 86;80;70;60;)
 
@@ -471,7 +472,7 @@ option(WITH_DRAW_DEBUG "Add extra debug capabilities to Draw Manager" OFF)
 mark_as_advanced(WITH_DRAW_DEBUG)
 
 # LLVM
-option(WITH_LLVM                    "Use LLVM" OFF)
+option(WITH_LLVM                    "Use LLVM" ON)
 if(APPLE)
   option(LLVM_STATIC                  "Link with LLVM static libraries" ON) # we prefer static llvm build on Apple, dyn build possible though
 else()

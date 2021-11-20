@@ -836,7 +836,7 @@ endif()
 set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES LANGUAGE CXX)
 set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES COMPILE_FLAGS ${__CUSTOM_CUDA_FLAGS})
 
-set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-set_target_properties(bf_blenkernel PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+#set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+#set_target_properties(bf_blenkernel PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
 
-set_target_properties(bf_blenkernel PROPERTIES CUDA_ARCHITECTURES "${__CUDA_ARCHS}")
+#set_target_properties(bf_blenkernel PROPERTIES CUDA_ARCHITECTURES "${__CUDA_ARCHS}")
