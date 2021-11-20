@@ -24,6 +24,7 @@
 #pragma once
 
 #include "BLI_sys_types.h"
+#include "BKE_subdiv_mesh.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,17 +33,7 @@ extern "C" {
 struct Mesh;
 struct Subdiv;
 
-typedef struct SubdivToMeshSettings_cuda {
-  /* Resolution at which regular ptex (created for quad polygon) are being
-   * evaluated. This defines how many vertices final mesh will have: every
-   * regular ptex has resolution^2 vertices. Special (irregular, or ptex
-   * created for a corner of non-quad polygon) will have resolution of
-   * `resolution - 1`.
-   */
-  int resolution;
-  /* When true, only edges emitted from coarse ones will be displayed. */
-  bool use_optimal_display;
-} SubdivToMeshSettings_cuda;
+typedef struct SubdivToMeshSettings SubdivToMeshSettings_cuda;
 
 /* Create real hi-res mesh from subdivision, all geometry is "real". */
 struct Mesh *BKE_subdiv_to_mesh_cuda(struct Subdiv *subdiv,
