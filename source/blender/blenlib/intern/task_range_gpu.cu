@@ -31,6 +31,8 @@
 #include "BLI_task.h"
 #include "BLI_threads.h"
 
+#include <cuda.h>
+
 #include "atomic_ops.h"
 
 #ifdef WITH_TBB
@@ -107,7 +109,8 @@ struct RangeTask {
 
 #endif
 
-void BLI_task_parallel_range(const int start,
+__global__
+void BLI_task_parallel_range_cuda(const int start,
                              const int stop,
                              void *userdata,
                              TaskParallelRangeFunc func,
