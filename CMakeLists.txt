@@ -135,14 +135,12 @@ cmake_policy(SET CMP0105 NEW)
 
 message(STATUS "CUDA path is ${CUDAToolkit_BIN_DIR}")
 
-set(__CUSTOM_CUDA_FLAGS "-x cuda --cuda-gpu-arch=sm_86 --cuda-path=\"${CUDAToolkit_BIN_DIR}/../lib/x64\" -lcudart_static -ldl -lrt -pthread -fcuda-rdc")
-
 set(__CUDA_ARCHS 86;80;70;60;)
 
-blender_project_hack_post()
+set(CMAKE_CUDA_FLAGS -rdc=true)
+set(CMAKE_CUDA_ARCHITECTURES ${__CUDA_ARCHS})
 
-# nessecary to prevent cycles kernels from being compiled with nvcc
-set(CMAKE_CUDA_EXTENSIONS "cudafile")
+blender_project_hack_post()
 
 enable_testing()
 
