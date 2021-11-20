@@ -9,3 +9,4 @@ vscode_workspaces/
 vscode_workspaces/*
 CMakeFiles
 CMakeCache.txt
+.vscode
