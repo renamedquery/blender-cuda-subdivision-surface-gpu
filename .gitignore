@@ -7,3 +7,5 @@ custom_source/*
 !custom_source/README.md
 vscode_workspaces/
 vscode_workspaces/*
+CMakeFiles
+CMakeCache.txt

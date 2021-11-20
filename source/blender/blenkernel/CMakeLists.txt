@@ -833,5 +833,7 @@ if(WITH_GTESTS)
   blender_add_test_lib(bf_blenkernel_tests "${TEST_SRC}" "${INC};${TEST_INC}" "${INC_SYS}" "${LIB}")
 endif()
 
+message(STATUS "bf_blenkernel using compiler ${CMAKE_C_COMPILER_ID}")
+
 set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES LANGUAGE C)
 set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES COMPILE_FLAGS ${__CUSTOM_CUDA_FLAGS})
