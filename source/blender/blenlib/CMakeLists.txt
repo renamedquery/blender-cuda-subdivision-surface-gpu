@@ -412,6 +412,7 @@ blender_add_lib(bf_blenlib "${SRC}" "${INC}" "${INC_SYS}" "${LIB}")
 set_target_properties(bf_blenlib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 set_source_files_properties(intern/task_range_gpu.cu PROPERTIES LANGUAGE CUDA)
+set_source_files_properties(intern/task_range_gpu.cu PROPERTIES COMPILE_FLAGS ${CMAKE_CUDA_FLAGS} CMAKE_CUDA_FLAGS ${CMAKE_CUDA_FLAGS})
 
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS ${__CUDA_COMPILE_DEFINITIONS})
 
