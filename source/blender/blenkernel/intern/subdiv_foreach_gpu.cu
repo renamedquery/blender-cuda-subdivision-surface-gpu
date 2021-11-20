@@ -1878,8 +1878,7 @@ static void subdiv_foreach_boundary_edges_task(void *__restrict userdata,
   subdiv_foreach_boundary_edges(ctx, tls->userdata_chunk, edge_index);
 }
 
-__global__
-bool BKE_subdiv_foreach_subdiv_geometry_cuda(Subdiv *subdiv,
+__global__ void BKE_subdiv_foreach_subdiv_geometry_cuda(Subdiv *subdiv,
                                         const SubdivForeachContext *context,
                                         const SubdivToMeshSettings_cuda *mesh_settings,
                                         const Mesh *coarse_mesh)
@@ -1943,7 +1942,6 @@ bool BKE_subdiv_foreach_subdiv_geometry_cuda(Subdiv *subdiv,
                             &parallel_range_settings);
   }
   subdiv_foreach_ctx_free_cuda(&ctx);
-  return true;
 }
 
 /** \} */
