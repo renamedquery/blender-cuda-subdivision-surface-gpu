@@ -40,7 +40,7 @@ Compiling the Blender fork in this repo (currently broken):
 
 # Limitations:
 
-- Only works on quads.
+- Only works on quads (should be fixed by using Blender's built in subdiv method with CUDA acceleration).
 
 # Tested CUDA Capable GPUs
 
