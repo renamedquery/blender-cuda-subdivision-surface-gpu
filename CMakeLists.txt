@@ -124,6 +124,13 @@ include(build_files/cmake/macros.cmake)
 
 blender_project_hack_pre()
 
+set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
+set(CMAKE_CUDA_FLAGS "")
+set(CMAKE_CUDA_FLAGS_DEBUG "")
+set(CMAKE_CUDA_FLAGS_MINSIZEREL "")
+set(CMAKE_CUDA_FLAGS_RELEASE "")
+set(CMAKE_CUDA_FLAGS_RELWITHDEBINFO "")
+
 project(Blender)
 
 enable_language(CUDA)
@@ -138,7 +145,7 @@ message(STATUS "CUDA path is ${CUDAToolkit_BIN_DIR}")
 set(__CUDA_ARCHS 86;80;70;60;)
 set(__CUDA_COMPILE_DEFINITIONS ;-D)
 
-set(CMAKE_CUDA_FLAGS ;-rdc=true)
+set(CMAKE_CUDA_FLAGS "")
 set(CMAKE_CUDA_ARCHITECTURES ${__CUDA_ARCHS})
 
 blender_project_hack_post()

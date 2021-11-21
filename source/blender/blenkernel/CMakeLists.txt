@@ -836,7 +836,7 @@ endif()
 set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES LANGUAGE CUDA)
-set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES COMPILE_FLAGS ${CMAKE_CUDA_FLAGS} CMAKE_CUDA_FLAGS ${CMAKE_CUDA_FLAGS})
+set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES COMPILE_FLAGS "" CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS}" COMPILE_OPTIONS "" COMPILE_DEFINITIONS "" COMPILE_FEATURES "")
 
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS ${__CUDA_COMPILE_DEFINITIONS})
 
