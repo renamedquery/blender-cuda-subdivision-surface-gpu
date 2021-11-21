@@ -22,37 +22,19 @@ You can view the old CUDA file [here](https://github.com/katznboyz1/blender-cuda
 
 Completed tasks:
 
-- Reading from a `.obj` file to take in data (verts + faces).
+- Make a UI for the modifier in Blender.
 
-- Writing to a `.obj` file to export the data (verts).
-
-- Basic Catmull Clark subdivision algorithm.
-
-- CPU Multithreading.
-
-- GPU Acceleration.
-
-- Merge by distance algorithm.
+- Complete the basic front end and back end functionality of the modifier (CPU, not CUDA accelerated yet).
 
 TODO:
 
-- Add a modifier to Blender's source code that enables users to use the CUDA Subdivision Surface modifier easily.
+- Fix the `nvcc fatal   : A single input file is required for a non-link phase when an outputfile is specified` error.
 
-- In the Blender modifier, make the CUDA `mergeByDistance()` function a tick box to enable or disable it for faster subdivision times. This will allow the user to use Blender's built in *"merge by distance"* modifier. The CUDA merge option will be un-ticked by default.
-
-- Create a "hash map" (not exactly a hash, but a unique representation) of all the vertex coordinates that allows the program to efficiently locate multiple vertices that share the same coordinate in *n(1)* function calls instead of *n^2* function calls.
-
-- Read normals and texture coordinates from `.obj` files.
-
-- Write normals, texture coordinates, and faces to `.obj` files.
+- Finish accelerating `BKE_subdiv_to_mesh_cuda()` using CUDA. 
 
 # Compiling Instructions:
 
-Compiling the CUDA file on Win64 (not completed):
-
-`nvcc gpu-subsurf.cu -o gpu-subsurf.cuda -ccbin "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\bin\Hostx64\x64" -G -g -arch=sm_86`
-
-Compiling the Blender fork in this repo (not completed; tested on win64 only):
+Compiling the Blender fork in this repo (currently broken):
 
 `./make.cmd`
 
