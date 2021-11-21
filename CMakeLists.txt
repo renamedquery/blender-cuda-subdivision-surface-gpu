@@ -142,11 +142,11 @@ cmake_policy(SET CMP0105 NEW)
 
 message(STATUS "CUDA path is ${CUDAToolkit_BIN_DIR}")
 
-set(CMAKE_CUDA_ARCHITECTURES OFF)
+set(CMAKE_CUDA_ARCHITECTURES 86;80;70;60;)
 
 set(__CUDA_COMPILE_DEFINITIONS "-DO_NOTHING")
 
-set(CMAKE_CUDA_FLAGS -arch\=sm_86)
+set(__CUDA_FLAGS "")
 
 blender_project_hack_post()
 
