@@ -44,45 +44,6 @@
 
 #ifdef WITH_TBB
 
-__global__
-void BLI_task_parallel_range_cuda(const int start,
-                             const int stop,
-                             void *userdata,
-                             TaskParallelRangeFunc func,
-                             const TaskParallelSettings *settings)
-{
-#ifdef WITH_TBB
-  /* Multithreading. */
-  if (settings->use_threading && BLI_task_scheduler_num_threads() > 1) {
-    RangeTask task(func, userdata, settings);
-    const size_t grainsize = MAX2(settings->min_iter_per_thread, 1);
-    const tbb::blocked_range<int> range(start, stop, grainsize);
-
-    if (settings->func_reduce) {
-      parallel_reduce(range, task);
-      if (settings->userdata_chunk) {
-        memcpy(settings->userdata_chunk, task.userdata_chunk, settings->userdata_chunk_size);
-      }
-    }
-    else {
-      parallel_for(range, task);
-    }
-    return;
-  }
-#endif
-
-  /* Single threaded. Nothing to reduce as everything is accumulated into the
-   * main userdata chunk directly. */
-  TaskParallelTLS tls;
-  tls.userdata_chunk = settings->userdata_chunk;
-  for (int i = start; i < stop; i++) {
-    func(userdata, i, &tls);
-  }
-  if (settings->func_free != nullptr) {
-    settings->func_free(userdata, settings->userdata_chunk);
-  }
-}
-
 /* Functor for running TBB parallel_for and parallel_reduce. */
 struct RangeTask {
   TaskParallelRangeFunc func;
@@ -147,6 +108,45 @@ struct RangeTask {
 };
 
 #endif
+
+__global__
+void BLI_task_parallel_range_cuda(const int start,
+                             const int stop,
+                             void *userdata,
+                             TaskParallelRangeFunc func,
+                             const TaskParallelSettings *settings)
+{
+#ifdef WITH_TBB
+  /* Multithreading. */
+  if (settings->use_threading && BLI_task_scheduler_num_threads() > 1) {
+    RangeTask task(func, userdata, settings);
+    const size_t grainsize = MAX2(settings->min_iter_per_thread, 1);
+    const tbb::blocked_range<int> range(start, stop, grainsize);
+
+    if (settings->func_reduce) {
+      parallel_reduce(range, task);
+      if (settings->userdata_chunk) {
+        memcpy(settings->userdata_chunk, task.userdata_chunk, settings->userdata_chunk_size);
+      }
+    }
+    else {
+      parallel_for(range, task);
+    }
+    return;
+  }
+#endif
+
+  /* Single threaded. Nothing to reduce as everything is accumulated into the
+   * main userdata chunk directly. */
+  TaskParallelTLS tls;
+  tls.userdata_chunk = settings->userdata_chunk;
+  for (int i = start; i < stop; i++) {
+    func(userdata, i, &tls);
+  }
+  if (settings->func_free != nullptr) {
+    settings->func_free(userdata, settings->userdata_chunk);
+  }
+}
 
 int BLI_task_parallel_thread_id(const TaskParallelTLS *UNUSED(tls))
 {
