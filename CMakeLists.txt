@@ -129,12 +129,12 @@ project(Blender)
 set(CMAKE_C_COMPILER_ID Clang)
 set(CMAKE_CXX_COMPILER_ID Clang++)
 
-set(__CUDA_FLAGS -x\ cuda\ --cuda-gpu-arch\=sm_86\ -L${CUDAToolkit_INCLUDE_DIRS}\ -lcudart_static\ -ldl\ -lrt\ -pthread)
-
 # for CUDAToolkit
 enable_language(CUDA)
 
 find_package(CUDAToolkit REQUIRED)
+
+set(__CUDA_FLAGS ;-x\ cuda;--cuda-gpu-arch\=sm_86;-L"${CUDAToolkit_INCLUDE_DIRS}";-lcudart_static;-ldl;-lrt;-pthread;)
 
 cmake_policy(SET CMP0104 NEW)
 cmake_policy(SET CMP0105 NEW)

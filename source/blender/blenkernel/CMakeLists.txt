@@ -834,6 +834,6 @@ if(WITH_GTESTS)
 endif()
 
 set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES LANGUAGE C)
-set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES CMAKE_C_COMPILE_FLAGS "${__CUDA_FLAGS}")
+set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES COMPILE_OPTIONS "${__CUDA_FLAGS}")
 
 message(STATUS "bf_blenkernel using CUDA flags: ${__CUDA_FLAGS}")
