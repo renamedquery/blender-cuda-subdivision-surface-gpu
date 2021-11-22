@@ -410,7 +410,7 @@ set_source_files_properties(
 blender_add_lib(bf_blenlib "${SRC}" "${INC}" "${INC_SYS}" "${LIB}")
 
 set_source_files_properties(intern/task_range_gpu.cu PROPERTIES LANGUAGE CXX)
-set_source_files_properties(intern/task_range_gpu.cu PROPERTIES COMPILE_FLAGS ${__CUDA_FLAGS})
+set_source_files_properties(intern/task_range_gpu.cu PROPERTIES CMAKE_CXX_COMPILE_FLAGS ${__CUDA_FLAGS})
 
 message(STATUS "bf_blenlib using compiler ${CMAKE_CUDA_COMPILER_ID}")
 message(STATUS "bf_blenlib using CUDA flags: ${__CUDA_FLAGS}")
