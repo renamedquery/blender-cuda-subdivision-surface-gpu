@@ -833,13 +833,7 @@ if(WITH_GTESTS)
   blender_add_test_lib(bf_blenkernel_tests "${TEST_SRC}" "${INC};${TEST_INC}" "${INC_SYS}" "${LIB}")
 endif()
 
-set_target_properties(bf_blenkernel PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES LANGUAGE C)
+set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES COMPILE_FLAGS "${__CUDA_FLAGS}")
 
-set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES LANGUAGE CUDA)
-set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES COMPILE_FLAGS "${__CUDA_FLAGS}" CMAKE_CUDA_FLAGS "" COMPILE_DEFINITIONS "" COMPILE_FEATURES "")
-set_source_files_properties(intern/subdiv_foreach_gpu.cu PROPERTIES COMPILE_OPTIONS "" COMPILE_OPTIONS_DEBUG "" COMPILE_OPTIONS_MINSIZEREL "" COMPILE_OPTIONS_RELEASE "" COMPILE_OPTIONS_RELWITHDEBINFO "")
-
-set_directory_properties(PROPERTIES COMPILE_DEFINITIONS ${__CUDA_COMPILE_DEFINITIONS})
-
-message(STATUS "bf_blenkernel using compiler ${CMAKE_CUDA_COMPILER_ID}")
 message(STATUS "bf_blenkernel using CUDA flags: ${__CUDA_FLAGS}")

@@ -124,15 +124,14 @@ include(build_files/cmake/macros.cmake)
 
 blender_project_hack_pre()
 
-set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
-set(CMAKE_CUDA_FLAGS "")
-set(CMAKE_CUDA_FLAGS_DEBUG "")
-set(CMAKE_CUDA_FLAGS_MINSIZEREL "")
-set(CMAKE_CUDA_FLAGS_RELEASE "")
-set(CMAKE_CUDA_FLAGS_RELWITHDEBINFO "")
-
 project(Blender)
 
+set(CMAKE_C_COMPILER_ID Clang)
+set(CMAKE_CXX_COMPILER_ID Clang++)
+
+set(__CUDA_FLAGS -x\ cuda\ --cuda-gpu-arch\=sm_86\ -L${CUDAToolkit_INCLUDE_DIRS}\ -lcudart_static\ -ldl\ -lrt\ -pthread)
+
+# for CUDAToolkit
 enable_language(CUDA)
 
 find_package(CUDAToolkit REQUIRED)
@@ -141,12 +140,6 @@ cmake_policy(SET CMP0104 NEW)
 cmake_policy(SET CMP0105 NEW)
 
 message(STATUS "CUDA path is ${CUDAToolkit_BIN_DIR}")
-
-set(CMAKE_CUDA_ARCHITECTURES 86;80;70;60;)
-
-set(__CUDA_COMPILE_DEFINITIONS "-DO_NOTHING")
-
-set(__CUDA_FLAGS "")
 
 blender_project_hack_post()
 
