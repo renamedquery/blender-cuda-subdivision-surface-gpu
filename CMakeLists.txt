@@ -129,6 +129,9 @@ project(Blender)
 set(CMAKE_C_COMPILER_ID Clang)
 set(CMAKE_CXX_COMPILER_ID Clang++)
 
+set(CMAKE_C_COMPILER_WORKS 1)
+set(CMAKE_CXX_COMPILER_WORKS 1)
+
 # for CUDAToolkit
 enable_language(CUDA)
 
